@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TACNET | Multi-Agency Task Force</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0a1a0a;
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .tacnet-container {
+            max-width: 550px;
+            width: 100%;
+            margin: 0 auto;
+            background: #132013;
+            background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 8px);
+            border-radius: 28px;
+            border: 1px solid #2a4a2a;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,200,0.05);
+            overflow: hidden;
+        }
+        .command-panel {
+            padding: 20px 18px 24px;
+        }
+        .taskforce-title {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .taskforce-main {
+            color: #d4af37;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-family: 'Georgia', serif;
+        }
+        .taskforce-sub {
+            color: #8aa87a;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #6f9e6f;
+            border-bottom: 1px solid #2a4a2a;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            font-family: monospace;
+        }
+        .mission-header {
+            background: #0e180e;
+            border-left: 4px solid #d4af37;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .mission-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .mission-label {
+            color: #8aa87a;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+        .mission-value {
+            color: #e6d5a8;
+            font-weight: bold;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        .elapsed {
+            color: #d4af37;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .sys-status {
+            background: #0a1208;
+            border-radius: 30px;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border: 1px solid #2c4a2c;
+        }
+        .status-led span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2ecc2e;
+            box-shadow: 0 0 4px #2ecc2e;
+            margin-right: 6px;
+        }
+        .sys-message {
+            color: #b0c4a0;
+            font-size: 0.75rem;
+        }
+        .access-card {
+            background: #0e1a0e;
+            border-radius: 20px;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px dashed #5a7a5a;
+        }
+        .qr-placeholder {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .qr-sim {
+            background: #1e2a1a;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d4af37;
+            font-size: 1.5rem;
+        }
+        .token-input {
+            flex: 1;
+            background: #1a2a1a;
+            border: 1px solid #4a6e4a;
+            color: #e6d5a8;
+            padding: 12px;
+            border-radius: 30px;
+            font-family: monospace;
+            font-size: 0.7rem;
+        }
+        .verify-btn {
+            background: #d4af37;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: #0a1208;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .access-accepted {
+            background: #1a3a1a;
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #d4c47c;
+        }
+        .units-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .unit-card {
+            background: #0e180e;
+            border-radius: 16px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid;
+        }
+        .unit-blue { border-left-color: #3399ff; }
+        .unit-white { border-left-color: #cccccc; }
+        .unit-yellow { border-left-color: #e6bc74; }
+        .unit-name { font-weight: bold; color: #f0e6c5; }
+        .unit-type { font-size: 0.65rem; color: #8aa87a; }
+        .unit-status { font-size: 0.7rem; background: #00000040; padding: 4px 8px; border-radius: 20px; }
+        
+        /* INTERACTIVE MAP */
+        .map-preview {
+            background: #0f1a0a;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #3a553a;
+        }
+        .map-title { 
+            color: #d4af37; 
+            font-size: 0.7rem; 
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .interactive-map {
+            background: #1a2a1a;
+            height: 200px;
+            border-radius: 16px;
+            position: relative;
+            cursor: crosshair;
+            background-image: radial-gradient(#3a5a3a 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: hidden;
+            border: 1px solid #4a6e4a;
+        }
+        .map-dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: left 0.3s, top 0.3s;
+        }
+        .k9-dot { background: #3399ff; box-shadow: 0 0 8px #3399ff; }
+        .patrol-dot { background: #cccccc; box-shadow: 0 0 4px #cccccc; }
+        .fed-dot { background: #e6bc74; box-shadow: 0 0 4px #e6bc74; }
+        .perimeter-draw {
+            position: absolute;
+            border: 2px dashed #d4af37;
+            background: #d4af3710;
+            pointer-events: none;
+        }
+        .map-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .perimeter-badge {
+            background: #2a6e2a;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            margin-top: 8px;
+        }
+        .timeline-section {
+            background: #0e180e;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        .timeline-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .timeline-btn {
+            background: #1e2a1e;
+            border: none;
+            color: #d4af37;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+        }
+        .frame-slider { width: 100%; accent-color: #d4af37; }
+        .frame-value { text-align: center; font-size: 0.7rem; margin-top: 6px; color: #b0c4a0; }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .nav-item {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #7a9e6a;
+            background: none;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .creator-footer {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #d4af37;
+            border-top: 1px solid #2a4a2a;
+            padding-top: 14px;
+            margin-top: 8px;
+            font-family: 'Georgia', cursive;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .nv-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #00ff0040;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+        .nv-overlay.active { display: block; }
+        .draw-btn-active {
+            background: #d4af37;
+            color: #0a1208;
+        }
+    </style>
+</head>
+<body>
+<div class="nv-overlay" id="nvOverlay"></div>
+<div class="tacnet-container">
+    <div class="command-panel">
+        <!-- NEW TITLE -->
+        <div class="taskforce-title">
+            <div class="taskforce-main">TACNET</div>
+            <div class="taskforce-sub">MULTI AGENCY TASK FORCE SEARCHING</div>
+        </div>
+        
+        <div class="status-bar">
+            <span>📡 5G ▰▰▰▰▰▰▱</span>
+            <span>🔔 ON</span>
+            <span>🔋 87%</span>
+            <span>⏱️ 14:27</span>
+        </div>
+        <div class="mission-header">
+            <div class="mission-row"><span class="mission-label">MISSION ID</span><span class="mission-value" id="missionIdDisplay">AC-2405-071</span></div>
+            <div class="mission-row"><span class="mission-label">ELAPSED TIME</span><span class="elapsed" id="elapsedTime">00:18:42</span></div>
+            <div class="mission-row"><span class="mission-label">ACTIVE UNITS</span><span class="mission-value" id="activeUnitsCount">3</span></div>
+            <div class="mission-row"><span class="mission-label">FRAME</span><span class="mission-value"><span id="currentFrame">19</span> / <span id="totalFrames">30</span></span></div>
+        </div>
+        <div class="sys-status">
+            <div class="status-led"><span></span> SYSTEM READY</div>
+            <div class="sys-message">All Systems Normal</div>
+            <div class="sys-message">🔒 SECURE</div>
+        </div>
+        <div class="access-card">
+            <div class="qr-placeholder">
+                <div class="qr-sim">📷</div>
+                <input type="text" class="token-input" id="tokenInput" placeholder="Paste token here">
+            </div>
+            <button class="verify-btn" id="verifyBtn">VERIFY ACCESS</button>
+            <div id="accessStatus" class="access-accepted" style="display: none;">
+                ✅ ACCESS ACCEPTED — Token valid<br>
+                ⏱️ Expires in: <span id="expiresSpan">04:26:16</span>
+            </div>
+        </div>
+        <div class="units-grid">
+            <div class="unit-card unit-blue"><div><div class="unit-name">K9-01</div><div class="unit-type">K9 UNIT</div></div><div class="unit-status">🟢 ACTIVE • moving north</div></div>
+            <div class="unit-card unit-white"><div><div class="unit-name">PATROL-3</div><div class="unit-type">PATROL UNIT</div></div><div class="unit-status">🟢 ACTIVE • perimeter east</div></div>
+            <div class="unit-card unit-yellow"><div><div class="unit-name">FED-1</div><div class="unit-type">FEDERAL UNIT</div></div><div class="unit-status">🟢 ACTIVE • command post</div></div>
+        </div>
+        
+        <!-- INTERACTIVE MAP SECTION -->
+        <div class="map-preview">
+            <div class="map-title">
+                <span>🗺️ PERIMETER ZONE — SCALE 200m</span>
+                <span>✏️ Tap map to draw</span>
+            </div>
+            <div class="interactive-map" id="tacticalMap">
+                <div class="map-dot k9-dot" id="k9Dot" style="left: 35%; top: 55%;"></div>
+                <div class="map-dot patrol-dot" id="patrolDot" style="left: 62%; top: 48%;"></div>
+                <div class="map-dot fed-dot" id="fedDot" style="left: 72%; top: 35%;"></div>
+            </div>
+            <div class="map-controls">
+                <button class="timeline-btn" id="drawPerimeterBtn">✏️ DRAW PERIMETER</button>
+                <button class="timeline-btn" id="clearPerimeterBtn">🗑️ CLEAR</button>
+                <button class="timeline-btn" id="resetDotsBtn">📍 RESET UNITS</button>
+            </div>
+            <div><span class="perimeter-badge" id="perimeterStatus">🟢 PERIMETER: NOT SET</span> <span style="float:right; color:#6f9e6f;">K9-01: grid C4</span></div>
+        </div>
+        
+        <div class="timeline-section">
+            <div class="timeline-controls">
+                <button class="timeline-btn" id="startBtn">⏮ START</button>
+                <button class="timeline-btn" id="prevBtn">◀ PREV</button>
+                <button class="timeline-btn" id="playPauseBtn">⏸ PAUSE</button>
+                <button class="timeline-btn" id="nextBtn">NEXT ▶</button>
+                <button class="timeline-btn" id="endBtn">⏭ END</button>
+            </div>
+            <input type="range" id="frameSlider" class="frame-slider" min="0" max="30" value="19" step="1">
+            <div class="frame-value">FRAME <span id="frameValue">19</span> / 30 | Use timeline to review mission flow</div>
+        </div>
+        <div class="bottom-nav">
+            <button class="nav-item" data-nav="MAP">🗺️ MAP</button>
+            <button class="nav-item" data-nav="UNITS">👥 UNITS</button>
+            <button class="nav-item" data-nav="SCAN">📷 SCAN</button>
+            <button class="nav-item" data-nav="LOGS">📋 LOGS</button>
+            <button class="nav-item" data-nav="SETTINGS">⚙️ SETTINGS</button>
+        </div>
+        <div class="creator-footer">
+            CREATED BY RETIRED DEPUTY SHERIFF EARL A. WOOD
+        </div>
+    </div>
+</div>
+
+<script>
+    // TACNET CORE
+    let currentFrame = 19;
+    const totalFrames = 30;
+    let isPlaying = false;
+    let playInterval = null;
+    let isDrawingPerimeter = false;
+    let perimeterPoints = [];
+    
+    // DOM elements
+    const frameSlider = document.getElementById('frameSlider');
+    const frameValueSpan = document.getElementById('frameValue');
+    const currentFrameSpan = document.getElementById('currentFrame');
+    const elapsedTimeSpan = document.getElementById('elapsedTime');
+    const activeUnitsSpan = document.getElementById('activeUnitsCount');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const tokenInput = document.getElementById('tokenInput');
+    const accessStatusDiv = document.getElementById('accessStatus');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const tacticalMap = document.getElementById('tacticalMap');
+    const k9Dot = document.getElementById('k9Dot');
+    const patrolDot = document.getElementById('patrolDot');
+    const fedDot = document.getElementById('fedDot');
+    const drawPerimeterBtn = document.getElementById('drawPerimeterBtn');
+    const clearPerimeterBtn = document.getElementById('clearPerimeterBtn');
+    const resetDotsBtn = document.getElementById('resetDotsBtn');
+    const perimeterStatus = document.getElementById('perimeterStatus');
+    
+    // Unit positions that move with timeline
+    const unitPositions = {
+        k9: { x: 35, y: 55 },
+        patrol: { x: 62, y: 48 },
+        fed: { x: 72, y: 35 }
+    };
+    
+    function updateUnitPositions() {
+        // Simulate movement based on frame
+        let k9X = 35, k9Y = 55;
+        let patrolX = 62, patrolY = 48;
+        let fedX = 72, fedY = 35;
+        
+        if (currentFrame > 5) { k9X = 42; k9Y = 52; }
+        if (currentFrame > 10) { k9X = 48; k9Y = 58; patrolX = 58; }
+        if (currentFrame > 15) { k9X = 55; k9Y = 50; fedX = 68; }
+        if (currentFrame > 20) { k9X = 60; k9Y = 45; patrolX = 50; }
+        if (currentFrame > 25) { k9X = 52; k9Y = 40; fedX = 62; }
+        
+        k9Dot.style.left = k9X + '%';
+        k9Dot.style.top = k9Y + '%';
+        patrolDot.style.left = patrolX + '%';
+        patrolDot.style.top = patrolY + '%';
+        fedDot.style.left = fedX + '%';
+        fedDot.style.top = fedY + '%';
+    }
+    
+    function resetUnitPositions() {
+        k9Dot.style.left = '35%';
+        k9Dot.style.top = '55%';
+        patrolDot.style.left = '62%';
+        patrolDot.style.top = '48%';
+        fedDot.style.left = '72%';
+        fedDot.style.top = '35%';
+        alert('Units reset to original positions');
+    }
+    
+    // Perimeter drawing
+    function handleMapClick(e) {
+        if (!isDrawingPerimeter) return;
+        const rect = tacticalMap.getBoundingClientRect();
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+        perimeterPoints.push({ x, y });
+        
+        // Draw perimeter point
+        const point = document.createElement('div');
+        point.style.position = 'absolute';
+        point.style.left = x + '%';
+        point.style.top = y + '%';
+        point.style.width = '6px';
+        point.style.height = '6px';
+        point.style.background = '#d4af37';
+        point.style.borderRadius = '50%';
+        point.style.transform = 'translate(-50%, -50%)';
+        point.classList.add('perimeter-point');
+        tacticalMap.appendChild(point);
+        
+        if (perimeterPoints.length > 2) {
+            perimeterStatus.innerHTML = '🟡 PERIMETER: ' + perimeterPoints.length + ' points drawn';
+        }
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+    
+    function clearPerimeter() {
+        const points = document.querySelectorAll('.perimeter-point');
+        points.forEach(p => p.remove());
+        perimeterPoints = [];
+        isDrawingPerimeter = false;
+        perimeterStatus.innerHTML = '🟢 PERIMETER: NOT SET';
+        drawPerimeterBtn.classList.remove('draw-btn-active');
+        alert('Perimeter cleared');
+    }
+    
+    function toggleDrawMode() {
+        isDrawingPerimeter = !isDrawingPerimeter;
+        if (isDrawingPerimeter) {
+            drawPerimeterBtn.classList.add('draw-btn-active');
+            perimeterStatus.innerHTML = '✏️ DRAWING MODE — Tap map to set perimeter points';
+        } else {
+            drawPerimeterBtn.classList.remove('draw-btn-active');
+            if (perimeterPoints.length >= 3) {
+                perimeterStatus.innerHTML = '🟢 PERIMETER: LOCKED (' + perimeterPoints.length + ' points)';
+            } else {
+                perimeterStatus.innerHTML = '🟢 PERIMETER: NOT SET';
+            }
+        }
+        if (navigator.vibrate) navigator.vibrate(15);
+    }
+    
+    function updateFrameUI() {
+        frameSlider.value = currentFrame;
+        frameValueSpan.innerText = currentFrame;
+        currentFrameSpan.innerText = currentFrame;
+        const minutes = currentFrame;
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        elapsedTimeSpan.innerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:00`;
+        let unitsDisplay = 3;
+        if (currentFrame > 25) unitsDisplay = 2;
+        if (currentFrame > 28) unitsDisplay = 1;
+        activeUnitsSpan.innerText = unitsDisplay;
+        updateUnitPositions();
+    }
+    
+    function setFrame(frame) {
+        currentFrame = Math.min(totalFrames, Math.max(0, frame));
+        updateFrameUI();
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+    
+    function startPlayback() {
+        if (playInterval) clearInterval(playInterval);
+        isPlaying = true;
+        playPauseBtn.innerHTML = "⏸ PAUSE";
+        playInterval = setInterval(() => {
+            if (currentFrame >= totalFrames) {
+                pausePlayback();
+                setFrame(totalFrames);
+            } else {
+                setFrame(currentFrame + 1);
+            }
+        }, 800);
+    }
+    
+    function pausePlayback() {
+        if (playInterval) clearInterval(playInterval);
+        isPlaying = false;
+        playPauseBtn.innerHTML = "▶ PLAY";
+    }
+    
+    function togglePlayPause() {
+        if (isPlaying) pausePlayback();
+        else startPlayback();
+    }
+    
+    function verifyAccess() {
+        const token = tokenInput.value.trim();
+        if (token === "" || token === "TACNET2025") {
+            accessStatusDiv.style.display = "block";
+            if (navigator.vibrate) navigator.vibrate(20);
+            alert("ACCESS ACCEPTED. Welcome to TACNET.");
+        } else {
+            alert("Invalid token. Access denied.");
+            accessStatusDiv.style.display = "none";
+        }
+    }
+    
+    function simulateQRScan() {
+        tokenInput.value = "TACNET2025";
+        verifyAccess();
+    }
+    
+    // Event listeners
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const nav = btn.getAttribute('data-nav');
+            if (nav === "SCAN") simulateQRScan();
+            else alert(`TACNET — ${nav} module ready. Full integration coming.`);
+            if (navigator.vibrate) navigator.vibrate(15);
+        });
+    });
+    
+    playPauseBtn.onclick = togglePlayPause;
+    document.getElementById('startBtn').onclick = () => { pausePlayback(); setFrame(0); };
+    document.getElementById('prevBtn').onclick = () => { pausePlayback(); setFrame(currentFrame - 1); };
+    document.getElementById('nextBtn').onclick = () => { pausePlayback(); setFrame(currentFrame + 1); };
+    document.getElementById('endBtn').onclick = () => { pausePlayback(); setFrame(totalFrames); };
+    frameSlider.oninput = (e) => { pausePlayback(); setFrame(parseInt(e.target.value)); };
+    verifyBtn.onclick = verifyAccess;
+    drawPerimeterBtn.onclick = toggleDrawMode;
+    clearPerimeterBtn.onclick = clearPerimeter;
+    resetDotsBtn.onclick = resetUnitPositions;
+    tacticalMap.addEventListener('click', handleMapClick);
+    tacticalMap.addEventListener('touchstart', handleMapClick);
+    
+    updateFrameUI();
+    
+    // NVG Toggle
+    function addNVG() {
+        const btn = document.createElement('div');
+        btn.innerText = "🌙 NVG";
+        btn.style.position = "fixed";
+        btn.style.bottom = "20px";
+        btn.style.left = "20px";
+        btn.style.background = "#d4af37";
+        btn.style.padding = "6px 12px";
+        btn.style.borderRadius = "30px";
+        btn.style.fontSize = "0.7rem";
+        btn.style.zIndex = "999";
+        btn.style.cursor = "pointer";
+        document.body.appendChild(btn);
+        btn.onclick = () => {
+            document.getElementById('nvOverlay').classList.toggle('active');
+            if (navigator.vibrate) navigator.vibrate(20);
+        };
+    }
+    addNVG();
+</script>
+</body>
+</html>
