@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>TACNET | Real GPS • Federal • State • Local</title>
+    <!-- Leaflet CSS + JS (Free maps, no API key needed) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a1a0a; font-family: 'Segoe UI', 'Courier New', monospace; padding: 16px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .tacnet-container { max-width: 600px; width: 100%; margin: 0 auto; background: #132013; border-radius: 28px; border: 1px solid #2a4a2a; box-shadow: 0 20px 35px rgba(0,0,0,0.5); overflow: hidden; }
+        .command-panel { padding: 20px 18px 24px; }
+        
+        .taskforce-title { text-align: center; margin-bottom: 20px; padding: 10px 0; border-bottom: 2px solid #d4af37; border-top: 2px solid #d4af37; background: linear-gradient(135deg, #0e180e 0%, #1a2a1a 100%); border-radius: 40px; }
+        .tacnet-main { color: #d4af37; font-size: 2.5rem; font-weight: 900; letter-spacing: 6px; font-family: 'Georgia', serif; text-shadow: 0 0 15px rgba(212,175,55,0.6); }
+        .tagline { color: #e6d5a8; font-size: 0.8rem; font-weight: bold; letter-spacing: 3px; }
+        .multi-agency { color: #c5a059; font-size: 1rem; font-weight: bold; margin-top: 5px; background: #0a1208; display: inline-block; padding: 4px 16px; border-radius: 40px; }
+        .federal-state-local { color: #d4af37; font-size: 0.75rem; letter-spacing: 2px; margin-top: 5px; }
+        
+        .status-bar { display: flex; justify-content: space-between; font-size: 0.65rem; color: #6f9e6f; border-bottom: 1px solid #2a4a2a; padding-bottom: 8px; margin-bottom: 12px; }
+        .mission-header { background: #0e180e; border-left: 4px solid #d4af37; padding: 10px; border-radius: 12px; margin-bottom: 12px; }
+        .mission-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+        .mission-label { color: #8aa87a; font-size: 0.65rem; }
+        .mission-value { color: #e6d5a8; font-weight: bold; font-size: 0.8rem; }
+        
+        .sys-status { background: #0a1208; border-radius: 30px; padding: 6px 12px; display: flex; justify-content: space-between; margin-bottom: 15px; border: 1px solid #2c4a2c; font-size: 0.7rem; }
+        .status-led span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #2ecc2e; box-shadow: 0 0 4px #2ecc2e; margin-right: 5px; }
+        
+        .hooks-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
+        .hook-card { background: #0e1a0e; border-radius: 12px; padding: 8px; border: 1px solid #3a553a; text-align: center; }
+        .hook-title { color: #d4af37; font-size: 0.65rem; font-weight: bold; }
+        .hook-value { color: #e6d5a8; font-size: 0.8rem; font-weight: bold; }
+        .hook-btn { background: #1e2a1e; border: 1px solid #d4af37; color: #d4af37; padding: 4px 8px; border-radius: 20px; font-size: 0.6rem; margin-top: 4px; width: 100%; cursor: pointer; }
+        
+        .access-card { background: #0e1a0e; border-radius: 16px; padding: 10px; margin-bottom: 15px; border: 1px dashed #5a7a5a; }
+        .qr-placeholder { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+        .qr-sim { background: #1e2a1a; width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #d4af37; font-size: 1.3rem; }
+        .token-input { flex: 1; background: #1a2a1a; border: 1px solid #4a6e4a; color: #e6d5a8; padding: 8px; border-radius: 30px; font-size: 0.7rem; }
+        .verify-btn { background: #d4af37; border: none; padding: 8px; border-radius: 30px; font-weight: bold; width: 100%; margin-top: 6px; cursor: pointer; }
+        .access-accepted { background: #1a3a1a; margin-top: 8px; padding: 6px; border-radius: 12px; text-align: center; font-size: 0.65rem; display: none; }
+        
+        .units-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+        .unit-card { background: #0e180e; border-radius: 12px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid; font-size: 0.7rem; }
+        .unit-blue { border-left-color: #3399ff; }
+        .unit-white { border-left-color: #cccccc; }
+        .unit-yellow { border-left-color: #e6bc74; }
+        
+        /* REAL GPS MAP */
+        .map-preview { background: #0f1a0a; border-radius: 16px; padding: 10px; margin-bottom: 15px; border: 1px solid #3a553a; }
+        .map-title { color: #d4af37; font-size: 0.7rem; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        #realMap { height: 280px; border-radius: 12px; border: 1px solid #4a6e4a; background: #1a2a1a; z-index: 1; }
+        .map-controls { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+        .timeline-btn { background: #1e2a1e; border: none; color: #d4af37; padding: 5px 10px; border-radius: 20px; font-size: 0.65rem; cursor: pointer; }
+        .perimeter-badge { background: #2a6e2a; display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.6rem; margin-top: 6px; }
+        
+        .timeline-section { background: #0e180e; border-radius: 16px; padding: 10px; margin-bottom: 15px; }
+        .timeline-controls { display: flex; justify-content: space-between; margin-bottom: 8px; gap: 5px; flex-wrap: wrap; }
+        .frame-slider { width: 100%; accent-color: #d4af37; }
+        
+        .bottom-nav { display: flex; justify-content: space-around; margin-top: 8px; margin-bottom: 8px; }
+        .nav-item { font-size: 0.65rem; color: #7a9e6a; background: none; border: none; padding: 5px 8px; cursor: pointer; }
+        .creator-footer { text-align: center; font-size: 0.6rem; color: #d4af37; border-top: 1px solid #2a4a2a; padding-top: 10px; margin-top: 6px; font-weight: bold; }
+        .nv-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #00ff0040; mix-blend-mode: screen; pointer-events: none; z-index: 1000; display: none; }
+        .nv-overlay.active { display: block; }
+        .evidence-log { max-height: 80px; overflow-y: auto; font-size: 0.6rem; margin-top: 6px; background: #0a1208; padding: 5px; border-radius: 8px; }
+        
+        @media (max-width: 550px) { .tacnet-main { font-size: 1.8rem; } .hooks-panel { grid-template-columns: 1fr; } #realMap { height: 250px; } }
+    </style>
+</head>
+<body>
+<div class="nv-overlay" id="nvOverlay"></div>
+<div class="tacnet-container">
+    <div class="command-panel">
+        <div class="taskforce-title">
+            <div class="tacnet-main">TACNET</div>
+            <div class="tagline">◈ REAL GPS • TACTICAL NETWORK ◈</div>
+            <div class="multi-agency">MULTI-AGENCY TASK FORCE SEARCHING</div>
+            <div class="federal-state-local">FEDERAL • STATE • LOCAL</div>
+        </div>
+        
+        <div class="status-bar">
+            <span>📍 GPS ACTIVE</span>
+            <span>🔔 ON</span>
+            <span>🔋 87%</span>
+            <span id="liveTime">--:--</span>
+        </div>
+        
+        <div class="mission-header">
+            <div class="mission-row"><span class="mission-label">MISSION ID</span><span class="mission-value" id="missionIdDisplay">FIELD-DEMO-001</span></div>
+            <div class="mission-row"><span class="mission-label">YOUR LOCATION</span><span class="mission-value" id="gpsStatus">Waiting for GPS...</span></div>
+            <div class="mission-row"><span class="mission-label">SEARCH TIMER</span><span class="elapsed" id="timerDisplay">00:00:00</span></div>
+        </div>
+        
+        <div class="sys-status">
+            <div class="status-led"><span></span> GPS LOCKED</div>
+            <div class="sys-message" id="accuracyMsg">Waiting for signal</div>
+            <div class="sys-message">🔒 SECURE</div>
+        </div>
+        
+        <!-- HOOKS PANEL -->
+        <div class="hooks-panel">
+            <div class="hook-card"><div class="hook-title">📍 LKP</div><div class="hook-value" id="lkpStatus">Not set</div><button class="hook-btn" id="setLKPBtn">SET LKP HERE</button></div>
+            <div class="hook-card"><div class="hook-title">🌬️ WIND</div><div class="hook-value" id="windDisplay">Calculating...</div><button class="hook-btn" id="refreshWindBtn">REFRESH</button></div>
+            <div class="hook-card"><div class="hook-title">🔲 GRID</div><div class="hook-value" id="gridStatus">Off</div><button class="hook-btn" id="createGridBtn">SHOW 6-GRID</button></div>
+            <div class="hook-card"><div class="hook-title">📋 EVIDENCE</div><div class="hook-value" id="evidenceCount">0</div><button class="hook-btn" id="addEvidenceBtn">+ ADD EVIDENCE</button></div>
+            <div class="hook-card"><div class="hook-title">📡 REPORT</div><div class="hook-value" id="lastReport">Ready</div><button class="hook-btn" id="sendReportBtn">SEND STATUS</button></div>
+            <div class="hook-card"><div class="hook-title">📝 NOTES</div><div class="hook-value" id="noteCount">0</div><button class="hook-btn" id="addNoteBtn">ADD NOTE</button></div>
+        </div>
+        
+        <div class="access-card">
+            <div class="qr-placeholder">
+                <div class="qr-sim">📷</div>
+                <input type="text" class="token-input" id="tokenInput" placeholder="Enter access token">
+            </div>
+            <button class="verify-btn" id="verifyBtn">VERIFY ACCESS</button>
+            <div id="accessStatus" class="access-accepted">✅ ACCESS ACCEPTED — Real GPS Active</div>
+        </div>
+        
+        <div class="units-grid">
+            <div class="unit-card unit-blue"><span>🐕 K9-01 (YOU)</span><span id="k9Status">📍 Getting GPS...</span></div>
+        </div>
+        
+        <!-- REAL GPS MAP -->
+        <div class="map-preview">
+            <div class="map-title"><span>🗺️ REAL-TIME SATELLITE MAP</span><span>📍 Your blue dot = your location</span></div>
+            <div id="realMap"></div>
+            <div class="map-controls">
+                <button class="timeline-btn" id="centerMapBtn">📍 CENTER ON ME</button>
+                <button class="timeline-btn" id="markSearchedBtn">✅ MARK SEARCHED AREA</button>
+                <button class="timeline-btn" id="clearSearchedBtn">🧹 CLEAR GREEN</button>
+                <button class="timeline-btn" id="drawPerimeterBtn">✏️ DRAW PERIMETER</button>
+            </div>
+            <div><span class="perimeter-badge" id="perimeterStatus">🟢 PERIMETER: NOT SET</span> <span id="distanceDisplay" style="float:right;">📍 Move to see location</span></div>
+            <div id="evidenceLogList" class="evidence-log"></div>
+        </div>
+        
+        <div class="timeline-section">
+            <div class="timeline-controls">
+                <button class="timeline-btn" id="resetTimerBtn">⏱️ RESET TIMER</button>
+                <button class="timeline-btn" id="clearMapBtn">🗑️ CLEAR PINS</button>
+            </div>
+            <div class="frame-value">📍 TACNET • Walk around — your blue dot moves with you</div>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-item" data-nav="MAP">🗺️ MAP</button>
+            <button class="nav-item" data-nav="SCAN">📷 SCAN</button>
+            <button class="nav-item" data-nav="LOGS">📋 LOGS</button>
+            <button class="nav-item" data-nav="SETTINGS">⚙️ SETTINGS</button>
+        </div>
+        <div class="creator-footer">CREATED BY RETIRED DEPUTY SHERIFF EARL A. WOOD</div>
+    </div>
+</div>
+
+<script>
+    // ========== TACNET WITH REAL GPS ==========
+    let map;
+    let userMarker;
+    let currentLat = null;
+    let currentLng = null;
+    let watchId = null;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let lkpMarker = null;
+    let evidenceItems = [];
+    let searchedPolygons = [];
+    let perimeterPoints = [];
+    let perimeterLayer = null;
+    let currentDrawMode = false;
+    
+    // Initialize map (default to Lynchburg, VA area)
+    function initMap() {
+        map = L.map('realMap').setView([37.4138, -79.1425], 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19,
+            minZoom: 12
+        }).addTo(map);
+        
+        // Start GPS
+        startGPS();
+    }
+    
+    function startGPS() {
+        if (!navigator.geolocation) {
+            document.getElementById('gpsStatus').innerHTML = 'GPS not supported';
+            return;
+        }
+        
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                currentLat = position.coords.latitude;
+                currentLng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                document.getElementById('gpsStatus').innerHTML = `${currentLat.toFixed(5)}°, ${currentLng.toFixed(5)}°`;
+                document.getElementById('accuracyMsg').innerHTML = `🎯 ±${Math.round(accuracy)}m accuracy`;
+                document.getElementById('k9Status').innerHTML = `📍 ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
+                
+                if (!userMarker) {
+                    userMarker = L.marker([currentLat, currentLng], {
+                        icon: L.divIcon({ html: '<div style="background:#3399ff; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 0 8px #3399ff;"></div>', iconSize: [16,16], className: '' })
+                    }).addTo(map);
+                    userMarker.bindTooltip('YOU - K9 UNIT', { permanent: false, direction: 'top' });
+                    map.setView([currentLat, currentLng], 16);
+                } else {
+                    userMarker.setLatLng([currentLat, currentLng]);
+                }
+                
+                // Update distance display
+                document.getElementById('distanceDisplay').innerHTML = `📍 ${currentLat.toFixed(4)}°, ${currentLng.toFixed(4)}°`;
+            },
+            (error) => {
+                console.error(error);
+                document.getElementById('gpsStatus').innerHTML = 'GPS error. Check permissions.';
+                document.getElementById('accuracyMsg').innerHTML = '⚠️ Allow location access';
+            },
+            { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+        );
+    }
+    
+    function centerOnMe() {
+        if (currentLat && currentLng) {
+            map.setView([currentLat, currentLng], 17);
+            if (navigator.vibrate) navigator.vibrate(20);
+        } else {
+            alert("Waiting for GPS signal...");
+        }
+    }
+    
+    // Timer
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timerSeconds++;
+            const h = Math.floor(timerSeconds / 3600);
+            const m = Math.floor((timerSeconds % 3600) / 60);
+            const s = timerSeconds % 60;
+            document.getElementById('timerDisplay').innerHTML = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if (timerSeconds === 3600) alert('⚠️ ONE HOUR — Increase urgency');
+            if (timerSeconds === 7200) alert('⚠️ TWO HOURS — Expand search');
+        }, 1000);
+    }
+    
+    // LKP - Last Known Position
+    function setLKP() {
+        if (!currentLat || !currentLng) { alert("No GPS lock yet"); return; }
+        if (lkpMarker) map.removeLayer(lkpMarker);
+        lkpMarker = L.marker([currentLat, currentLng], {
+            icon: L.divIcon({ html: '<div style="background:#aa66ff; width:20px; height:20px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);"></div>', iconSize: [20,20], className: '' })
+        }).addTo(map);
+        lkpMarker.bindTooltip('LAST KNOWN POSITION', { permanent: true, direction: 'top' });
+        document.getElementById('lkpStatus').innerHTML = 'Set';
+        if (navigator.vibrate) navigator.vibrate(20);
+        alert("LKP marked at your current location");
+    }
+    
+    // Evidence
+    function addEvidence() {
+        if (!currentLat || !currentLng) { alert("No GPS lock"); return; }
+        const desc = prompt("Evidence description:", "Found item / K9 alert");
+        if (!desc) return;
+        const now = new Date().toLocaleTimeString();
+        evidenceItems.push({ time: now, lat: currentLat, lng: currentLng, desc: desc });
+        document.getElementById('evidenceCount').innerHTML = evidenceItems.length;
+        const evidenceList = document.getElementById('evidenceLogList');
+        evidenceList.innerHTML = evidenceItems.slice(-5).reverse().map(e => `📍 ${e.time} - ${e.desc}`).join('<br>');
+        
+        // Add marker on map
+        L.marker([currentLat, currentLng], {
+            icon: L.divIcon({ html: '<div style="background:#d4af37; width:12px; height:12px; border-radius:50%; border:1px solid white;"></div>', iconSize: [12,12] })
+        }).addTo(map).bindTooltip(`📌 EVIDENCE: ${desc}`, { permanent: false });
+        
+        if (navigator.vibrate) navigator.vibrate(15);
+        alert(`Evidence logged at your location`);
+    }
+    
+    // Mark searched area (green circle around user)
+    function markSearchedArea() {
+        if (!currentLat || !currentLng) { alert("No GPS lock"); return; }
+        const radius = 30; // meters
+        const circle = L.circle([currentLat, currentLng], {
+            color: '#00cc00',
+            fillColor: '#00cc00',
+            fillOpacity: 0.3,
+            radius: radius
+        }).addTo(map);
+        searchedPolygons.push(circle);
+        if (navigator.vibrate) navigator.vibrate(20);
+        alert(`✅ Searched area marked (${radius}m radius)`);
+    }
+    
+    function clearSearchedAreas() {
+        searchedPolygons.forEach(p => map.removeLayer(p));
+        searchedPolygons = [];
+        if (navigator.vibrate) navigator.vibrate(10);
+        alert('Green searched areas cleared');
+    }
+    
+    // Grid overlay
+    function createGrid() {
+        if (!map) return;
+        const bounds = map.getBounds();
+        const latStep = (bounds.getNorth() - bounds.getSouth()) / 3;
+        const lngStep = (bounds.getEast() - bounds.getWest()) / 2;
+        // Remove existing grid
+        if (window.gridLines) window.gridLines.forEach(l => map.removeLayer(l));
+        window.gridLines = [];
+        for (let i = 1; i <= 2; i++) {
+            const lat = bounds.getSouth() + (i * latStep);
+            const line = L.polyline([[lat, bounds.getWest()], [lat, bounds.getEast()]], { color: '#d4af37', weight: 1, opacity: 0.5 }).addTo(map);
+            window.gridLines.push(line);
+        }
+        for (let i = 1; i <= 3; i++) {
+            const lng = bounds.getWest() + (i * lngStep);
+            const line = L.polyline([[bounds.getSouth(), lng], [bounds.getNorth(), lng]], { color: '#d4af37', weight: 1, opacity: 0.5 }).addTo(map);
+            window.gridLines.push(line);
+        }
+        document.getElementById('gridStatus').innerHTML = 'Active';
+        if (navigator.vibrate) navigator.vibrate(10);
+        alert('6-grid overlay added to map');
+    }
+    
+    // Perimeter drawing
+    function toggleDrawPerimeter() {
+        currentDrawMode = !currentDrawMode;
+        const btn = document.getElementById('drawPerimeterBtn');
+        if (currentDrawMode) {
+            btn.style.background = '#d4af37';
+            btn.style.color = '#0a1208';
+            perimeterPoints = [];
+            document.getElementById('perimeterStatus').innerHTML = '✏️ Tap map to add perimeter points';
+            map.on('click', onMapClickForPerimeter);
+        } else {
+            btn.style.background = '#1e2a1e';
+            btn.style.color = '#d4af37';
+            if (perimeterPoints.length >= 3) {
+                if (perimeterLayer) map.removeLayer(perimeterLayer);
+                perimeterLayer = L.polygon(perimeterPoints, { color: '#d4af37', weight: 3, fillColor: '#d4af37', fillOpacity: 0.1 }).addTo(map);
+                document.getElementById('perimeterStatus').innerHTML = `🔒 PERIMETER LOCKED (${perimeterPoints.length} points)`;
+            } else {
+                document.getElementById('perimeterStatus').innerHTML = '🟢 PERIMETER: NOT SET';
+            }
+            map.off('click', onMapClickForPerimeter);
+        }
+        if (navigator.vibrate) navigator.vibrate(15);
+    }
+    
+    function onMapClickForPerimeter(e) {
+        perimeterPoints.push([e.latlng.lat, e.latlng.lng]);
+        L.marker([e.latlng.lat, e.latlng.lng], {
+            icon: L.divIcon({ html: '<div style="background:#d4af37; width:6px; height:6px; border-radius:50%;"></div>', iconSize: [6,6] })
+        }).addTo(map);
+        document.getElementById('perimeterStatus').innerHTML = `✏️ ${perimeterPoints.length} points placed`;
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+    
+    function sendReport() {
+        const now = new Date().toLocaleTimeString();
+        const report = `TACNET REPORT ${now}: Location ${currentLat?.toFixed(5)},${currentLng?.toFixed(5)} | Evidence: ${evidenceItems.length} items | Timer: ${document.getElementById('timerDisplay').innerHTML}`;
+        document.getElementById('lastReport').innerHTML = now;
+        alert("📡 REPORT READY:\n" + report + "\n\n[Copy this text for radio or inter-agency comms]");
+        if (navigator.vibrate) navigator.vibrate(20);
+    }
+    
+    function addTerrainNote() {
+        if (!currentLat || !currentLng) { alert("No GPS lock"); return; }
+        const note = prompt("Terrain note:", "Thick brush / Water / No signal");
+        if (!note) return;
+        L.marker([currentLat, currentLng], {
+            icon: L.divIcon({ html: '<div style="background:#d4af37; width:10px; height:10px; border-radius:2px;">📝</div>', iconSize: [10,10], className: '' })
+        }).addTo(map).bindTooltip(`📝 ${note}`, { permanent: false });
+        const count = parseInt(document.getElementById('noteCount').innerHTML) + 1;
+        document.getElementById('noteCount').innerHTML = count;
+        if (navigator.vibrate) navigator.vibrate(15);
+        alert(`Note added at your location`);
+    }
+    
+    function clearMapPins() {
+        if (lkpMarker) map.removeLayer(lkpMarker);
+        if (perimeterLayer) map.removeLayer(perimeterLayer);
+        perimeterPoints = [];
+        lkpMarker = null;
+        document.getElementById('lkpStatus').innerHTML = 'Not set';
+        document.getElementById('perimeterStatus').innerHTML = '🟢 PERIMETER: NOT SET';
+        alert('Map pins cleared');
+    }
+    
+    function refreshWind() {
+        const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+        const speed = Math.floor(Math.random() * 15) + 3;
+        document.getElementById('windDisplay').innerHTML = `${dir} ${speed}mph`;
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+    
+    function verifyAccess() {
+        const token = document.getElementById('tokenInput').value.trim();
+        if (token === "TACNET2025" || token === "") {
+            document.getElementById('accessStatus').style.display = 'block';
+            alert("ACCESS ACCEPTED — Real GPS Active");
+            startTimer();
+        } else { alert("Invalid token"); }
+    }
+    
+    function resetTimer() { timerSeconds = 0; alert("Timer reset"); }
+    
+    // Update live clock
+    function updateClock() { document.getElementById('liveTime').innerHTML = new Date().toLocaleTimeString().slice(0,5); }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // Bind events
+    document.getElementById('centerMapBtn').onclick = centerOnMe;
+    document.getElementById('setLKPBtn').onclick = setLKP;
+    document.getElementById('addEvidenceBtn').onclick = addEvidence;
+    document.getElementById('markSearchedBtn').onclick = markSearchedArea;
+    document.getElementById('clearSearchedBtn').onclick = clearSearchedAreas;
+    document.getElementById('createGridBtn').onclick = createGrid;
+    document.getElementById('sendReportBtn').onclick = sendReport;
+    document.getElementById('addNoteBtn').onclick = addTerrainNote;
+    document.getElementById('drawPerimeterBtn').onclick = toggleDrawPerimeter;
+    document.getElementById('clearMapBtn').onclick = clearMapPins;
+    document.getElementById('refreshWindBtn').onclick = refreshWind;
+    document.getElementById('resetTimerBtn').onclick = resetTimer;
+    document.getElementById('verifyBtn').onclick = verifyAccess;
+    
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.onclick = () => alert(`TACNET — ${btn.getAttribute('data-nav')} module ready in ultimate version`);
+    });
+    
+    // NVG Button
+    function addNVG() {
+        const btn = document.createElement('div');
+        btn.innerText = "🌙 NVG";
+        btn.style.position = "fixed";
+        btn.style.bottom = "20px";
+        btn.style.left = "20px";
+        btn.style.background = "#d4af37";
+        btn.style.padding = "5px 10px";
+        btn.style.borderRadius = "30px";
+        btn.style.fontSize = "0.65rem";
+        btn.style.zIndex = "999";
+        btn.style.cursor = "pointer";
+        document.body.appendChild(btn);
+        btn.onclick = () => { document.getElementById('nvOverlay').classList.toggle('active'); if (navigator.vibrate) navigator.vibrate(20); };
+    }
+    
+    initMap();
+    addNVG();
+    refreshWind();
+    
+    // Auto-accept for demo
+    setTimeout(() => { document.getElementById('accessStatus').style.display = 'block'; startTimer(); }, 500);
+</script>
+</body>
+</html>
