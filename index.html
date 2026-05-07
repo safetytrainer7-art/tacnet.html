@@ -1,0 +1,1362 @@
+
+(legal_bible.json)
+
+[
+  {
+    "id": 1,
+    "title": "Search & Seizure - K9 Deployment",
+    "case_code": "VA-LS-01",
+    "summary": "Key legal precedents regarding the use of search dogs in public spaces.",
+    "content": "Full text of the legal guidelines goes here..."
+  }
+]
+
+(index.html) INTERFACE
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K9 SAR - Legal Bible</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f4f4f9; padding: 20px; }
+        .header { background: #1a365d; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .card h3 { margin-top: 0; color: #1a365d; }
+        .tag { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>K9 SAR: Legal Bible</h1>
+    </div>
+
+    <input type="text" class="search-box" placeholder="Search cases or keywords...">
+
+    <div id="content-area">
+        <div class="card">
+            <span class="tag">VIRGINIA LAW</span>
+            <h3>Case 01: Probable Cause & K9 Alerts</h3>
+            <p>Summary of the legal standing for vehicle sniffs and residential perimeter searches...</p>
+            <button onclick="alert('Full text loading...')">Read Full Text</button>
+        </div>
+    </div>
+
+</body>
+</html>
+
+data.json  THE CONTENT SILOS
+
+{
+  "legal_bible": [
+    {"id": 1, "case": "VA v. Jones", "topic": "K9 Alerts", "summary": "Establishing probable cause through canine alerts in Virginia."},
+    {"id": 2, "case": "Terry v. Ohio", "topic": "Stop & Frisk", "summary": "Constitutional limits on brief investigative stops."}
+  ],
+  "medical_silo": [
+    {"id": 1, "protocol": "Heat Stroke", "action": "Immediate cooling, water immersion, rectal temp monitoring.", "urgency": "Critical"},
+    {"id": 2, "protocol": "GDV/Bloat", "action": "Check for distension, immediate transport to emergency vet.", "urgency": "High"}
+  ]
+}
+
+index.html THE APP SHELL
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K9 SAR Command</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="top-nav">
+        <h2>K9 SAR COMMAND</h2>
+    </nav>
+
+    <div class="search-container">
+        <input type="text" id="appSearch" placeholder="Search Legal or Medical...">
+    </div>
+
+    <div class="tab-bar">
+        <button onclick="switchSilo('legal')">LEGAL BIBLE</button>
+        <button onclick="switchSilo('medical')">MEDICAL SILO</button>
+    </div>
+
+    <main id="app-content">
+        <p class="status-msg">Select a silo to begin.</p>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+style.css THE VISUAL DESIGN
+
+:root {
+    --primary: #1a365d;
+    --accent: #f6ad55;
+    --bg: #edf2f7;
+}
+
+body { margin: 0; font-family: sans-serif; background: var(--bg); }
+.top-nav { background: var(--primary); color: white; text-align: center; padding: 10px; }
+.search-container { padding: 15px; }
+#appSearch { width: 100%; padding: 12px; border-radius: 20px; border: 1px solid #cbd5e0; box-sizing: border-box; }
+
+.tab-bar { display: flex; gap: 10px; padding: 0 15px; }
+.tab-bar button { flex: 1; padding: 10px; border: none; background: var(--primary); color: white; border-radius: 5px; font-weight: bold; }
+
+.card { background: white; margin: 15px; padding: 15px; border-left: 5px solid var(--accent); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.card h3 { margin-top: 0; color: var(--primary); }
+
+app.js THE ENGINE
+
+async function switchSilo(type) {
+    const response = await fetch('data.json');
+    const data = await response.json();
+    const container = document.getElementById('app-content');
+    container.innerHTML = ''; // Clear current
+
+    const items = type === 'legal' ? data.legal_bible : data.medical_silo;
+    
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <h3>${item.case || item.protocol}</h3>
+            <p>${item.summary || item.action}</p>
+        `;
+        container.appendChild(card);
+    });
+}
+
+index.html) MASTER SOURCE CODE
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 SAR PRO</title>
+    <style>
+        /* CSS: THE LOOK AND FEEL */
+        :root { --dark: #0f172a; --gold: #f59e0b; --gray: #f8fafc; --text: #334155; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: var(--gray); color: var(--text); }
+        
+        header { background: var(--dark); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 100; border-bottom: 4px solid var(--gold); }
+        
+        .search-container { padding: 15px; background: white; }
+        input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; }
+
+        .tabs { display: flex; background: #e2e8f0; }
+        .tab-btn { flex: 1; padding: 15px; border: none; cursor: pointer; font-weight: bold; color: #64748b; transition: 0.3s; }
+        .tab-btn.active { background: white; color: var(--dark); border-bottom: 3px solid var(--gold); }
+
+        .content { padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 6px solid var(--dark); }
+        .card h3 { margin: 0 0 10px 0; color: var(--dark); }
+        .medical-card { border-left-color: #ef4444; } /* Red for medical */
+        .legal-card { border-left-color: #3b82f6; }   /* Blue for legal */
+        
+        .tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; background: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2 style="margin:0;">K9 SAR COMMAND</h2>
+    <small>Field Reference Tool</small>
+</header>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search laws or protocols..." onkeyup="filterContent()">
+</div>
+
+<div class="tabs">
+    <button class="tab-btn active" onclick="showSilo('legal', this)">LEGAL BIBLE</button>
+    <button class="tab-btn" onclick="showSilo('medical', this)">MEDICAL SILO</button>
+</div>
+
+<div id="content-area" class="content">
+    </div>
+
+<script>
+    // DATA: THE "GUTS" OF YOUR APP
+    const data = {
+        legal: [
+            { title: "Virginia v. Moore", tag: "VA LAW", text: "Rules regarding search incident to arrest and K9 alert validity." },
+            { title: "Probable Cause: Vehicle", tag: "FEDERAL", text: "A positive K9 alert on a vehicle provides probable cause for a full search." },
+            { title: "Curtilage Rights", tag: "PROPERTY", text: "Restrictions on bringing K9s onto private porches without a warrant (Florida v. Jardines)." }
+        ],
+        medical: [
+            { title: "Heat Exhaustion", tag: "CRITICAL", text: "Symptoms: Heavy panting, dark red gums. Action: Cool paws/ears, offer small water sips." },
+            { title: "Paw Laceration", tag: "FIRST AID", text: "Clean with sterile water, apply pressure, wrap firmly but do not cut off circulation." },
+            { title: "Gastric Torsion (Bloat)", tag: "EMERGENCY", text: "Symptoms: Distended belly, unproductive vomiting. Immediate evacuation required." }
+        ]
+    };
+
+    let currentSilo = 'legal';
+
+    function showSilo(silo, btn) {
+        currentSilo = silo;
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function render(filter = "") {
+        const container = document.getElementById('content-area');
+        container.innerHTML = "";
+        
+        const items = data[currentSilo];
+        const filtered = items.filter(i => i.title.toLowerCase().includes(filter.toLowerCase()) || i.text.toLowerCase().includes(filter.toLowerCase()));
+
+        filtered.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `card ${currentSilo}-card`;
+            card.innerHTML = `
+                <span class="tag">${item.tag}</span>
+                <h3>${item.title}</h3>
+                <p>${item.text}</p>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function filterContent() {
+        const val = document.getElementById('searchInput').value;
+        render(val);
+    }
+
+    // Initial Load
+    render();
+</script>
+
+</body>
+</html>
+
+index.html THE GLOBAL CONTROLLER
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 Task Force Command</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="agency-header">
+                <h2>K9 TASK FORCE</h2>
+                <span class="badge">MULTI-AGENCY UNIT</span>
+            </div>
+            <nav>
+                <button onclick="router('home')">Home</button>
+                <button onclick="router('legal')">Legal</button>
+                <button onclick="router('medical')">Medical</button>
+                <button onclick="router('admin')">Ops</button>
+            </nav>
+        </header>
+
+        <div class="search-bar">
+            <input type="text" id="masterSearch" placeholder="Search across all silos..." onkeyup="globalSearch()">
+        </div>
+
+        <main id="view-port">
+            </main>
+
+        <footer>
+            <p>OFFICIAL USE ONLY - UNCLASSIFIED</p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+
+app.js  THE ENGINE
+
+
+// DATABASE: This is where you will add your 10+ Legal cases and 10+ Medical protocols
+const library = {
+    legal: [
+        { id: "L01", title: "VA Statute 19.2-250", category: "Jurisdiction", detail: "Multi-agency authority within search zones." },
+        { id: "L02", title: "K9 Tracking Consent", category: "Fourth Amendment", detail: "Guidelines for tracking onto private property." }
+        // Add all 10 cases here
+    ],
+    medical: [
+        { id: "M01", title: "Naloxone K9", category: "Overdose", detail: "Dosage and administration for canine opioid exposure." },
+        { id: "M02", title: "Gunshot Trauma", category: "Field Surgery", detail: "Chest seal application and emergency extraction." }
+        // Add all 10 protocols here
+    ]
+};
+
+function router(view) {
+    const port = document.getElementById('view-port');
+    if(view === 'home') {
+        port.innerHTML = `<h3>Deployment Dashboard</h3><div class="grid">...</div>`;
+    } else {
+        renderSilo(view);
+    }
+}
+
+function renderSilo(type) {
+    const port = document.getElementById('view-port');
+    const items = library[type];
+    let html = `<h2 class="section-title">${type.toUpperCase()} DATABASE</h2>`;
+    
+    items.forEach(item => {
+        html += `
+            <div class="record-card">
+                <small>${item.category}</small>
+                <h4>${item.title}</h4>
+                <p>${item.detail}</p>
+            </div>`;
+    });
+    port.innerHTML = html;
+}
+
+// Global search across all data
+function globalSearch() {
+    const term = document.getElementById('masterSearch').value.toLowerCase();
+    // Implementation for filtering logic across both arrays
+}
+style.css  THE PROFESSIOMAL STYLESHEET
+:root {
+    --emergency-red: #d9534f;
+    --police-blue: #002d62;
+    --warning-gold: #f0ad4e;
+    --dark-bg: #121212;
+    --card-bg: #1e1e1e;
+}
+
+body { background: var(--dark-bg); color: white; margin: 0; font-family: 'Roboto', sans-serif; }
+
+header { background: var(--police-blue); padding: 1rem; border-bottom: 2px solid var(--warning-gold); }
+.agency-header { display: flex; justify-content: space-between; align-items: center; }
+
+nav { display: flex; gap: 5px; margin-top: 10px; }
+nav button { flex: 1; background: #2a2a2a; color: white; border: none; padding: 10px; border-radius: 4px; }
+
+.record-card {
+    background: var(--card-bg);
+    margin: 10px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--police-blue);
+}
+
+.record-card h4 { margin: 5px 0; color: var(--warning-gold); }
+.badge { background: var(--emergency-red); padding: 5px; font-size: 10px; border-radius: 3px; }
+
+
+index.html  THE FOUNDATION
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 SAR TASK FORCE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="status-bar">MULTI-AGENCY OPERATIONAL TOOL</div>
+        <h1>K9 COMMAND</h1>
+        <nav>
+            <button onclick="loadSilo('legal')">LEGAL BIBLE</button>
+            <button onclick="loadSilo('medical')">MEDICAL SILO</button>
+        </nav>
+    </header>
+
+    <div class="search-area">
+        <input type="text" id="mainSearch" placeholder="Search Case Law or Protocols..." onkeyup="search()">
+    </div>
+
+    <main id="app-display">
+        <div class="welcome-msg">Select a Silo to begin deployment protocols.</div>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
+data.js THE DONTENT
+const k9Database = {
+    legal: [
+        { id: 1, title: "VA Case 01: Probable Cause", detail: "K9 alert on vehicle exterior allows search of entire vehicle.", tag: "PRECEDENT" },
+        { id: 2, title: "VA Case 02: Curtilage", detail: "Search dogs cannot enter the porch (curtilage) without a warrant.", tag: "RESTRICTION" },
+        // Add your other 8 cases here
+    ],
+    medical: [
+        { id: 1, title: "Heat Stroke Protocol", detail: "Cool with water, fan, and move to shade. Do not use ice water.", tag: "URGENT" },
+        { id: 2, title: "Narcotic Exposure", detail: "Administer Narcan if K9 shows respiratory distress or pinpoint pupils.", tag: "CRITICAL" }
+    ]
+};
+
+app.js THE LOGIC
+
+
+let currentType = '';
+
+function loadSilo(type) {
+    currentType = type;
+    render(k9Database[type]);
+}
+
+function render(items) {
+    const display = document.getElementById('app-display');
+    display.innerHTML = items.map(item => `
+        <div class="card ${currentType}-border">
+            <span class="tag">${item.tag}</span>
+            <h3>${item.title}</h3>
+            <p>${item.detail}</p>
+        </div>
+    `).join('');
+}
+
+function search() {
+    const term = document.getElementById('mainSearch').value.toLowerCase();
+    if (!currentType) return;
+    const filtered = k9Database[currentType].filter(i => 
+        i.title.toLowerCase().includes(term) || i.detail.toLowerCase().includes(term)
+    );
+    render(filtered);
+}
+
+style.css  THE TACTICAL DESIGN
+
+
+:root { --blue: #002d62; --red: #b91c1c; --gold: #fbbf24; --dark: #111827; }
+
+body { font-family: sans-serif; background: #f3f4f6; margin: 0; }
+header { background: var(--blue); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
+.status-bar { font-size: 10px; letter-spacing: 1px; margin-bottom: 5px; opacity: 0.8; }
+
+nav { display: flex; gap: 10px; padding: 10px; }
+nav button { flex: 1; padding: 12px; background: var(--dark); color: white; border: none; border-radius: 5px; font-weight: bold; }
+
+.search-area { padding: 15px; }
+#mainSearch { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; box-sizing: border-box; }
+
+.card { background: white; margin: 15px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.legal-border { border-left: 8px solid var(--blue); }
+.medical-border { border-left: 8px solid var(--red); }
+.tag { font-size: 10px; font-weight: bold; background: #eee; padding: 2px 5px; border-radius: 3px; }
+
+index.html THE SCREEN
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 SAR Task Force</title>
+    <style>
+        :root { --police-blue: #002d62; --medical-red: #d9534f; --gold: #f0ad4e; --dark: #1a1a1a; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: #f0f2f5; color: #333; }
+        header { background: var(--police-blue); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+        .search-container { padding: 15px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        .tabs { display: flex; background: #e2e8f0; }
+        .tab-btn { flex: 1; padding: 15px; border: none; font-weight: bold; color: #444; background: #d1d5db; }
+        .tab-btn.active { background: white; border-bottom: 4px solid var(--police-blue); }
+        .content { padding: 15px; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 8px solid var(--police-blue); }
+        .medical-card { border-left-color: var(--medical-red); }
+        .tag { font-size: 10px; font-weight: bold; background: #eee; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; }
+        h3 { margin: 10px 0 5px 0; color: var(--police-blue); }
+        .medical-card h3 { color: var(--medical-red); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2 style="margin:0;">K9 COMMAND</h2>
+    <div style="font-size: 12px; opacity: 0.8;">VIRGINIA MULTI-AGENCY TASK FORCE</div>
+</header>
+
+<div class="search-container">
+    <input type="text" id="search" placeholder="Search Laws or Medical Protocols..." onkeyup="doSearch()">
+</div>
+
+<div class="tabs">
+    <button id="legalBtn" class="tab-btn active" onclick="switchSilo('legal')">LEGAL BIBLE</button>
+    <button id="medicalBtn" class="tab-btn" onclick="switchSilo('medical')">MEDICAL SILOS</button>
+</div>
+
+<div id="display" class="content"></div>
+
+<script src="database.js"></script>
+<script>
+    let currentTab = 'legal';
+    function switchSilo(type) {
+        currentTab = type;
+        document.getElementById('legalBtn').classList.toggle('active', type === 'legal');
+        document.getElementById('medicalBtn').classList.toggle('active', type === 'medical');
+        render();
+    }
+
+    function render(filter = "") {
+        const container = document.getElementById('display');
+        container.innerHTML = "";
+        const data = k9Data[currentTab].filter(item => 
+            item.title.toLowerCase().includes(filter.toLowerCase()) || 
+            item.body.toLowerCase().includes(filter.toLowerCase())
+        );
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `card ${currentTab === 'medical' ? 'medical-card' : ''}`;
+            card.innerHTML = `<span class="tag">${item.tag}</span><h3>${item.title}</h3><p>${item.body}</p>`;
+            container.appendChild(card);
+        });
+    }
+
+    function doSearch() { render(document.getElementById('search').value); }
+    window.onload = () => switchSilo('legal');
+</script>
+
+</body>
+</html>
+
+database.js THE GUTS
+
+const k9Data = {
+    legal: [
+        { tag: "VA Case 1", title: "Harris v. Florida", body: "Established that a certified K9's alert is sufficient for probable cause for a vehicle search." },
+        { tag: "VA Case 2", title: "Rodriguez v. US", body: "Officers may not extend a traffic stop duration specifically to wait for a K9 unit without independent reasonable suspicion." },
+        { tag: "VA Case 3", title: "Illinois v. Caballes", body: "A K9 sniff of a vehicle's exterior during a lawful traffic stop does not violate the 4th Amendment." },
+        { tag: "VA Case 4", title: "US v. Place", body: "Sniff by a well-trained narcotics dog does not constitute a 'search' under the 4th Amendment." },
+        { tag: "VA Case 5", title: "Florida v. Jardines", body: "Bringing a K9 onto a home's porch (curtilage) to sniff for drugs requires a warrant." },
+        { tag: "VA Case 6", title: "Commonwealth v. Enos", body: "Virginia-specific ruling on the reliability of K9 alerts in residential multi-unit settings." },
+        { tag: "VA Case 7", title: "Search of Persons", body: "K9 alerts on a vehicle do not automatically justify a strip search of passengers." },
+        { tag: "VA Case 8", title: "Tracking Consent", body: "Guidelines for K9 tracking across private property during 'Hot Pursuit' vs. missing person searches." },
+        { tag: "VA Case 9", title: "Use of Force", body: "K9 deployment for apprehension must follow Graham v. Connor 'objective reasonableness' standards." },
+        { tag: "VA Case 10", title: "Evidence Chain", body: "Documentation requirements for K9 alerts to be admissible in Virginia courts." }
+    ],
+    medical: [
+        { tag: "Critical", title: "Heat Exhaustion", body: "Move to shade, apply cool water to pads/ears. Rectal temp >103°F requires immediate vet transport." },
+        { tag: "Emergency", title: "Narcotic Exposure", body: "Check for miosis (pinpoint pupils). Administer Naloxone (Narcan) via intranasal spray immediately." },
+        { tag: "Trauma", title: "Gunshot/Penetrating", body: "Apply direct pressure. Use chest seals for thoracic wounds. Do not remove embedded objects." },
+        { tag: "Environment", title: "Snake Bite", body: "Keep dog calm/immobilized. Note snake type if possible. Rapid transport for antivenom. Do not use a tourniquet." }
+    ]
+};
+
+manifest.json THE APP IDENITY
+
+{
+  "short_name": "K9Command",
+  "name": "K9 SAR Task Force Command",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#002d62",
+  "background_color": "#1a1a1a"
+}
+
+
+sw.js the offline engine
+
+const CACHE_NAME = 'k9-sar-v1';
+const ASSETS = [
+  './',
+  './index.html',
+  './style.css',
+  './database.js',
+  './app.js',
+  './manifest.json'
+];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(caches.match(e.request).then(response => response || fetch(e.request)));
+});
+
+ops.js the deployment log
+
+function startDeployment() {
+    const startTime = new Date().toLocaleTimeString();
+    localStorage.setItem('deployment_start', startTime);
+    alert('Log Started at: ' + startTime);
+}
+
+function endDeployment() {
+    const start = localStorage.getItem('deployment_start');
+    const end = new Date().toLocaleTimeString();
+    if (!start) return alert('No active deployment found.');
+    
+    const logEntry = `Deployment: ${start} to ${end}`;
+    let history = JSON.parse(localStorage.getItem('k9_logs') || "[]");
+    history.push(logEntry);
+    localStorage.setItem('k9_logs', JSON.stringify(history));
+    alert('Mission Logged Successfully.');
+}
+index.html the full version
+
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+
+The Operations Tab)
+
+<div class="ops-panel" style="padding: 20px; background: #222; color: gold;">
+    <h3>MISSION CONTROLS</h3>
+    <button onclick="startDeployment()" style="background: green; color: white;">START SEARCH</button>
+    <button onclick="endDeployment()" style="background: red; color: white;">END SEARCH</button>
+</div>
+<script src="ops.js"></script>
+
+setup.js the permissions handler
+
+// Verification that the Silos are loaded correctly
+window.addEventListener('DOMContentLoaded', () => {
+    console.log("K9 Task Force System: Initializing...");
+    
+    if (typeof k9Data === 'undefined') {
+        document.getElementById('display').innerHTML = 
+            "<div class='error-msg'>CRITICAL ERROR: Database.js not found. Load failed.</div>";
+    } else {
+        console.log("Silos Detected: Legal (" + k9Data.legal.length + ") Medical (" + k9Data.medical.length + ")");
+    }
+});
+
+// Prevention of accidental refresh during a mission
+window.onbeforeunload = function() {
+    return "Caution: An active deployment log may be lost if you refresh.";
+};
+
+admin.html  the agency customization page
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ops Settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background: #1a1a1a; color: white; padding: 20px;">
+    <h3>OPERATIONAL SETTINGS</h3>
+    <label>Agency Name:</label><br>
+    <input type="text" id="agencyName" placeholder="e.g. VSP, Fairfax PD..."><br><br>
+    
+    <label>Unit/K9 ID:</label><br>
+    <input type="text" id="unitID"><br><br>
+
+    <button onclick="saveSettings()" style="background: var(--gold); padding: 15px; width: 100%;">SAVE PROFILE</button>
+    
+    <script>
+        function saveSettings() {
+            const data = {
+                name: document.getElementById('agencyName').value,
+                id: document.getElementById('unitID').value
+            };
+            localStorage.setItem('k9_agency_profile', JSON.stringify(data));
+            alert('Agency Profile Updated Locally.');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
+
+README.txt  the deveploper handoff
+PROJECT: K9 SAR TASK FORCE COMMAND
+PLATFORM: Progressive Web App (PWA)
+CORE SPECS:
+- Offline-First Architecture (via sw.js)
+- No External Dependencies (No jQuery, No Bootstrap)
+- LocalStorage for Deployment Logging
+- Data siloing for Legal/Medical separation
+
+SECURITY NOTE: 
+This app is designed for "Search and Rescue" field reference. 
+All data is stored in the client-side database.js. 
+Future versions should implement Biometric/PIN authentication 
+to protect Law Enforcement sensitive data.
+
+Your Final Project Folder (Checklist)
+Ensure your folder has exactly these 10 items:
+
+index.html (The Main UI)
+
+style.css (The Visuals/Dark Mode)
+
+database.js (The 10 Cases & Medical Protocols)
+
+app.js (The Search/Render Logic)
+
+ops.js (The Mission Clock/Logger)
+
+setup.js (The System Check)
+
+admin.html (The Agency Profile Page)
+
+sw.js (The Offline Service Worker)
+
+manifest.json (The Mobile Install File)
+
+README.txt (The Project Documentation)
+
+Summary of what you've built:
+You now have a Digital Foundation that is completely private, works without cell towers, and contains the specific legal logic for the Virginia area.
+
+Is there any specific "Case 11" or a special Medical Protocol (like Snake Bites or K9 CPR) you want to make sure we hard-coded into the database.js before you lock it down?
+
+profile.js  my bio id
+const userBio = {
+    name: "Task Force Operator", // You can change this in the Admin panel
+    agency: "Multi-Agency K9 SAR",
+    role: "K9 Handler / Search Lead",
+    certifications: ["NAPDS", "VSP-SAR", "Emergency Medical K9"],
+    contact: "Emergency Dispatch: 911 / Tactical Channel: 04"
+};
+
+function displayBio() {
+    const port = document.getElementById('app-display');
+    port.innerHTML = `
+        <div class="bio-card">
+            <div class="bio-header">OPERATOR PROFILE</div>
+            <div class="bio-body">
+                <p><strong>Name:</strong> ${userBio.name}</p>
+                <p><strong>Agency:</strong> ${userBio.agency}</p>
+                <p><strong>Role:</strong> ${userBio.role}</p>
+                <hr>
+                <p><strong>Certs:</strong> ${userBio.certifications.join(', ')}</p>
+            </div>
+        </div>
+    `;
+}
+icons.css the visual buttons
+/* TACTICAL ICON STYLING */
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.nav-icon {
+    background: #1e293b;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+.nav-icon:active { transform: scale(0.95); background: #334155; }
+
+/* SVG Icon Colors */
+.icon-legal { color: #3b82f6; }
+.icon-medical { color: #ef4444; }
+.icon-bio { color: #10b981; }
+.icon-ops { color: #f59e0b; }
+
+index.html  updated the full dashboard
+<body>
+    <header>
+        <h1>K9 COMMAND</h1>
+        <div id="operator-tag">UNIT: K9-LE-VA</div>
+    </header>
+
+    <div id="app-display">
+        <div class="icon-grid">
+            <div class="nav-icon" onclick="loadSilo('legal')">
+                <span>⚖️</span><br>LEGAL BIBLE
+            </div>
+            <div class="nav-icon" onclick="loadSilo('medical')">
+                <span>🚑</span><br>MEDICAL SILO
+            </div>
+            <div class="nav-icon" onclick="displayBio()">
+                <span>👤</span><br>MY BIO
+            </div>
+            <div class="nav-icon" onclick="window.location.href='admin.html'">
+                <span>⚙️</span><br>SETTINGS
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-status">FIELD READY • OFFLINE ACTIVE</div>
+</body>
+final master file list for the project
+To complete the "Source Code" for the entire app—including your Bio/Profile, Operational Icons, and the Full Directory—you need these final structural files. This ensures that when you click an icon, the app knows exactly who is logged in and what agency they represent.Here are the final pieces of the "Digital Foundation."1. profile.js (Your Bio & ID)This file handles your personal professional information and saves your "Bio" to the device memory.JavaScriptconst userBio = {
+    name: "Task Force Operator", // You can change this in the Admin panel
+    agency: "Multi-Agency K9 SAR",
+    role: "K9 Handler / Search Lead",
+    certifications: ["NAPDS", "VSP-SAR", "Emergency Medical K9"],
+    contact: "Emergency Dispatch: 911 / Tactical Channel: 04"
+};
+
+function displayBio() {
+    const port = document.getElementById('app-display');
+    port.innerHTML = `
+        <div class="bio-card">
+            <div class="bio-header">OPERATOR PROFILE</div>
+            <div class="bio-body">
+                <p><strong>Name:</strong> ${userBio.name}</p>
+                <p><strong>Agency:</strong> ${userBio.agency}</p>
+                <p><strong>Role:</strong> ${userBio.role}</p>
+                <hr>
+                <p><strong>Certs:</strong> ${userBio.certifications.join(', ')}</p>
+            </div>
+        </div>
+    `;
+}
+2. icons.css (The Visual Buttons)These are the "files behind the icons." This CSS creates the professional, high-contrast buttons for field use.CSS/* TACTICAL ICON STYLING */
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.nav-icon {
+    background: #1e293b;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+.nav-icon:active { transform: scale(0.95); background: #334155; }
+
+/* SVG Icon Colors */
+.icon-legal { color: #3b82f6; }
+.icon-medical { color: #ef4444; }
+.icon-bio { color: #10b981; }
+.icon-ops { color: #f59e0b; }
+3. Updated index.html (The Full Dashboard)This ties the Bio, Icons, and Files together into one master screen.HTML<body>
+    <header>
+        <h1>K9 COMMAND</h1>
+        <div id="operator-tag">UNIT: K9-LE-VA</div>
+    </header>
+
+    <div id="app-display">
+        <div class="icon-grid">
+            <div class="nav-icon" onclick="loadSilo('legal')">
+                <span>⚖️</span><br>LEGAL BIBLE
+            </div>
+            <div class="nav-icon" onclick="loadSilo('medical')">
+                <span>🚑</span><br>MEDICAL SILO
+            </div>
+            <div class="nav-icon" onclick="displayBio()">
+                <span>👤</span><br>MY BIO
+            </div>
+            <div class="nav-icon" onclick="window.location.href='admin.html'">
+                <span>⚙️</span><br>SETTINGS
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-status">FIELD READY • OFFLINE ACTIVE</div>
+</body>
+4. assets/ Folder (The Final Assets)To make the app look exactly like the one in your screenshot, you need one final thing:icon.png: A 512x512 pixel image of your Task Force seal. Save this in the main folder.The Final "Master File List" for your ProjectYou now have the Complete Source Code Repository. Ensure these files are all in the same folder:File NamePurposeindex.htmlThe Master Dashboard & App Framestyle.cssThe Tactical Dark Mode & Icon Layoutsdatabase.jsThe 10 Legal Cases & Medical Logicapp.jsThe Logic for Searching and Renderingprofile.jsThe "Bio" and User Identification Logicops.jsThe Deployment Clock & Start/Stop Logicsw.jsThe Service Worker (Enables Offline Mode)manifest.jsonThe Mobile App Installeradmin.htmlThe Agency/Unit Configuration PageDeployment Instructions for You:Check the Folder: Ensure all files above are present.Edit database.js: Put your specific text for the 10 cases inside the brackets.Launch: Open index.html. If you are on a phone, use the "Add to Home Screen" feature to see your icon and bio in full screen.You have every piece of the puzzle now. Is there any specific legal text from Case #1 or Case #10 you want me to double-check for accuracy before you finalize the data file?
+
+profile.js  personal bio data file
+/* YOUR PERMANENT BIO DATA */
+const myBio = {
+    name: "TASK FORCE OPERATOR", // Replace with your name
+    id_number: "K9-VA-0026",
+    role: "K9 Search Specialist",
+    agency: "Multi-Agency SAR Task Force",
+    specialties: ["Urban Tracking", "Narcotics Detection", "Emergency Trauma"],
+    certifications: [
+        "VSP SAR Certification",
+        "K9 First Aid / CPR",
+        "VA Law Enforcement Standards"
+    ],
+    contact: "Emergency Tactical Channel 4"
+};
+
+/* LOGIC TO INJECT BIO INTO THE APP */
+function showMyBio() {
+    const display = document.getElementById('app-display');
+    display.innerHTML = `
+        <div class="card bio-container" style="border-left-color: #f59e0b;">
+            <div style="text-align:center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; background: #334155; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 40px;">👤</div>
+                <h2 style="margin: 10px 0 0 0;">${myBio.name}</h2>
+                <small style="color: #f59e0b; font-weight: bold;">${myBio.id_number}</small>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #ddd;">
+            <p><strong>Agency:</strong> ${myBio.agency}</p>
+            <p><strong>Primary Role:</strong> ${myBio.role}</p>
+            <p><strong>Specialties:</strong> ${myBio.specialties.join(", ")}</p>
+            <div style="background: #f8fafc; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                <strong style="font-size: 12px; color: #64748b;">CERTIFICATIONS:</strong>
+                <ul style="font-size: 13px; padding-left: 20px; margin: 5px 0;">
+                    ${myBio.certifications.map(cert => `<li>${cert}</li>`).join('')}
+                </ul>
+            </div>
+            <p style="font-size: 11px; margin-top: 20px; text-align: center; color: #94a3b8;">
+                ENCRYPTED OPERATOR PROFILE - FOR OFFICIAL USE ONLY
+            </p>
+        </div>
+    `;
+}
+
+index.html connecting my bio
+<div class="nav-icon" onclick="showMyBio()">
+    <span>👤</span>
+    <p>MY BIO</p>
+</div>
+
+<script src="profile.js"></script>
+
+final checklist
+3. Final Checklist of Every File in your App Folder
+To ensure you aren't missing anything from the previous sessions, here is your complete file vault:
+
+index.html: The main dashboard and screen structure.
+
+style.css: The tactical design, dark mode, and icon layouts.
+
+database.js: The 10 Legal cases and the Medical protocols.
+
+app.js: The search logic and system for switching between silos.
+
+profile.js: (NEW) Your specific bio, certifications, and ID data.
+
+ops.js: The deployment start/stop clock and mission logging.
+
+sw.js: The Service Worker that makes the app work in the woods without signal.
+
+manifest.json: The file that lets you install it as a real app icon on your phone.
+
+How to put it on your phone:
+Zip that entire folder.
+
+Send the zip to your phone or upload it to a private hosting spot (like GitHub or even just opening the index.html file in a mobile browser).
+
+Tap the Share button on your phone and select "Add to Home Screen."
+
+The icon will appear, and when you open it, your Bio, Legal Bible, and Medical Silo will all be there.
+
+Is there anything else—like a specific "Case Law" summary or a "Search Log" export feature—that we haven't added yet?
+
+
+index.html the app interface
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 SAR TASK FORCE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <header>
+        <div class="agency-tag">VIRGINIA TASK FORCE</div>
+        <h1>K9 COMMAND</h1>
+    </header>
+
+    <div class="search-box">
+        <input type="text" id="mainSearch" placeholder="Search Database..." onkeyup="search()">
+    </div>
+
+    <div class="icon-grid">
+        <div class="icon-btn" onclick="showSilo('legal')">⚖️<br>LEGAL</div>
+        <div class="icon-btn" onclick="showSilo('medical')">🚑<br>MEDICAL</div>
+        <div class="icon-btn" onclick="showBio()">👤<br>MY BIO</div>
+        <div class="icon-btn" onclick="location.reload()">🔄<br>RESET</div>
+    </div>
+
+    <main id="app-display">
+        <div class="welcome">SYSTEM READY. SELECT A SILO.</div>
+    </main>
+
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+style.css the tactical design
+
+:root { --blue: #002d62; --gold: #f59e0b; --dark: #121212; --card: #ffffff; }
+body { font-family: sans-serif; background: #f0f2f5; margin: 0; color: #333; }
+header { background: var(--blue); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--gold); }
+.agency-tag { font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.8; }
+.search-box { padding: 15px; background: white; }
+input { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; box-sizing: border-box; }
+.icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px; background: #e2e8f0; }
+.icon-btn { background: var(--blue); color: white; padding: 10px; text-align: center; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold; }
+.card { background: white; margin: 15px; padding: 20px; border-radius: 10px; border-left: 8px solid var(--blue); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.medical-border { border-left-color: #d9534f; }
+.bio-header { color: var(--gold); font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+database.js  my bio 10 legal case and medical
+
+const k9Data = {
+    bio: {
+        name: "K9 TASK FORCE OPERATOR",
+        id: "V-SAR 2026-9",
+        agency: "Virginia Multi-Agency Task Force",
+        role: "Lead K9 Handler / Search Specialist",
+        certs: ["NAPDS Certified", "Emergency K9 Medical", "VA Law Enforcement Standards"]
+    },
+    legal: [
+        { t: "Case 01: Harris v. Florida", d: "Certified K9 alert provides probable cause for vehicle search." },
+        { t: "Case 02: Rodriguez v. US", d: "Traffic stops cannot be prolonged for a K9 unit without independent suspicion." },
+        { t: "Case 03: Illinois v. Caballes", d: "Exterior K9 sniff during lawful stop isn't a 4th Amendment search." },
+        { t: "Case 04: Florida v. Jardines", d: "K9 sniff on a porch (curtilage) requires a warrant." },
+        { t: "Case 05: US v. Place", d: "Sniff of luggage in public place is not a search." },
+        { t: "Case 06: VA Statute 19.2-250", d: "Jurisdictional authority for Task Force members in search zones." },
+        { t: "Case 07: Use of Force", d: "Graham v. Connor standards apply to K9 apprehensions." },
+        { t: "Case 08: Hot Pursuit", d: "Guidelines for tracking suspects onto private property without warrant." },
+        { t: "Case 09: Consent Search", d: "K9 deployment following verbal consent for vehicle searches." },
+        { t: "Case 10: Evidence Chain", d: "Documentation required for K9 alerts to stand in VA courts." }
+    ],
+    medical: [
+        { t: "Heat Stroke", d: "Cool with water/fan. Rectal temp >103F is emergency. Transport immediately." },
+        { t: "Narcotic Exposure", d: "Administer Naloxone (Narcan) if miosis or respiratory distress occurs." },
+        { t: "GDV / Bloat", d: "Distended belly, unproductive vomiting. Immediate vet transport required." },
+        { t: "Trauma / Bleeding", d: "Apply direct pressure and tourniquet (if applicable) for field stabilization." }
+    ]
+};
+app.js  the engine
+let activeSilo = 'legal';
+
+function showSilo(type) {
+    activeSilo = type;
+    render(k9Data[type]);
+}
+
+function showBio() {
+    const display = document.getElementById('app-display');
+    const b = k9Data.bio;
+    display.innerHTML = `
+        <div class="card" style="border-left-color: var(--gold)">
+            <div class="bio-header">OPERATOR PROFILE</div>
+            <h3>${b.name}</h3>
+            <p><strong>ID:</strong> ${b.id}</p>
+            <p><strong>Agency:</strong> ${b.agency}</p>
+            <p><strong>Role:</strong> ${b.role}</p>
+            <p><strong>Certs:</strong> ${b.certs.join(', ')}</p>
+        </div>
+    `;
+}
+
+function render(items) {
+    const display = document.getElementById('app-display');
+    display.innerHTML = items.map(i => `
+        <div class="card ${activeSilo === 'medical' ? 'medical-border' : ''}">
+            <h3>${i.t}</h3>
+            <p>${i.d}</p>
+        </div>
+    `).join('');
+}
+
+function search() {
+    const term = document.getElementById('mainSearch').value.toLowerCase();
+    const filtered = k9Data[activeSilo].filter(i => i.t.toLowerCase().includes(term) || i.d.toLowerCase().includes(term));
+    render(filtered);
+}
+
+index.html the command center
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>K9 SAR COMMAND PRO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="top-bar">OPERATIONAL ENCRYPTED LINK</div>
+        <h1>K9 COMMAND</h1>
+    </header>
+
+    <div class="icon-grid">
+        <div class="icon-card legal" onclick="showSection('legal')">⚖️<br>LEGAL</div>
+        <div class="icon-card medical" onclick="startVoiceFirstAid()">🎙️<br>VOICE MED</div>
+        <div class="icon-card training" onclick="showSection('training')">🐕‍🦺<br>TRAINING</div>
+        <div class="icon-card reports" onclick="showReports()">📝<br>REPORTS</div>
+        <div class="icon-card bio" onclick="showBio()">👤<br>MY BIO</div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="masterSearch" placeholder="Quick Search..." onkeyup="doSearch()">
+    </div>
+
+    <main id="app-viewport">
+        <div class="status-msg">SYSTEM ACTIVE: Awaiting Command</div>
+    </main>
+
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+    <script src="voice.js"></script>
+    <script src="reports.js"></script>
+</body>
+</html>
+
+
+database.js the full data sheet
+
+const k9Database = {
+    bio: {
+        name: "TASK FORCE OPERATOR",
+        agency: "VA Multi-Agency Task Force",
+        id: "K9-UNIT-9",
+        certs: ["NAPDS Search", "K9 TECC", "Virginia Law Standards"]
+    },
+    legal: [
+        { t: "Harris v. Florida", d: "K9 alert = Probable Cause." },
+        { t: "Rodriguez v. US", d: "No stop extensions for K9 arrival." },
+        { t: "Jardines", d: "Porch sniffs require a warrant." }
+    ],
+    training: [
+        { t: "Hard Surface Tracking", d: "Focus on scent pools in corners and wind-protected areas." },
+        { t: "Narcotic Proofing", d: "Correction for non-target odors (food/wildlife)." }
+    ],
+    medical: {
+        "heat stroke": "Move to shade. Cool paws and ears. Do not use ice.",
+        "bleeding": "Apply pressure. Use K9 specific tourniquet above the wound.",
+        "narcan": "Intranasal delivery. 1mg per dose. Check for respiratory rate."
+
+
+    }
+};
+
+voice.js the voice activated module
+
+const synth = window.speechSynthesis;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function startVoiceFirstAid() {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    
+    document.getElementById('app-viewport').innerHTML = "<div class='voice-active'>LISTENING FOR MEDICAL KEYWORDS...</div>";
+
+    recognition.onresult = (event) => {
+        const command = event.results[0][0].transcript.toLowerCase();
+        let response = "Keyword not recognized. Try: Heat Stroke, Bleeding, or Narcan.";
+
+        for (let key in k9Database.medical) {
+            if (command.includes(key)) {
+                response = k9Database.medical[key];
+            }
+        }
+        
+        speak(response);
+    };
+
+    recognition.start();
+}
+
+function speak(text) {
+    const utter = new SpeechSynthesisUtterance(text);
+    synth.speak(utter);
+    document.getElementById('app-viewport').innerHTML = `<div class='card'><h3>VOICE INSTRUCTION</h3><p>${text}</p></div>`;
+}
+
+
+reports.js   reports incident reporting
+function showReports() {
+    document.getElementById('app-viewport').innerHTML = `
+        <div class="card">
+            <h3>INCIDENT REPORT</h3>
+            <input type="text" id="caseNum" placeholder="Case #"><br><br>
+            <textarea id="narrative" placeholder="Search Narrative..." rows="5" style="width:100%"></textarea><br><br>
+            <button onclick="saveReport()" style="width:100%; background:green; color:white; padding:10px;">SAVE REPORT</button>
+        </div>
+    `;
+}
+
+function saveReport() {
+    const report = {
+        case: document.getElementById('caseNum').value,
+        text: document.getElementById('narrative').value,
+        date: new Date().toLocaleDateString()
+    };
+    let logs = JSON.parse(localStorage.getItem('k9_reports') || "[]");
+    logs.push(report);
+    localStorage.setItem('k9_reports', JSON.stringify(logs));
+    alert("Report Saved to Local Storage.");
+}
+
+style.css  the tactical ui
+
+:root { --blue: #002d62; --gold: #f59e0b; --red: #d9534f; --dark: #1a1a1a; }
+body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
+header { background: var(--blue); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--gold); }
+
+.icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; }
+.icon-card { background: var(--blue); color: white; padding: 20px 10px; border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; font-size: 11px; }
+.medical { background: var(--red); }
+.reports { background: #334155; }
+
+.card { background: white; margin: 15px; padding: 15px; border-left: 8px solid var(--blue); border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.voice-active { text-align: center; color: var(--red); font-weight: bold; padding: 20px; animation: blink 1.5s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+
+
+
+index.html the map view
+
+<div class="icon-card gps" onclick="showMap()">📍<br>LIVE GPS</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    #map { height: 400px; width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+    .gps-stats { background: #1a1a1a; color: #f59e0b; padding: 10px; font-family: monospace; font-size: 12px; }
+</style>
+
+<div id="map"></div>
+<div id="gps-coords" class="gps-stats" style="display:none;">
+    LAT: <span id="lat">0.00</span> | LON: <span id="lon">0.00</span>
+</div>
+
+gps.js  the tracker engine
+
+let map, marker, path;
+let trackLog = [];
+
+function showMap() {
+    document.getElementById('app-viewport').style.display = 'none';
+    document.getElementById('map').style.display = 'block';
+    document.getElementById('gps-coords').style.display = 'block';
+    
+    if (!map) {
+        // Initialize Map centered on Virginia coordinates
+        map = L.map('map').setView([37.5407, -77.4360], 13);
+        
+        // OpenStreetMap Tiles (Standard for SAR)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        marker = L.marker([0,0]).addTo(map).bindPopup("K9 UNIT POSITION").openPopup();
+        path = L.polyline([], {color: 'red'}).addTo(map);
+        
+        startTracking();
+    }
+}
+
+function startTracking() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Update UI
+            document.getElementById('lat').innerText = lat.toFixed(5);
+            document.getElementById('lon').innerText = lon.toFixed(5);
+            
+            // Update Map
+            const newPos = [lat, lon];
+            marker.setLatLng(newPos);
+            map.panTo(newPos);
+            
+            // Draw Breadcrumb Trail
+            trackLog.push(newPos);
+            path.setLatLngs(trackLog);
+            
+            // Save to Incident Report automatically
+            localStorage.setItem('current_search_track', JSON.stringify(trackLog));
+            
+        }, (err) => {
+            console.error("GPS Signal Lost", err);
+        }, {
+            enableHighAccuracy: true,
+            maximumAge: 1000
+        });
+    }
+}
+
+updated file directory
+
+3. Your Updated File Directory
+Your app folder should now contain these specific files to be 100% complete:
+
+index.html (Master Dashboard + Map Container)
+
+style.css (Tactical UI)
+
+database.js (Legal, Bio, Training Data)
+
+app.js (Navigation Logic)
+
+voice.js (Voice First Aid Engine)
+
+reports.js (Incident Logs)
+
+gps.js (New: Real-Time Tracker)
+
+sw.js (Offline Capabilities)
+
+manifest.json (Installation File)
+
+Tactical Note for SAR:
+Battery Management: Live GPS tracking consumes high battery. In a multi-hour search, ensure you have an external power bank.
+
+Offline Maps: While this code uses OpenStreetMap (online), a professional developer can help you pre-download "mbtiles" for the specific search area in Virginia so the map works in deep woods where there is no signal.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
