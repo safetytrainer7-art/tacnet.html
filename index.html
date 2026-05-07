@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>TACNET | Field Ready</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a1a0a; font-family: 'Segoe UI', 'Courier New', monospace; padding: 12px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .tacnet { max-width: 100%; width: 100%; background: #132013; border-radius: 24px; border: 1px solid #2a4a2a; box-shadow: 0 20px 35px rgba(0,0,0,0.5); overflow: hidden; }
+        .inner { padding: 16px; }
+        
+        /* TITLE */
+        .title { text-align: center; margin-bottom: 12px; }
+        .tacnet-title { color: #d4af37; font-size: 2.5rem; font-weight: 900; letter-spacing: 6px; font-family: 'Georgia', serif; }
+        .subtitle { color: #c5a059; font-size: 0.7rem; letter-spacing: 2px; }
+        
+        /* MAP FULL WIDTH */
+        .map-container { background: #0e180e; border-radius: 16px; padding: 10px; border: 1px solid #3a553a; }
+        .map-header { display: flex; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .map-badge { color: #d4af37; font-size: 0.7rem; }
+        .wind-flag { background: #1e2a1e; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; color: #88ccff; }
+        .address-search { display: flex; gap: 8px; margin-bottom: 8px; }
+        .address-input { flex: 1; background: #1a2a1a; border: 1px solid #4a6e4a; color: white; padding: 8px 12px; border-radius: 30px; font-size: 0.8rem; }
+        .address-btn { background: #d4af37; border: none; color: #0a1208; padding: 6px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        #fieldMap { height: 50vh; min-height: 350px; border-radius: 16px; border: 1px solid #4a6e4a; background: #1a2a1a; width: 100%; }
+        .map-controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+        .map-btn { background: #1e2a1e; border: 1px solid #d4af37; color: #d4af37; padding: 8px 14px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; font-weight: bold; }
+        .map-btn-danger { background: #6a1e1e; border-color: #ff6666; color: white; }
+        
+        .bottom-info { display: flex; justify-content: space-between; margin-top: 12px; padding: 8px; background: #0a1208; border-radius: 16px; font-size: 0.65rem; color: #8aa87a; flex-wrap: wrap; gap: 8px; }
+        .footer { text-align: center; font-size: 0.55rem; color: #d4af37; border-top: 1px solid #2a4a2a; padding-top: 12px; margin-top: 12px; }
+        
+        .nv-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #00ff00; mix-blend-mode: screen; pointer-events: none; z-index: 1000; display: none; opacity: 0.4; }
+        .nv-overlay.active { display: block; }
+        
+        /* LED BUTTON BOTTOM LEFT */
+        .led-btn { position: fixed; bottom: 20px; left: 20px; width: 55px; height: 55px; border-radius: 50%; background: #00ff44; border: 3px solid white; box-shadow: 0 0 20px #00ff44, 0 0 40px #00ff44; cursor: pointer; z-index: 1001; animation: pulse 1s infinite; }
+        .led-btn.off { background: #2a4a2a; box-shadow: none; animation: none; }
+        @keyframes pulse { 0% { box-shadow: 0 0 10px #00ff44; } 100% { box-shadow: 0 0 30px #00ff44, 0 0 50px #00ff44; } }
+        
+        @media (max-width: 600px) { .tacnet-title { font-size: 1.8rem; } .map-btn { padding: 5px 10px; } }
+    </style>
+</head>
+<body>
+<div class="nv-overlay" id="nvOverlay"></div>
+<div id="ledButton" class="led-btn"></div>
+
+<div class="tacnet">
+    <div class="inner">
+        <div class="title">
+            <div class="tacnet-title">TACNET</div>
+            <div class="subtitle">MULTI-AGENCY TASK FORCE • FEDERAL • STATE • LOCAL</div>
+        </div>
+
+        <div class="map-container">
+            <div class="map-header">
+                <span class="map-badge">📍 LIVE GPS TRACKING — YOUR BLUE DOT MOVES WITH YOU</span>
+                <span class="wind-flag" id="windDisplay">🌬️ CALM</span>
+            </div>
+            <div class="address-search">
+                <input type="text" id="addressInput" class="address-input" placeholder="Enter address to respond...">
+                <button class="address-btn" id="searchBtn">🔍 GO</button>
+            </div>
+            <div id="fieldMap"></div>
+            <div class="map-controls">
+                <button class="map-btn" id="drawPerimBtn">🔵 DRAW PERIMETER</button>
+                <button class="map-btn" id="clearPerimBtn">🗑️ CLEAR</button>
+                <button class="map-btn" id="setLKPBtn">⭐ MARK LKP</button>
+                <button class="map-btn" id="dropPinBtn">💧 DROP EVIDENCE</button>
+                <button class="map-btn map-btn-danger" id="sosBtn">🚨 SOS</button>
+                <button class="map-btn" id="centerBtn">📍 CENTER ON ME</button>
+            </div>
+        </div>
+
+        <div class="bottom-info">
+            <span>🟢 GPS: <span id="gpsStatus">Waiting for signal...</span></span>
+            <span>🐾 YOU ARE THE BLUE DOT</span>
+            <span>🕒 <span id="liveTime">--:--:--</span></span>
+        </div>
+
+        <div class="footer">CREATED BY RETIRED DEPUTY SHERIFF EARL A. WOOD</div>
+    </div>
+</div>
+
+<script>
+    // ========== TACNET FIELD READY — LIVE GPS, WORKING PERIMETER, NIGHT VISION ==========
+    let map, userMarker, watchId;
+    let currentLat = null, currentLng = null;
+    let perimeterLayer = null;
+    let isDrawingMode = false;
+    let drawingPoints = [];
+    let drawingLine = null;
+    let lkpMarker = null;
+    let evidencePins = [];
+    let mapDrawEnabled = true;
+    
+    // Night vision
+    const ledBtn = document.getElementById('ledButton');
+    const nvOverlay = document.getElementById('nvOverlay');
+    
+    ledBtn.onclick = () => {
+        nvOverlay.classList.toggle('active');
+        if (nvOverlay.classList.contains('active')) {
+            ledBtn.style.background = "#88ff88";
+            ledBtn.style.boxShadow = "0 0 30px #88ff88, 0 0 60px #88ff88";
+            document.body.style.background = "#00aa00";
+        } else {
+            ledBtn.style.background = "#00ff44";
+            ledBtn.style.boxShadow = "0 0 20px #00ff44, 0 0 40px #00ff44";
+            document.body.style.background = "#0a1a0a";
+        }
+    };
+    
+    // Initialize map
+    function initMap() {
+        map = L.map('fieldMap').setView([37.4138, -79.1425], 14);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: 'Map data &copy; OpenStreetMap',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Disable map drag when drawing perimeter
+        map.on('dragstart', () => { if (isDrawingMode) map.dragging.disable(); });
+        
+        startGPS();
+        animateWind();
+        updateClock();
+    }
+    
+    // LIVE GPS TRACKING
+    function startGPS() {
+        if (!navigator.geolocation) {
+            document.getElementById('gpsStatus').innerHTML = "GPS not supported";
+            return;
+        }
+        
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                currentLat = position.coords.latitude;
+                currentLng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                document.getElementById('gpsStatus').innerHTML = `LOCKED ±${Math.round(accuracy)}m`;
+                
+                if (!userMarker) {
+                    userMarker = L.marker([currentLat, currentLng], {
+                        icon: L.divIcon({
+                            html: '<div style="background:#3399ff; width:20px; height:20px; border-radius:50%; border:3px solid white; box-shadow:0 0 15px #3399ff; animation: pulse 1s infinite;"></div>',
+                            iconSize: [20, 20],
+                            className: ''
+                        })
+                    }).addTo(map);
+                    userMarker.bindTooltip("YOU ARE HERE", { permanent: false, direction: 'top' });
+                    map.setView([currentLat, currentLng], 16);
+                } else {
+                    userMarker.setLatLng([currentLat, currentLng]);
+                }
+            },
+            (error) => {
+                document.getElementById('gpsStatus').innerHTML = "Allow location access";
+            },
+            { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+        );
+    }
+    
+    // DRAW PERIMETER (MAP DOES NOT MOVE)
+    function startDrawPerimeter() {
+        if (isDrawingMode) {
+            // Finish drawing
+            isDrawingMode = false;
+            map.dragging.enable();
+            if (drawingPoints.length >= 3) {
+                if (perimeterLayer) map.removeLayer(perimeterLayer);
+                perimeterLayer = L.polygon(drawingPoints, {
+                    color: '#00ff44',
+                    weight: 4,
+                    opacity: 1,
+                    fillColor: '#00ff44',
+                    fillOpacity: 0.15,
+                    dashArray: '8, 4'
+                }).addTo(map);
+            }
+            if (drawingLine) map.removeLayer(drawingLine);
+            document.getElementById('drawPerimBtn').style.background = "#1e2a1e";
+            document.getElementById('drawPerimBtn').style.color = "#d4af37";
+        } else {
+            // Start drawing
+            isDrawingMode = true;
+            drawingPoints = [];
+            map.dragging.disable();
+            document.getElementById('drawPerimBtn').style.background = "#00ff44";
+            document.getElementById('drawPerimBtn').style.color = "#0a1208";
+            
+            map.on('click', addPerimeterPoint);
+            map.on('mousemove', updateTempLine);
+        }
+    }
+    
+    function addPerimeterPoint(e) {
+        if (!isDrawingMode) return;
+        const point = [e.latlng.lat, e.latlng.lng];
+        drawingPoints.push(point);
+        
+        // Add temporary marker
+        L.marker(point, {
+            icon: L.divIcon({ html: '<div style="background:#00ff44; width:8px; height:8px; border-radius:50%;"></div>', iconSize: [8, 8] })
+        }).addTo(map);
+        
+        if (drawingPoints.length > 1 && drawingPoints.length < 4) {
+            if (drawingLine) map.removeLayer(drawingLine);
+            drawingLine = L.polyline(drawingPoints, { color: '#00ff44', weight: 3, dashArray: '5, 5' }).addTo(map);
+        }
+    }
+    
+    function updateTempLine(e) {
+        if (!isDrawingMode || drawingPoints.length === 0) return;
+        if (drawingLine) map.removeLayer(drawingLine);
+        const tempPoints = [...drawingPoints, [e.latlng.lat, e.latlng.lng]];
+        drawingLine = L.polyline(tempPoints, { color: '#00ff44', weight: 3, dashArray: '5, 5' }).addTo(map);
+    }
+    
+    function finishAndClearDraw() {
+        if (isDrawingMode) {
+            isDrawingMode = false;
+            map.dragging.enable();
+            map.off('click', addPerimeterPoint);
+            map.off('mousemove', updateTempLine);
+            if (drawingLine) map.removeLayer(drawingLine);
+            document.getElementById('drawPerimBtn').style.background = "#1e2a1e";
+            document.getElementById('drawPerimBtn').style.color = "#d4af37";
+        }
+        if (perimeterLayer) map.removeLayer(perimeterLayer);
+        drawingPoints = [];
+    }
+    
+    function clearPerimeter() {
+        finishAndClearDraw();
+        if (perimeterLayer) map.removeLayer(perimeterLayer);
+        perimeterLayer = null;
+    }
+    
+    // MARK LKP (Last Known Position)
+    function markLKP() {
+        if (!currentLat) { return; }
+        if (lkpMarker) map.removeLayer(lkpMarker);
+        lkpMarker = L.marker([currentLat, currentLng], {
+            icon: L.divIcon({
+                html: '<div style="background:#aa66ff; width:22px; height:22px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); box-shadow:0 0 8px #aa66ff;"></div>',
+                iconSize: [22, 22]
+            })
+        }).addTo(map);
+        lkpMarker.bindTooltip("LAST KNOWN POSITION", { permanent: true, direction: 'top' });
+    }
+    
+    // DROP EVIDENCE PIN
+    function dropEvidence() {
+        if (!currentLat) { return; }
+        const desc = prompt("Evidence description:", "Track / Item / Alert");
+        if (desc) {
+            const pin = L.marker([currentLat, currentLng], {
+                icon: L.divIcon({
+                    html: '<div style="background:#d4af37; width:16px; height:16px; border-radius:50%; border:2px solid white; font-size:10px; text-align:center;">📌</div>',
+                    iconSize: [16, 16]
+                })
+            }).addTo(map);
+            pin.bindTooltip(desc, { permanent: false });
+            evidencePins.push(pin);
+        }
+    }
+    
+    // SOS
+    function sosAlert() {
+        if (!currentLat) { return; }
+        const sosCircle = L.circle([currentLat, currentLng], {
+            color: '#ff0000',
+            weight: 4,
+            fillColor: '#ff0000',
+            fillOpacity: 0.3,
+            radius: 50
+        }).addTo(map);
+        setTimeout(() => map.removeLayer(sosCircle), 5000);
+        if (navigator.vibrate) navigator.vibrate([500, 500, 500]);
+    }
+    
+    // Center map on user
+    function centerOnUser() {
+        if (currentLat) map.setView([currentLat, currentLng], 17);
+    }
+    
+    // Address search
+    function searchAddress() {
+        const addr = document.getElementById('addressInput').value;
+        if (!addr) return;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data[0]) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    map.setView([lat, lng], 16);
+                    const targetMarker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: '<div style="background:#ff0000; width:24px; height:24px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); animation: pulse 0.5s infinite;"></div>',
+                            iconSize: [24, 24]
+                        })
+                    }).addTo(map);
+                    targetMarker.bindTooltip(addr, { permanent: true });
+                    setTimeout(() => map.removeLayer(targetMarker), 10000);
+                }
+            });
+    }
+    
+    // Animated wind flag
+    function animateWind() {
+        const dirs = ['N ↑', 'NE ↗', 'E →', 'SE ↘', 'S ↓', 'SW ↙', 'W ←', 'NW ↖'];
+        let idx = 0;
+        setInterval(() => {
+            idx = (idx + 1) % dirs.length;
+            const speed = Math.floor(Math.random() * 12) + 4;
+            document.getElementById('windDisplay').innerHTML = `🌬️ ${dirs[idx]} ${speed}mph`;
+        }, 4000);
+    }
+    
+    function updateClock() {
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('liveTime').innerHTML = now.toLocaleTimeString();
+        }, 1000);
+    }
+    
+    // Bind buttons
+    document.getElementById('drawPerimBtn').onclick = startDrawPerimeter;
+    document.getElementById('clearPerimBtn').onclick = clearPerimeter;
+    document.getElementById('setLKPBtn').onclick = markLKP;
+    document.getElementById('dropPinBtn').onclick = dropEvidence;
+    document.getElementById('sosBtn').onclick = sosAlert;
+    document.getElementById('centerBtn').onclick = centerOnUser;
+    document.getElementById('searchBtn').onclick = searchAddress;
+    document.getElementById('addressInput').onkeypress = (e) => { if (e.key === 'Enter') searchAddress(); };
+    
+    // Start
+    initMap();
+</script>
+</body>
+</html>
