@@ -1,0 +1,81 @@
+// --- STYLE: Your Dark Hunter Green & Gold Theme ---
+<style>
+  body {
+    background-color: #0B2601; /* Hunter Green */
+    margin: 0; 
+    font-family: 'Audiowide', sans-serif; /* Rugged Font */
+  }
+  #tacnet-header {
+    background-image: url('ballistic-texture.svg'); /* Your Rugged Texture */
+    color: #FFD700; /* Gold Text */
+    padding: 10px;
+    font-size: 1.5em;
+    text-align: center;
+    border-bottom: 3px solid #FFD700;
+    letter-spacing: 2px;
+  }
+  #search-map { height: 75vh; } /* The Battlefield */
+  #footer {
+    color: #FFD700;
+    text-align: center;
+    font-size: 0.8em;
+    padding: 5px;
+    background: #051400;
+  }
+  .perimeter-btn {
+    background: #39FF14; /* Neon Green */
+    color: #0B2601;
+    font-weight: bold;
+    border: 2px solid #FFD700;
+    padding: 10px;
+    margin: 5px;
+  }
+</style>
+
+// --- HTML STRUCTURE: Your Screen ---
+<div id="tacnet-header">TACNET // MULTI-AGENCY TACTICAL TASK FORCE</div>
+<div id="search-map"></div>
+<div id="control-panel">
+  <button class="perimeter-btn" onclick="activatePerimeter()">SET PERIMETER</button>
+  <button onclick="officerDown()">SOS 10-33</button>
+  <button onclick="terminateSearch()">TERMINATE SEARCH</button>
+  <input type="range" id="k9-slider" min="0" max="100" value="0">
+</div>
+<div id="footer">APP CREATOR: EARL A. WOOD, RETIRED DEPUTY SHERIFF</div>
+
+// --- JAVASCRIPT: Your Mission Logic (Simplified Concept) ---
+<script>
+  // Initialize YOUR map, YOUR terrain.
+  var map = L.map('search-map').setView([37.6, -79.1], 14);
+  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'TACNET Op'
+  }).addTo(map);
+
+  // MY DOT: Blue & White, assigned to me.
+  var myDot = L.circleMarker([37.6, -79.1], {color: '#FFFFFF', fillColor: '#0000FF', radius: 8}).addTo(map)
+    .bindPopup('COMMAND: Earl A. Wood');
+
+  // TEAM DOTS: Real-time. K9 (Light Blue), LEO (Blue), SAR (Red).
+  var k9Dot = L.circleMarker([37.605, -79.095], {color: '#88CCFF', fillColor: '#88CCFF', radius: 6}).addTo(map)
+    .bindPopup('K9 Unit - Rex');
+
+  // PERIMETER: Translucent Neon Green.
+  var drawnItems = new L.FeatureGroup();
+  map.addLayer(drawnItems);
+  var drawControl = new L.Control.Draw({
+    edit: { featureGroup: drawnItems },
+    draw: { polygon: { shapeOptions: { color: '#39FF14', fillOpacity: 0.2 } }, polyline: false, circle: false, rectangle: false, marker: false }
+  });
+  map.addControl(drawControl);
+  
+  // The moment a perimeter is created, it's locked and visible to the team.
+  map.on(L.Draw.Event.CREATED, function (event) {
+    var layer = event.layer;
+    drawnItems.addLayer(layer); // This is now the active search zone.
+  });
+
+  // PLACEHOLDER FUNCTIONS - You wire these to your Firebase/Socket logic.
+  function activatePerimeter() { alert('Perimeter set. Tap points on the map.'); }
+  function officerDown() { alert('10-33! OFFICER DOWN! GPS sent to all units.'); }
+  function terminateSearch() { alert('SEARCH TERMINATED. Data logged and saved.'); }
+</script>
