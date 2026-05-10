@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TACNET | Multi-Agency Tactical Task Force Search App</title>
+    <!-- Leaflet CSS + JS (free maps, no key) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Tailwind for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes tacpulse {
+            0%,100% { transform:scale(1); opacity:1; text-shadow: 0 0 5px #39FF14; }
+            50% { transform:scale(1.02); opacity:0.9; text-shadow: 0 0 20px #39FF14; }
+        }
+        @keyframes tacping {
+            0%,100% { transform:scale(1); opacity:1; }
+            50% { transform:scale(1.6); opacity:0.4; }
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% { opacity: 0.95; }
+            10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90% { opacity: 0.98; }
+        }
+        @keyframes crackle {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+        body { margin:0; padding:0; background-color:black !important; overflow:hidden; font-family: 'Courier New', monospace; }
+        .cracked-text {
+            position: relative;
+            animation: flicker 0.15s infinite;
+            text-shadow: 2px 2px 0px #0a3300, -1px -1px 0px #39FF14, 1px 1px 0px #1a6600;
+            letter-spacing: -0.5px;
+        }
+        .cracked-text::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(57,255,20,0.03) 2px, rgba(57,255,20,0.03) 4px);
+            pointer-events: none;
+            animation: crackle 10s linear infinite;
+        }
+        .glow-border {
+            box-shadow: 0 0 30px rgba(57,255,20,0.3), inset 0 0 20px rgba(57,255,20,0.1);
+        }
+        .hex-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L55 20 L55 40 L30 55 L5 40 L5 20 Z' fill='none' stroke='%2339FF14' stroke-width='0.5' stroke-opacity='0.1'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+        }
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(57,255,20,0.02) 50%, transparent 100%);
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+            z-index: 1000;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(57,255,20,0.3); border-radius: 4px; }
+        .leaflet-container { background: #0a0f0a; }
+        .modal-backdrop {
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script>
+    // ===================== CONFIGURATION =====================
+    const FED_PATCH = "https://dtvoeevhaseb5.cloudfront.net/user-uploads/f5ce1129-cdd3-4664-a2a7-d18c5f1f5e9f.png";
+    const VA_PATCH = "https://dtvoeevhaseb5.cloudfront.net/user-uploads/33a58ec2-dfcf-4661-8121-2fd4d1994f69.png";
+    const MOCKUP_BG = "https://dtvoeevhaseb5.cloudfront.net/user-uploads/9afc3ce3-08e3-4179-9206-71483d186e3e.png";
+    
+    const ROLES = [
+        { id: "le", name: "Law Enforcement", color: "#0066FF", dot: "bg-blue-600" },
+        { id: "k9", name: "K9 Unit", color: "#ADD8E6", dot: "bg-sky-400" },
+        { id: "sars", name: "SARS Team", color: "#FF2200", dot: "bg-red-600" },
+        { id: "civilian", name: "Civilian", color: "#00AA00", dot: "bg-green-600" },
+        { id: "suspect", name: "Suspect", color: "#9900FF", dot: "bg-purple-600" },
+    ];
+
+    const EVENT_TYPE_COLORS = {
+        MARK_ON: "#39FF14",
+        TERMINATE: "#FF4444",
+        NOTE: "#ADD8E6",
+        PERIMETER_SET: "#FFA500",
+        PERIMETER_RESET: "#FF6600",
+        SEARCHERS_CLEARED: "#FF8800",
+        PERSONNEL_JOINED: "#00BFFF",
+        SUSPECT_LOCATED: "#FF00FF",
+        OFFICER_DOWN: "#FF0000",
+        SEARCH_AREA: "#FFFF00",
+    };
+
+    // ===================== GLOBAL STATE =====================
+    let currentUser = null;
+    let myLocation = { lat: 37.4316, lng: -78.6569 };
+    let perimeterPoints = [];
+    let isDrawing = false;
+    let showMarkOnModal = false;
+    let showIncidentPanel = false;
+    let activeIncident = null;
+    let incidentLog = [];
+    let mapInstance = null;
+    let markersLayer = null;
+    let perimeterMarkers = [];
+    let myMarker = null;
+    let watchId = null;
+    let personnelList = [];
+
+    // Helper functions
+    function formatTime(iso) {
+        if (!iso) return "";
+        return new Date(iso).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function formatDuration(startIso) {
+        if (!startIso) return "00:00:00";
+        const diff = Math.max(0, Math.floor((Date.now() - new Date(startIso)) / 1000));
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function addLogEntry({ description, event_type }) {
+        if (!activeIncident) return;
+        const newEntry = {
+            id: Date.now(),
+            logged_at: new Date().toISOString(),
+            event_type: event_type || "NOTE",
+            description: description,
+            operator_name: currentUser?.name || "UNKNOWN"
+        };
+        incidentLog.push(newEntry);
+        renderApp();
+    }
+
+    function markOnIncident(data) {
+        const newId = `INC-${Date.now()}`;
+        activeIncident = {
+            id: newId,
+            title: data.title,
+            incident_type: data.incidentType,
+            location_description: data.location,
+            commander_name: currentUser.name,
+            commander_id: currentUser.id,
+            status: "active",
+            started_at: new Date().toISOString()
+        };
+        incidentLog = [{
+            id: Date.now(),
+            logged_at: new Date().toISOString(),
+            event_type: "MARK_ON",
+            description: `INCIDENT INITIATED: ${data.title}`,
+            operator_name: currentUser.name
+        }];
+        showMarkOnModal = false;
+        showIncidentPanel = true;
+        renderApp();
+    }
+
+    function terminateIncident() {
+        if (activeIncident) {
+            addLogEntry({ description: "INCIDENT TERMINATED BY COMMAND", event_type: "TERMINATE" });
+            activeIncident.status = "terminated";
+            renderApp();
+        }
+    }
+
+    function resetPerimeter() {
+        perimeterPoints = [];
+        updatePerimeterUI();
+        if (activeIncident) addLogEntry({ description: "PERIMETER RESET — ALL BOUNDARY POINTS CLEARED", event_type: "PERIMETER_RESET" });
+        renderApp();
+    }
+
+    function clearPersonnel() {
+        personnelList = personnelList.filter(p => p.id === currentUser?.id);
+        updatePersonnelMarkers();
+        if (activeIncident) addLogEntry({ description: "ALL SEARCHERS REMOVED FROM ACTIVE MAP", event_type: "SEARCHERS_CLEARED" });
+        renderApp();
+    }
+
+    async function searchAddress(query) {
+        if (!query) return;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && data[0]) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                if (mapInstance) mapInstance.setView([lat, lon], 16);
+                if (activeIncident) {
+                    addLogEntry({ description: `ADDRESS SEARCH: ${query.toUpperCase()} — LAT ${lat.toFixed(5)} / LON ${lon.toFixed(5)}`, event_type: "SEARCH_AREA" });
+                }
+            } else {
+                alert("Address not found. Try a different format.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Geocoding failed. Check connection.");
+        }
+    }
+
+    function initMap(centerLat, centerLng) {
+        if (mapInstance) {
+            mapInstance.setView([centerLat, centerLng], 16);
+            return;
+        }
+        mapInstance = L.map('map').setView([centerLat, centerLng], 16);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(mapInstance);
+        markersLayer = L.layerGroup().addTo(mapInstance);
+        mapInstance.on('click', (e) => {
+            if (!isDrawing) return;
+            const newPoint = { lat: e.latlng.lat, lng: e.latlng.lng };
+            perimeterPoints.push(newPoint);
+            updatePerimeterUI();
+            if (activeIncident) {
+                addLogEntry({ description: `PERIMETER POINT ${perimeterPoints.length} SET — LAT ${newPoint.lat.toFixed(5)} / LON ${newPoint.lng.toFixed(5)}`, event_type: "PERIMETER_SET" });
+            }
+        });
+    }
+
+    function updatePersonnelMarkers() {
+        if (!markersLayer) return;
+        markersLayer.clearLayers();
+        personnelList.forEach(p => {
+            if (p.id === currentUser?.id) return;
+            const role = ROLES.find(r => r.id === p.role) || ROLES[0];
+            const marker = L.circleMarker([p.latitude, p.longitude], {
+                radius: 8,
+                fillColor: role.color,
+                color: "#FFFFFF",
+                weight: 2,
+                fillOpacity: 1
+            }).bindTooltip(`${p.name} | ${role.name}`);
+            marker.addTo(markersLayer);
+        });
+        if (myLocation && currentUser) {
+            if (myMarker) myMarker.remove();
+            myMarker = L.circleMarker([myLocation.lat, myLocation.lng], {
+                radius: 10,
+                fillColor: "#0000FF",
+                color: "#FFFFFF",
+                weight: 4,
+                fillOpacity: 1
+            }).bindTooltip(`${currentUser.name} (YOU)`).addTo(markersLayer);
+        }
+        updatePerimeterUI();
+    }
+
+    function updatePerimeterUI() {
+        if (!markersLayer) return;
+        perimeterMarkers.forEach(m => m.remove());
+        perimeterMarkers = [];
+        perimeterPoints.forEach((pt, idx) => {
+            const m = L.circleMarker([pt.lat, pt.lng], { radius: 5, fillColor: "#39FF14", color: "#39FF14", weight: 2, fillOpacity: 0.9 }).addTo(markersLayer);
+            perimeterMarkers.push(m);
+        });
+    }
+
+    function startGPSTracking() {
+        if (!currentUser) return;
+        if ("geolocation" in navigator) {
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    myLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    updatePersonnelMarkers();
+                    const existing = personnelList.find(p => p.id === currentUser.id);
+                    if (existing) {
+                        existing.latitude = myLocation.lat;
+                        existing.longitude = myLocation.lng;
+                    } else {
+                        personnelList.push({ ...currentUser, latitude: myLocation.lat, longitude: myLocation.lng });
+                    }
+                    renderApp();
+                },
+                (err) => console.warn("Geolocation error", err),
+                { enableHighAccuracy: true }
+            );
+        }
+    }
+
+    // ===================== HOMEPAGE COMPONENT =====================
+    function Homepage({ onEnter }) {
+        const [glitchIndex, setGlitchIndex] = React.useState(0);
+        React.useEffect(() => {
+            const interval = setInterval(() => setGlitchIndex(Math.random()), 100);
+            return () => clearInterval(interval);
+        }, []);
+        
+        return React.createElement("div", { className: "relative w-full h-screen overflow-hidden" },
+            // Background image with overlay
+            React.createElement("div", { className: "absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20 blur-[1px]", style: { backgroundImage: `url(${MOCKUP_BG})` } }),
+            // Hex pattern overlay
+            React.createElement("div", { className: "absolute inset-0 z-0 hex-pattern opacity-30" }),
+            // Scan line effect
+            React.createElement("div", { className: "scan-line" }),
+            // Content
+            React.createElement("div", { className: "relative z-10 flex flex-col items-center justify-between min-h-screen p-8 modal-backdrop" },
+                // Top Agency Badges
+                React.createElement("div", { className: "flex justify-center gap-12 mb-8 w-full" },
+                    React.createElement("img", { src: FED_PATCH, className: "w-24 h-24 object-contain drop-shadow-[0_0_20px_rgba(57,255,20,0.6)] opacity-90 hover:opacity-100 transition-all duration-500", alt: "Federal Agency" }),
+                    React.createElement("img", { src: VA_PATCH, className: "w-24 h-24 object-contain drop-shadow-[0_0_20px_rgba(57,255,20,0.6)] opacity-90 hover:opacity-100 transition-all duration-500", alt: "Virginia State Police" })),
+                
+                // Main Title - CRACKED & DRY
+                React.createElement("div", { className: "text-center mb-6 group" },
+                    React.createElement("h1", { 
+                        className: "cracked-text text-[120px] md:text-[180px] font-black text-[#39FF14] tracking-tighter leading-none mb-2", 
+                        "data-text": "TACNET",
+                        style: { 
+                            fontFamily: "'Courier New', monospace",
+                            textShadow: "4px 4px 0px #0a3300, -2px -2px 0px #39FF14, 2px 2px 0px #1a6600",
+                            animation: `flicker ${0.1 + glitchIndex * 0.05}s infinite`
+                        }
+                    }, "TACNET"),
+                    React.createElement("p", { 
+                        className: "text-[#39FF14]/80 text-sm md:text-base font-black tracking-[0.3em] uppercase mt-2 border-t-2 border-[#39FF14]/30 pt-4 inline-block",
+                        style: { letterSpacing: "0.3em" }
+                    }, "MULTI AGENCY TACTICAL TASK FORCE SEARCH APP")),
+                
+                // Operational Stats Row
+                React.createElement("div", { className: "flex gap-8 mb-8 text-center" },
+                    React.createElement("div", null, 
+                        React.createElement("div", { className: "text-[#39FF14] text-3xl font-black" }, "24/7"),
+                        React.createElement("div", { className: "text-[#39FF14]/50 text-[9px] font-black uppercase tracking-widest" }, "OPERATIONAL")),
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-[#39FF14] text-3xl font-black" }, "REAL-TIME"),
+                        React.createElement("div", { className: "text-[#39FF14]/50 text-[9px] font-black uppercase tracking-widest" }, "TRACKING")),
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-[#39FF14] text-3xl font-black" }, "SECURE"),
+                        React.createElement("div", { className: "text-[#39FF14]/50 text-[9px] font-black uppercase tracking-widest" }, "CHANNEL"))),
+                
+                // CTA Button
+                React.createElement("button", {
+                    onClick: onEnter,
+                    className: "group relative px-12 py-5 bg-transparent border-2 border-[#39FF14] rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(57,255,20,0.4)] mb-8"
+                },
+                    React.createElement("div", { className: "absolute inset-0 bg-[#39FF14]/0 group-hover:bg-[#39FF14]/10 transition-all duration-300" }),
+                    React.createElement("span", { className: "relative text-[#39FF14] font-black text-lg uppercase tracking-[0.3em] z-10" }, "ENTER TACNET SYSTEM"),
+                    React.createElement("div", { className: "absolute bottom-0 left-0 w-full h-[2px] bg-[#39FF14]/30 group-hover:bg-[#39FF14] transition-all" })),
+                
+                // Agency Bar
+                React.createElement("div", { className: "flex gap-8 mb-6 text-center" },
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]" }, "FEDERAL"),
+                        React.createElement("div", { className: "w-8 h-px bg-[#39FF14]/30 mx-auto mt-1" })),
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]" }, "STATE"),
+                        React.createElement("div", { className: "w-8 h-px bg-[#39FF14]/30 mx-auto mt-1" })),
+                    React.createElement("div", null,
+                        React.createElement("div", { className: "text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]" }, "LOCAL"),
+                        React.createElement("div", { className: "w-8 h-px bg-[#39FF14]/30 mx-auto mt-1" }))),
+                
+                // Footer
+                React.createElement("div", { className: "absolute bottom-8 left-0 right-0 text-center" },
+                    React.createElement("p", { className: "text-[#39FF14] text-[11px] font-black uppercase tracking-[0.3em] drop-shadow-[0_0_5px_rgba(57,255,20,0.5)]" }, "APP CREATOR EARL A. WOOD — DEPUTY SHERIFF RETIRED"),
+                    React.createElement("div", { className: "flex justify-center gap-3 mt-2" },
+                        React.createElement("div", { className: "w-16 h-px bg-[#39FF14]/30" }),
+                        React.createElement("span", { className: "text-[#39FF14]/30 text-[7px] font-black tracking-[0.2em]" }, "CLASSIFIED // LAW ENFORCEMENT SENSITIVE"),
+                        React.createElement("div", { className: "w-16 h-px bg-[#39FF14]/30" })))),
+            
+            // Decorative corners
+            React.createElement("div", { className: "absolute top-4 left-4 w-16 h-16 border-t-2 border-l-2 border-[#39FF14]/30" }),
+            React.createElement("div", { className: "absolute top-4 right-4 w-16 h-16 border-t-2 border-r-2 border-[#39FF14]/30" }),
+            React.createElement("div", { className: "absolute bottom-4 left-4 w-16 h-16 border-b-2 border-l-2 border-[#39FF14]/30" }),
+            React.createElement("div", { className: "absolute bottom-4 right-4 w-16 h-16 border-b-2 border-r-2 border-[#39FF14]/30" }));
+    }
+
+    // ===================== ACCESS MODAL =====================
+    function AccessCodeModal({ onAuth }) {
+        const [code, setCode] = React.useState("");
+        const [name, setName] = React.useState("");
+        const [role, setRole] = React.useState("le");
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            if (code && name) onAuth({ name: name.toUpperCase(), role, code });
+        };
+        return React.createElement("div", { className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/95 modal-backdrop p-4" },
+            React.createElement("div", { className: "relative w-full max-w-lg bg-black/80 border-2 border-[#39FF14] rounded-2xl p-8 glow-border" },
+                React.createElement("div", { className: "text-center mb-6" },
+                    React.createElement("h2,", { className: "text-[#39FF14] text-2xl font-black uppercase tracking-widest" }, "Tactical Authentication"),
+                    React.createElement("div", { className: "w-20 h-px bg-[#39FF14]/30 mx-auto mt-2" })),
+                React.createElement("form", { onSubmit: handleSubmit, className: "space-y-5" },
+                    React.createElement("input", { required, placeholder: "CALLSIGN / PERSONNEL ID", value: name, onChange: (e) => setName(e.target.value), className: "w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase outline-none focus:border-[#39FF14]" }),
+                    React.createElement("select", { value: role, onChange: (e) => setRole(e.target.value), className: "w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black outline-none" }, ROLES.map(r => React.createElement("option", { key: r.id, value: r.id }, r.name))),
+                    React.createElement("input", { required, type="password", placeholder: "ACCESS CODE", value: code, onChange: (e) => setCode(e.target.value), className: "w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black tracking-widest outline-none" }),
+                    React.createElement("button", { type: "submit", className: "w-full bg-[#39FF14]/10 hover:bg-[#39FF14]/30 border-2 border-[#39FF14] text-[#39FF14] font-black py-4 rounded-xl transition-all uppercase tracking-widest" }, "AUTHENTICATE & DEPLOY"))));
+    }
+
+    // ===================== MARK ON MODAL =====================
+    function MarkOnModalComp({ onClose }) {
+        const [title, setTitle] = React.useState("");
+        const [incidentType, setIncidentType] = React.useState("SEARCH OPERATION");
+        const [location, setLocation] = React.useState("");
+        const TYPES = ["SEARCH OPERATION", "MISSING PERSON", "FUGITIVE APPREHENSION", "K9 SEARCH", "SARS OPERATION", "MULTI-AGENCY TASK FORCE"];
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            if (!title.trim()) return;
+            markOnIncident({ title: title.toUpperCase(), incidentType, location: location.toUpperCase() });
+        };
+        return React.createElement("div", { className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4" },
+            React.createElement("div", { className: "w-full max-w-lg bg-black border-2 border-[#39FF14] rounded-2xl p-8 glow-border" },
+                React.createElement("div", { className: "flex items-center justify-between mb-6" },
+                    React.createElement("div", { className: "flex items-center gap-3" },
+                        React.createElement("div", { className: "w-3 h-3 rounded-full bg-[#39FF14] animate-pulse" }),
+                        React.createElement("h2,", { className: "text-[#39FF14] font-black text-lg uppercase tracking-widest" }, "MARK ON — INITIATE INCIDENT")),
+                    React.createElement("button", { onClick: onClose, className: "text-white/40 hover:text-white text-xl" }, "✕")),
+                React.createElement("form", { onSubmit: handleSubmit, className: "space-y-5" },
+                    React.createElement("input", { required, placeholder: "Incident Title", value: title, onChange: (e) => setTitle(e.target.value), className: "w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase" }),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2" }, TYPES.map(t => React.createElement("button", { type: "button", key: t, onClick: () => setIncidentType(t), className: `py-2 px-3 rounded-lg border text-[9px] font-black uppercase ${incidentType === t ? "bg-[#39FF14]/30 border-[#39FF14]" : "bg-black/40 border-[#39FF14]/20"}` }, t))),
+                    React.createElement("input", { placeholder: "Location description", value: location, onChange: (e) => setLocation(e.target.value), className: "w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase" }),
+                    React.createElement("button", { type: "submit", className: "w-full bg-[#39FF14]/20 hover:bg-[#39FF14]/40 border-2 border-[#39FF14] text-[#39FF14] font-black py-4 rounded-xl uppercase tracking-widest" }, "MARK ON — BEGIN RECORDING"))));
+    }
+
+    // ===================== LIVE CLOCK =====================
+    function LiveClock() {
+        const [time, setTime] = React.useState("");
+        React.useEffect(() => {
+            const update = () => setTime(new Date().toLocaleString("en-US", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "UTC" }) + " Z");
+            update();
+            const t = setInterval(update, 1000);
+            return () => clearInterval(t);
+        }, []);
+        return React.createElement("span", { className: "text-xs font-black text-[#39FF14]/50 tabular-nums" }, time);
+    }
+
+    // ===================== MAIN APP =====================
+    function TacnetApp() {
+        const [addressInput, setAddressInput] = React.useState("");
+        const [duration, setDuration] = React.useState("00:00:00");
+        const [showPanel, setShowPanel] = React.useState(true);
+        
+        React.useEffect(() => {
+            if (mapInstance && myLocation) mapInstance.setView([myLocation.lat, myLocation.lng], 16);
+            else if (myLocation) initMap(myLocation.lat, myLocation.lng);
+            startGPSTracking();
+            return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
+        }, []);
+        
+        React.useEffect(() => { if (mapInstance) updatePersonnelMarkers(); });
+        React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+        React.useEffect(() => {
+            if (!activeIncident?.started_at) return;
+            const interval = setInterval(() => setDuration(formatDuration(activeIncident.started_at)), 1000);
+            return () => clearInterval(interval);
+        }, [activeIncident?.started_at]);
+        
+        const defaultCenter = myLocation || { lat: 37.4316, lng: -78.6569 };
+        if (!mapInstance) setTimeout(() => initMap(defaultCenter.lat, defaultCenter.lng), 100);
+        
+        return React.createElement("div", { className: "relative w-full h-screen bg-black flex flex-col" },
+            React.createElement("header", { className: "relative z-[60] h-[72px] flex items-center justify-between px-6 backdrop-blur-[30px] bg-black/70 border-b border-[#39FF14]/50 shrink-0" },
+                React.createElement("div", { className: "flex items-center gap-4" },
+                    React.createElement("img", { src: FED_PATCH, className: "w-11 h-11 object-contain" }),
+                    React.createElement("div", null,
+                        React.createElement("h1", { className: "text-[28px] font-black text-[#39FF14] italic" }, "TACNET"),
+                        React.createElement("span", { className: "text-[8px] font-black text-[#39FF14]/60 tracking-[0.4em]" }, "Multi-Agency Tactical Task Force"))),
+                React.createElement("div", { className: "flex items-center gap-3" },
+                    activeIncident ? React.createElement("button", { onClick: () => setShowPanel(!showPanel), className: "flex items-center gap-2 px-4 py-2 bg-[#39FF14]/10 border border-[#39FF14]/50 rounded-xl" },
+                        React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse" }),
+                        React.createElement("span", { className: "text-[#39FF14] text-[10px] font-black uppercase" }, activeIncident.status === "active" ? "● RECORDING ACTIVE" : "INCIDENT CLOSED"))
+                        : React.createElement("button", { onClick: () => setShowMarkOnModal(true), className: "flex items-center gap-2 px-5 py-2.5 bg-[#39FF14]/20 border-2 border-[#39FF14] rounded-xl text-[#39FF14] font-black text-[10px] uppercase" }, "MARK ON")),
+                React.createElement("div", { className: "hidden md:flex items-center gap-6" }, React.createElement(LiveClock, null))),
+            
+            React.createElement("main", { className: "flex-1 flex overflow-hidden pb-[88px] px-3 pt-3 gap-3 relative z-10" },
+                React.createElement("div", { className: "relative flex-1 border-2 border-[#39FF14]/40 rounded-[1.75rem] overflow-hidden bg-black/30" },
+                    React.createElement("div", { id: "map", className: "w-full h-full" }),
+                    React.createElement("div", { className: "absolute top-4 left-4 z-10 flex flex-col gap-3 w-68" },
+                        React.createElement("div", { className: "backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3 flex gap-2" },
+                            React.createElement("input", { type: "text", value: addressInput, onChange: (e) => setAddressInput(e.target.value), onKeyDown: (e) => e.key === "Enter" && searchAddress(addressInput), placeholder: "ENTER ADDRESS OR COORDINATES...", className: "bg-transparent text-[#39FF14] text-[10px] font-black outline-none flex-1 uppercase placeholder:text-[#39FF14]/30" }),
+                            React.createElement("button", { onClick: () => searchAddress(addressInput), className: "p-2 bg-[#39FF14]/10 hover:bg-[#39FF14]/30 rounded-lg" }, "🔍")),
+                        React.createElement("div", { className: "backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3 flex flex-col gap-2" },
+                            React.createElement("button", { onClick: () => { isDrawing = !isDrawing; renderApp(); }, className: `flex items-center gap-2 p-2.5 rounded-lg border text-[9px] font-black uppercase ${isDrawing ? "bg-[#39FF14]/30 border-[#39FF14]" : "bg-black/40 border-[#39FF14]/20"}` }, "✏️ ", isDrawing ? "SAVING PERIMETER..." : "DRAW PERIMETER"),
+                            React.createElement("button", { onClick: () => resetPerimeter(), className: "flex items-center gap-2 bg-black/40 border border-red-500/30 text-red-500 p-2.5 rounded-lg text-[9px] font-black uppercase" }, "⟳ RESET PERIMETER"),
+                            React.createElement("button", { onClick: () => clearPersonnel(), className: "flex items-center gap-2 bg-black/40 border border-orange-500/30 text-orange-500 p-2.5 rounded-lg text-[9px] font-black uppercase" }, "🗑 REMOVE SEARCHERS"))),
+                    React.createElement("div", { className: "absolute bottom-4 left-4 z-10 backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3" },
+                        React.createElement("h3,", { className: "text-[#39FF14] text-[8px] font-black mb-2 uppercase" }, "Operational Units"),
+                        ROLES.map(role => React.createElement("div", { key: role.id, className: "flex items-center gap-2.5" }, React.createElement("div", { className: `w-3 h-3 rounded-full ${role.dot} border border-white` }), React.createElement("span", { className: "text-[#39FF14] text-[9px] font-black uppercase" }, role.name))))),
+                
+                showPanel && activeIncident && React.createElement("div", { className: "w-[300px] shrink-0 border-2 border-[#39FF14]/40 rounded-[1.75rem] backdrop-blur-[20px] bg-black/80 flex flex-col" },
+                    React.createElement("div", { className: "flex flex-col h-full" },
+                        React.createElement("div", { className: "px-4 py-3 border-b border-[#39FF14]/30 bg-[#39FF14]/5" },
+                            React.createElement("div", { className: "flex items-center gap-2" }, React.createElement("div", { className: "w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse" }), React.createElement("span", { className: "text-[#39FF14] text-[9px] font-black uppercase" }, "● REC — LIVE LOG")),
+                            React.createElement("p", { className: "text-[#39FF14] font-black text-[11px] uppercase mt-2" }, activeIncident.title),
+                            React.createElement("div", { className: "flex items-center gap-5 mt-2" }, React.createElement("span", { className: "text-[#39FF14]/90 text-[10px] font-black tabular-nums" }, duration))),
+                        React.createElement("div", { className: "flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0" }, incidentLog.map(entry => React.createElement("div", { key: entry.id, className: "flex gap-2" },
+                            React.createElement("div", { className: "w-2 h-2 rounded-full mt-1", style: { backgroundColor: EVENT_TYPE_COLORS[entry.event_type] || "#39FF14" } }),
+                            React.createElement("div", null,
+                                React.createElement("div", { className: "flex gap-2" }, React.createElement("span", { className: "text-[8px] font-black uppercase", style: { color: EVENT_TYPE_COLORS[entry.event_type] || "#39FF14" } }, entry.event_type), React.createElement("span", { className: "text-white/30 text-[8px]" }, formatTime(entry.logged_at))),
+                                React.createElement("p", { className: "text-white/75 text-[10px]" }, entry.description))))),
+                        React.createElement("div", { className: "px-3 py-3 border-t border-[#39FF14]/20" },
+                            React.createElement("button", { onClick: () => terminateIncident(), className: "w-full p-2.5 bg-red-900/30 border border-red-500/40 rounded-xl text-red-400 text-[9px] font-black uppercase" }, "TERMINATE — CLOSE INCIDENT"))))),
+            
+            React.createElement("footer", { className: "absolute bottom-0 left-0 right-0 h-[88px] flex flex-col items-center justify-center backdrop-blur-[30px] bg-black/80 border-t border-[#39FF14]/50" },
+                React.createElement("p", { className: "text-[#39FF14] text-[11px] font-black uppercase tracking-[0.4em]" }, "APP CREATOR EARL A. WOOD — DEPUTY SHERIFF RETIRED"),
+                React.createElement("div", { className: "mt-1 flex items-center gap-3" },
+                    React.createElement("div", { className: "w-12 h-px bg-[#39FF14]/30" }),
+                    React.createElement("span", { className: "text-[6px] text-[#39FF14]/50 font-black uppercase tracking-[0.2em]" }, "FEDERAL • STATE • LOCAL"),
+                    React.createElement("div", { className: "w-12 h-px bg-[#39FF14]/30" }))),
+            
+            showMarkOnModal && React.createElement(MarkOnModalComp, { onClose: () => { showMarkOnModal = false; renderApp(); } }));
+    }
+
+    // ===================== RENDER CONTROLLER =====================
+    let showingHomepage = true;
+    
+    function renderApp() {
+        const root = document.getElementById("root");
+        if (showingHomepage && !currentUser) {
+            ReactDOM.createRoot(root).render(React.createElement(Homepage, { onEnter: () => {
+                showingHomepage = false;
+                renderApp();
+            } }));
+        } else if (!currentUser) {
+            ReactDOM.createRoot(root).render(React.createElement(AccessCodeModal, { onAuth: (userData) => {
+                currentUser = userData;
+                renderApp();
+            } }));
+        } else {
+            ReactDOM.createRoot(root).render(React.createElement(TacnetApp, null));
+        }
+    }
+
+    // Load React
+    const loadReact = async () => {
+        if (window.React && window.ReactDOM) {
+            renderApp();
+            return;
+        }
+        const scriptReact = document.createElement("script");
+        scriptReact.src = "https://unpkg.com/react@18.2.0/umd/react.development.js";
+        const scriptReactDOM = document.createElement("script");
+        scriptReactDOM.src = "https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js";
+        scriptReact.onload = () => { document.head.appendChild(scriptReactDOM); };
+        scriptReactDOM.onload = () => {
+            window.ReactDOM = ReactDOM;
+            window.React = React;
+            renderApp();
+        };
+        document.head.appendChild(scriptReact);
+        const lucideScript = document.createElement("script");
+        lucideScript.src = "https://unpkg.com/lucide@latest";
+        lucideScript.onload = () => { window.lucide = lucide; };
+        document.head.appendChild(lucideScript);
+    };
+    loadReact();
+</script>
+</body>
+</html>
