@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TACNET | Multi-Agency Tactical Task Force Search App</title>
+    <!-- Leaflet CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes tacpulse {
+            0%,100% { opacity:1; text-shadow: 0 0 5px #39FF14; }
+            50% { opacity:0.9; text-shadow: 0 0 25px #39FF14; }
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            10%, 30%, 50%, 70%, 90% { opacity: 0.97; }
+            20%, 40%, 60%, 80% { opacity: 0.99; }
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        @keyframes glowPulse {
+            0%,100% { box-shadow: 0 0 20px rgba(57,255,20,0.3); }
+            50% { box-shadow: 0 0 50px rgba(57,255,20,0.6); }
+        }
+        .cracked-text {
+            animation: flicker 0.15s infinite;
+            text-shadow: 3px 3px 0px #0a3300, -1px -1px 0px #39FF14;
+            letter-spacing: -2px;
+        }
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(57,255,20,0.05) 50%, transparent 100%);
+            pointer-events: none;
+            animation: scan 6s linear infinite;
+            z-index: 1000;
+        }
+        .glow-border {
+            box-shadow: 0 0 30px rgba(57,255,20,0.3);
+        }
+        body { margin: 0; padding: 0; background: black; font-family: 'Courier New', monospace; overflow: hidden; }
+        .hex-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 2 L38 12 L38 28 L20 38 L2 28 L2 12 Z' fill='none' stroke='%2339FF14' stroke-width='0.5' stroke-opacity='0.08'/%3E%3C/svg%3E");
+        }
+        .modal-backdrop {
+            backdrop-filter: blur(10px);
+        }
+        .leaflet-container { background: #0a0f0a; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #39FF14; border-radius: 4px; }
+        
+        /* Hide/show states */
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; transition: all 0.3s; overflow: auto; }
+        .hidden-screen { display: none; }
+        .visible-screen { display: block; }
+    </style>
+</head>
+<body>
+
+<!-- SCAN LINE EFFECT -->
+<div class="scan-line"></div>
+
+<!-- ==================== SCREEN 1: HOMEPAGE ==================== -->
+<div id="homepageScreen" class="screen visible-screen">
+    <!-- Background -->
+    <div class="absolute inset-0 bg-black"></div>
+    <div class="absolute inset-0 hex-bg opacity-30"></div>
+    
+    <!-- Content -->
+    <div class="relative z-10 flex flex-col items-center justify-between min-h-screen p-8">
+        <!-- Top Logos -->
+        <div class="flex justify-center gap-12 mb-8 w-full">
+            <div class="w-28 h-28 rounded-full border-2 border-[#39FF14]/30 bg-gradient-to-br from-[#39FF14]/5 to-transparent flex items-center justify-center">
+                <span class="text-[#39FF14] text-4xl">⭐</span>
+            </div>
+            <div class="w-28 h-28 rounded-full border-2 border-[#39FF14]/30 bg-gradient-to-br from-[#39FF14]/5 to-transparent flex items-center justify-center">
+                <span class="text-[#39FF14] text-4xl">⚡</span>
+            </div>
+        </div>
+        
+        <!-- Main Title - Cracked & Dry -->
+        <div class="text-center mb-8">
+            <h1 class="cracked-text text-[100px] md:text-[160px] font-black text-[#39FF14] tracking-tighter leading-none mb-4" style="font-family: 'Courier New', monospace;">
+                TACNET
+            </h1>
+            <p class="text-[#39FF14]/80 text-xs md:text-sm font-black tracking-[0.3em] uppercase mt-4 border-t-2 border-[#39FF14]/30 pt-4 inline-block">
+                MULTI AGENCY TACTICAL TASK FORCE SEARCH APP
+            </p>
+        </div>
+        
+        <!-- Stats -->
+        <div class="flex gap-12 mb-10">
+            <div class="text-center">
+                <div class="text-[#39FF14] text-4xl font-black">24/7</div>
+                <div class="text-[#39FF14]/40 text-[8px] font-black uppercase tracking-widest">OPERATIONAL</div>
+            </div>
+            <div class="text-center">
+                <div class="text-[#39FF14] text-4xl font-black">GPS</div>
+                <div class="text-[#39FF14]/40 text-[8px] font-black uppercase tracking-widest">TRACKING</div>
+            </div>
+            <div class="text-center">
+                <div class="text-[#39FF14] text-4xl font-black">SEC</div>
+                <div class="text-[#39FF14]/40 text-[8px] font-black uppercase tracking-widest">ENCRYPT</div>
+            </div>
+        </div>
+        
+        <!-- Enter Button -->
+        <button id="enterBtn" class="group relative px-12 py-5 bg-transparent border-2 border-[#39FF14] rounded-2xl transition-all duration-300 hover:scale-105 glow-border mb-10 cursor-pointer">
+            <span class="relative text-[#39FF14] font-black text-base uppercase tracking-[0.3em]">ENTER TACNET SYSTEM</span>
+        </button>
+        
+        <!-- Agency Bar -->
+        <div class="flex gap-10 mb-8">
+            <div class="text-center">
+                <div class="text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]">FEDERAL</div>
+                <div class="w-10 h-px bg-[#39FF14]/30 mx-auto mt-1"></div>
+            </div>
+            <div class="text-center">
+                <div class="text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]">STATE</div>
+                <div class="w-10 h-px bg-[#39FF14]/30 mx-auto mt-1"></div>
+            </div>
+            <div class="text-center">
+                <div class="text-[#39FF14] text-[10px] font-black uppercase tracking-[0.2em]">LOCAL</div>
+                <div class="w-10 h-px bg-[#39FF14]/30 mx-auto mt-1"></div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="absolute bottom-8 left-0 right-0 text-center">
+            <p class="text-[#39FF14] text-[11px] font-black uppercase tracking-[0.3em]">APP CREATOR EARL A. WOOD — DEPUTY SHERIFF RETIRED</p>
+            <div class="flex justify-center gap-3 mt-2">
+                <div class="w-16 h-px bg-[#39FF14]/30"></div>
+                <span class="text-[#39FF14]/30 text-[7px] font-black tracking-[0.2em]">LAW ENFORCEMENT SENSITIVE</span>
+                <div class="w-16 h-px bg-[#39FF14]/30"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Corner decorations -->
+    <div class="absolute top-4 left-4 w-20 h-20 border-t-2 border-l-2 border-[#39FF14]/30"></div>
+    <div class="absolute top-4 right-4 w-20 h-20 border-t-2 border-r-2 border-[#39FF14]/30"></div>
+    <div class="absolute bottom-4 left-4 w-20 h-20 border-b-2 border-l-2 border-[#39FF14]/30"></div>
+    <div class="absolute bottom-4 right-4 w-20 h-20 border-b-2 border-r-2 border-[#39FF14]/30"></div>
+</div>
+
+<!-- ==================== SCREEN 2: LOGIN MODAL ==================== -->
+<div id="loginScreen" class="screen hidden-screen">
+    <div class="absolute inset-0 bg-black/95 modal-backdrop flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-black/80 border-2 border-[#39FF14] rounded-2xl p-8 glow-border">
+            <div class="text-center mb-6">
+                <h2 class="text-[#39FF14] text-2xl font-black uppercase tracking-widest">Tactical Authentication</h2>
+                <div class="w-20 h-px bg-[#39FF14]/30 mx-auto mt-2"></div>
+            </div>
+            <form id="loginForm" class="space-y-5">
+                <input type="text" id="callsign" required placeholder="CALLSIGN / PERSONNEL ID" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase outline-none focus:border-[#39FF14]">
+                <select id="roleSelect" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black outline-none">
+                    <option value="le">Law Enforcement</option>
+                    <option value="k9">K9 Unit</option>
+                    <option value="sars">SARS Team</option>
+                    <option value="civilian">Civilian</option>
+                    <option value="suspect">Suspect</option>
+                </select>
+                <input type="password" id="accessCode" required placeholder="ACCESS CODE" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black tracking-widest outline-none">
+                <button type="submit" class="w-full bg-[#39FF14]/10 hover:bg-[#39FF14]/30 border-2 border-[#39FF14] text-[#39FF14] font-black py-4 rounded-xl transition-all uppercase tracking-widest cursor-pointer">AUTHENTICATE & DEPLOY</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SCREEN 3: MAIN APP ==================== -->
+<div id="appScreen" class="screen hidden-screen">
+    <div class="relative w-full h-full bg-black flex flex-col">
+        <!-- Header -->
+        <header class="relative z-[60] h-[72px] flex items-center justify-between px-6 backdrop-blur-[30px] bg-black/70 border-b border-[#39FF14]/50 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-full border-2 border-[#39FF14]/50 flex items-center justify-center">
+                    <span class="text-[#39FF14] text-2xl">⭐</span>
+                </div>
+                <div>
+                    <h1 class="text-[28px] font-black text-[#39FF14] italic">TACNET</h1>
+                    <span class="text-[8px] font-black text-[#39FF14]/60 tracking-[0.4em]">Multi-Agency Tactical Task Force</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="markOnBtn" class="flex items-center gap-2 px-5 py-2.5 bg-[#39FF14]/20 border-2 border-[#39FF14] rounded-xl text-[#39FF14] font-black text-[10px] uppercase cursor-pointer">
+                    <span class="w-2 h-2 rounded-full bg-[#39FF14] animate-pulse"></span>
+                    MARK ON
+                </button>
+            </div>
+            <div class="hidden md:flex items-center gap-6">
+                <span id="liveClock" class="text-xs font-black text-[#39FF14]/50 tabular-nums">--:--:--</span>
+            </div>
+        </header>
+        
+        <!-- Main Area -->
+        <main class="flex-1 flex overflow-hidden pb-[88px] px-3 pt-3 gap-3 relative z-10">
+            <!-- Map -->
+            <div class="relative flex-1 border-2 border-[#39FF14]/40 rounded-[1.75rem] overflow-hidden bg-black/30">
+                <div id="map" class="w-full h-full"></div>
+                
+                <!-- Map Controls -->
+                <div class="absolute top-4 left-4 z-10 flex flex-col gap-3 w-68">
+                    <div class="backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3 flex gap-2">
+                        <input type="text" id="addressInput" placeholder="ENTER ADDRESS OR COORDINATES..." class="bg-transparent text-[#39FF14] text-[10px] font-black outline-none flex-1 uppercase placeholder:text-[#39FF14]/30">
+                        <button id="searchBtn" class="p-2 bg-[#39FF14]/10 hover:bg-[#39FF14]/30 rounded-lg cursor-pointer">🔍</button>
+                    </div>
+                    <div class="backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3 flex flex-col gap-2">
+                        <button id="drawPerimeterBtn" class="flex items-center gap-2 p-2.5 rounded-lg border text-[9px] font-black uppercase bg-black/40 border-[#39FF14]/20 hover:bg-[#39FF14]/10 cursor-pointer">
+                            ✏️ DRAW PERIMETER
+                        </button>
+                        <button id="resetPerimeterBtn" class="flex items-center gap-2 bg-black/40 border border-red-500/30 text-red-500 p-2.5 rounded-lg text-[9px] font-black uppercase hover:bg-red-500/20 cursor-pointer">
+                            ⟳ RESET PERIMETER
+                        </button>
+                        <button id="clearPersonnelBtn" class="flex items-center gap-2 bg-black/40 border border-orange-500/30 text-orange-500 p-2.5 rounded-lg text-[9px] font-black uppercase hover:bg-orange-500/20 cursor-pointer">
+                            🗑 REMOVE SEARCHERS
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Legend -->
+                <div class="absolute bottom-4 left-4 z-10 backdrop-blur-2xl bg-black/70 border border-[#39FF14]/40 rounded-xl p-3">
+                    <h3 class="text-[#39FF14] text-[8px] font-black mb-2 uppercase">Operational Units</h3>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full bg-blue-600 border border-white"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">Law Enforcement</span></div>
+                        <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full bg-sky-400 border border-white"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">K9 Unit</span></div>
+                        <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full bg-red-600 border border-white"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">SARS Team</span></div>
+                        <div class="flex items-center gap-2.5"><div class="w-3 h-3 rounded-full bg-green-600 border border-white"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">Civilian</span></div>
+                        <div class="flex items-center gap-2.5 mt-1 pt-1 border-t border-[#39FF14]/10"><div class="w-3 h-3 rounded-full bg-blue-700 border-[3px] border-white"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">Your Position</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Incident Panel (hidden initially) -->
+            <div id="incidentPanel" class="w-[300px] shrink-0 border-2 border-[#39FF14]/40 rounded-[1.75rem] backdrop-blur-[20px] bg-black/80 flex flex-col hidden">
+                <div class="flex flex-col h-full">
+                    <div class="px-4 py-3 border-b border-[#39FF14]/30 bg-[#39FF14]/5">
+                        <div class="flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse"></div><span class="text-[#39FF14] text-[9px] font-black uppercase">● REC — LIVE LOG</span></div>
+                        <p id="incidentTitle" class="text-[#39FF14] font-black text-[11px] uppercase mt-2">NO ACTIVE INCIDENT</p>
+                        <div class="flex items-center gap-5 mt-2"><span id="incidentDuration" class="text-[#39FF14]/90 text-[10px] font-black tabular-nums">00:00:00</span></div>
+                    </div>
+                    <div id="logContainer" class="flex-1 overflow-y-auto px-3 py-3 space-y-2 min-h-0"></div>
+                    <div class="px-3 py-3 border-t border-[#39FF14]/20">
+                        <textarea id="logEntry" placeholder="LOG ENTRY..." class="w-full bg-black/60 border border-[#39FF14]/30 rounded-lg px-3 py-2 text-[#39FF14] text-[10px] font-black outline-none uppercase placeholder:text-[#39FF14]/20" rows="2"></textarea>
+                        <button id="addLogBtn" class="w-full mt-2 p-2 bg-[#39FF14]/10 hover:bg-[#39FF14]/30 border border-[#39FF14]/30 rounded-xl text-[#39FF14] text-[9px] font-black uppercase cursor-pointer">ADD LOG ENTRY</button>
+                        <button id="terminateBtn" class="w-full mt-2 p-2 bg-red-900/30 hover:bg-red-900/50 border border-red-500/40 rounded-xl text-red-400 text-[9px] font-black uppercase cursor-pointer">TERMINATE INCIDENT</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="absolute bottom-0 left-0 right-0 h-[88px] flex flex-col items-center justify-center backdrop-blur-[30px] bg-black/80 border-t border-[#39FF14]/50 z-[60]">
+            <p class="text-[#39FF14] text-[11px] font-black uppercase tracking-[0.4em]">APP CREATOR EARL A. WOOD — DEPUTY SHERIFF RETIRED</p>
+            <div class="flex items-center gap-3 mt-1">
+                <div class="w-12 h-px bg-[#39FF14]/30"></div>
+                <span class="text-[6px] text-[#39FF14]/50 font-black uppercase tracking-[0.2em]">FEDERAL • STATE • LOCAL</span>
+                <div class="w-12 h-px bg-[#39FF14]/30"></div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- ==================== MARK ON MODAL ==================== -->
+<div id="markOnModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="w-full max-w-lg bg-black border-2 border-[#39FF14] rounded-2xl p-8 glow-border">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-[#39FF14] animate-pulse"></div><h2 class="text-[#39FF14] font-black text-lg uppercase tracking-widest">MARK ON — INITIATE INCIDENT</h2></div>
+            <button id="closeMarkOnModal" class="text-white/40 hover:text-white text-xl cursor-pointer">✕</button>
+        </div>
+        <form id="markOnForm" class="space-y-5">
+            <input type="text" id="incidentTitleInput" required placeholder="Incident Title" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase">
+            <select id="incidentTypeSelect" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black">
+                <option>SEARCH OPERATION</option>
+                <option>MISSING PERSON</option>
+                <option>FUGITIVE APPREHENSION</option>
+                <option>K9 SEARCH</option>
+                <option>SARS OPERATION</option>
+                <option>MULTI-AGENCY TASK FORCE</option>
+            </select>
+            <input type="text" id="locationInput" placeholder="Location description" class="w-full bg-black/60 border border-[#39FF14]/40 rounded-xl px-5 py-3 text-[#39FF14] font-black uppercase">
+            <button type="submit" class="w-full bg-[#39FF14]/20 hover:bg-[#39FF14]/40 border-2 border-[#39FF14] text-[#39FF14] font-black py-4 rounded-xl uppercase tracking-widest cursor-pointer">MARK ON — BEGIN RECORDING</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ==================== APP STATE ====================
+    let currentUser = null;
+    let activeIncident = null;
+    let incidentLogs = [];
+    let myLocation = { lat: 37.4316, lng: -78.6569 };
+    let perimeterPoints = [];
+    let isDrawing = false;
+    let mapInstance = null;
+    let markersLayer = null;
+    let personnelMarkers = [];
+    let myMarker = null;
+    let watchId = null;
+    
+    // Screen management
+    function showScreen(screenName) {
+        document.getElementById('homepageScreen').classList.add('hidden-screen');
+        document.getElementById('homepageScreen').classList.remove('visible-screen');
+        document.getElementById('loginScreen').classList.add('hidden-screen');
+        document.getElementById('loginScreen').classList.remove('visible-screen');
+        document.getElementById('appScreen').classList.add('hidden-screen');
+        document.getElementById('appScreen').classList.remove('visible-screen');
+        
+        document.getElementById(screenName + 'Screen').classList.remove('hidden-screen');
+        document.getElementById(screenName + 'Screen').classList.add('visible-screen');
+    }
+    
+    // Live Clock
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' }) + ' Z';
+        const clockEl = document.getElementById('liveClock');
+        if (clockEl) clockEl.innerText = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // Map Functions
+    function initMap() {
+        if (mapInstance) return;
+        mapInstance = L.map('map').setView([myLocation.lat, myLocation.lng], 16);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OSM & CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(mapInstance);
+        markersLayer = L.layerGroup().addTo(mapInstance);
+        
+        mapInstance.on('click', (e) => {
+            if (!isDrawing) return;
+            const newPoint = { lat: e.latlng.lat, lng: e.latlng.lng };
+            perimeterPoints.push(newPoint);
+            updatePerimeterMarkers();
+            if (activeIncident) {
+                addLogEntry(`PERIMETER POINT ${perimeterPoints.length} SET — LAT ${newPoint.lat.toFixed(5)}`);
+            }
+        });
+    }
+    
+    function updatePerimeterMarkers() {
+        if (!markersLayer) return;
+        // Clear old perimeter markers
+        markersLayer.eachLayer(layer => {
+            if (layer.options && layer.options.perimeterPoint) markersLayer.removeLayer(layer);
+        });
+        perimeterPoints.forEach((pt, idx) => {
+            const marker = L.circleMarker([pt.lat, pt.lng], { radius: 5, fillColor: "#39FF14", color: "#39FF14", weight: 2, fillOpacity: 0.9 });
+            marker.options.perimeterPoint = true;
+            marker.addTo(markersLayer);
+        });
+    }
+    
+    function updateMyLocationMarker() {
+        if (!markersLayer) return;
+        if (myMarker) markersLayer.removeLayer(myMarker);
+        myMarker = L.circleMarker([myLocation.lat, myLocation.lng], { radius: 10, fillColor: "#0000FF", color: "#FFFFFF", weight: 4, fillOpacity: 1 });
+        myMarker.bindTooltip(`${currentUser?.name || 'YOU'} (YOU)`);
+        myMarker.addTo(markersLayer);
+    }
+    
+    async function searchAddress(query) {
+        if (!query) return;
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && data[0]) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                if (mapInstance) mapInstance.setView([lat, lon], 16);
+                if (activeIncident) addLogEntry(`ADDRESS SEARCH: ${query.toUpperCase()} — LAT ${lat.toFixed(5)} / LON ${lon.toFixed(5)}`);
+            } else {
+                alert("Address not found. Try a different format.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Geocoding failed. Check connection.");
+        }
+    }
+    
+    function startGPSTracking() {
+        if ("geolocation" in navigator) {
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    myLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    if (mapInstance) mapInstance.setView([myLocation.lat, myLocation.lng], 16);
+                    updateMyLocationMarker();
+                },
+                (err) => console.warn("Geolocation error", err),
+                { enableHighAccuracy: true }
+            );
+        }
+    }
+    
+    function addLogEntry(message) {
+        if (!activeIncident) return;
+        const entry = { id: Date.now(), time: new Date().toISOString(), message: message.toUpperCase() };
+        incidentLogs.push(entry);
+        updateLogPanel();
+    }
+    
+    function updateLogPanel() {
+        const container = document.getElementById('logContainer');
+        if (!container) return;
+        container.innerHTML = incidentLogs.map(log => `
+            <div class="flex gap-2">
+                <div class="w-2 h-2 rounded-full mt-1 bg-[#39FF14]"></div>
+                <div>
+                    <div class="flex gap-2"><span class="text-[8px] font-black text-[#39FF14] uppercase">LOG</span><span class="text-white/30 text-[8px]">${new Date(log.time).toLocaleTimeString()}</span></div>
+                    <p class="text-white/75 text-[10px]">${log.message}</p>
+                </div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function updateIncidentDisplay() {
+        const panel = document.getElementById('incidentPanel');
+        const titleEl = document.getElementById('incidentTitle');
+        const durationEl = document.getElementById('incidentDuration');
+        if (activeIncident) {
+            panel.classList.remove('hidden');
+            titleEl.innerText = activeIncident.title;
+            const start = new Date(activeIncident.started_at);
+            setInterval(() => {
+                const diff = Math.floor((Date.now() - start) / 1000);
+                const h = String(Math.floor(diff / 3600)).padStart(2,'0');
+                const m = String(Math.floor((diff % 3600) / 60)).padStart(2,'0');
+                const s = String(diff % 60).padStart(2,'0');
+                if(durationEl) durationEl.innerText = `${h}:${m}:${s}`;
+            }, 1000);
+        } else {
+            panel.classList.add('hidden');
+        }
+    }
+    
+    // ==================== EVENT LISTENERS ====================
+    document.getElementById('enterBtn')?.addEventListener('click', () => showScreen('login'));
+    
+    document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const callsign = document.getElementById('callsign').value;
+        const role = document.getElementById('roleSelect').value;
+        const code = document.getElementById('accessCode').value;
+        if (callsign && code) {
+            currentUser = { name: callsign.toUpperCase(), role, code };
+            showScreen('app');
+            initMap();
+            startGPSTracking();
+            updateMyLocationMarker();
+        }
+    });
+    
+    document.getElementById('markOnBtn')?.addEventListener('click', () => {
+        document.getElementById('markOnModal').style.display = 'flex';
+    });
+    
+    document.getElementById('closeMarkOnModal')?.addEventListener('click', () => {
+        document.getElementById('markOnModal').style.display = 'none';
+    });
+    
+    document.getElementById('markOnForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('incidentTitleInput').value;
+        const incidentType = document.getElementById('incidentTypeSelect').value;
+        const location = document.getElementById('locationInput').value;
+        if (title) {
+            activeIncident = {
+                id: Date.now(),
+                title: title.toUpperCase(),
+                incident_type: incidentType,
+                location_description: location,
+                commander_name: currentUser.name,
+                started_at: new Date().toISOString()
+            };
+            incidentLogs = [{
+                id: Date.now(),
+                time: new Date().toISOString(),
+                message: `INCIDENT INITIATED: ${title.toUpperCase()}`
+            }];
+            updateLogPanel();
+            updateIncidentDisplay();
+            document.getElementById('markOnModal').style.display = 'none';
+            document.getElementById('incidentTitleInput').value = '';
+            document.getElementById('locationInput').value = '';
+        }
+    });
+    
+    document.getElementById('searchBtn')?.addEventListener('click', () => {
+        const addr = document.getElementById('addressInput').value;
+        searchAddress(addr);
+    });
+    
+    document.getElementById('addressInput')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchAddress(e.target.value);
+    });
+    
+    let drawingActive = false;
+    document.getElementById('drawPerimeterBtn')?.addEventListener('click', () => {
+        isDrawing = !isDrawing;
+        const btn = document.getElementById('drawPerimeterBtn');
+        if (isDrawing) {
+            btn.style.background = '#39FF14';
+            btn.style.color = 'black';
+            btn.innerText = '✓ SAVING PERIMETER...';
+        } else {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.innerText = '✏️ DRAW PERIMETER';
+        }
+    });
+    
+    document.getElementById('resetPerimeterBtn')?.addEventListener('click', () => {
+        perimeterPoints = [];
+        updatePerimeterMarkers();
+        if (activeIncident) addLogEntry('PERIMETER RESET — ALL BOUNDARY POINTS CLEARED');
+    });
+    
+    document.getElementById('clearPersonnelBtn')?.addEventListener('click', () => {
+        if (activeIncident) addLogEntry('ALL SEARCHERS REMOVED FROM ACTIVE MAP BY COMMAND');
+    });
+    
+    document.getElementById('addLogBtn')?.addEventListener('click', () => {
+        const entry = document.getElementById('logEntry').value;
+        if (entry && activeIncident) {
+            addLogEntry(entry);
+            document.getElementById('logEntry').value = '';
+        }
+    });
+    
+    document.getElementById('terminateBtn')?.addEventListener('click', () => {
+        if (activeIncident) {
+            addLogEntry('INCIDENT TERMINATED BY COMMAND');
+            activeIncident = null;
+            updateIncidentDisplay();
+        }
+    });
+    
+    // Show homepage immediately
+    showScreen('homepage');
+</script>
+</body>
+</html>
