@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TACNET Tactical Search App</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    touch-action: manipulation;
+    background: #020b05;
+    color: #00ff88;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #062d17 0%, #010805 100%);
+    padding: 18px;
+    box-sizing: border-box;
+}
+
+.header {
+    text-align: center;
+    border: 2px solid #00ff88;
+    padding: 18px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 15px #00ff88;
+}
+
+.header h1 {
+    font-size: 72px;
+    margin: 0;
+    color: gold;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px gold,
+        2px 2px 0 #222,
+        -2px -2px 0 #444;
+    letter-spacing: 6px;
+    position: relative;
+}
+
+.header h1::after {
+    content: 'TACNET';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: rgba(255,255,255,0.08);
+    transform: translate(3px,3px);
+    clip-path: polygon(0 0,100% 0,100% 45%,0 60%);
+}
+
+.header h2 {
+    margin: 5px 0;
+    font-size: 30px;
+    letter-spacing: 3px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 10px;
+}
+
+.panel {
+    border: 2px solid #00ff88;
+    padding: 18px;
+    background: rgba(0,0,0,0.7);
+    box-shadow: 0 0 10px #00ff88;
+    border-radius: 8px;
+}
+
+.panel h3 {
+    margin-top: 0;
+    color: #00ff88;
+}
+
+input, button, textarea, select {
+    width: 100%;
+    font-size: 24px;
+    border-radius: 12px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    padding: 18px;
+    background: #021a0e;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    box-sizing: border-box;
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #00ff88;
+    color: black;
+}
+
+#map {
+    width: 100%;
+    height: 700px;
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+}
+
+.status-bar {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.status-box {
+    border: 1px solid #00ff88;
+    padding: 18px;
+    text-align: center;
+    background: rgba(0,0,0,0.6);
+}
+
+.footer {
+    margin-top: 15px;
+    text-align: center;
+    border-top: 1px solid #00ff88;
+    padding-top: 10px;
+}
+
+.red {
+    color: red;
+}
+
+.green {
+    color: #00ff88;
+}
+
+@media(max-width: 900px) {
+    body {
+        font-size: 24px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header h1 {
+        font-size: 58px;
+    }
+
+    .header h2 {
+        font-size: 24px;
+    }
+
+    .panel h3 {
+        font-size: 28px;
+    }
+
+    input, button, textarea, select {
+        font-size: 26px;
+        padding: 22px;
+    }
+
+    .status-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #map {
+        height: 500px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+    <div style="display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;margin-bottom:20px;gap:15px;">
+
+        <img src="federal_patch.png"
+             alt="Federal Patch"
+             style="width:110px;height:110px;border-radius:50%;border:3px solid gold;box-shadow:0 0 20px gold;background:black;object-fit:cover;">
+
+        <img src="va_state_police.png"
+             alt="Virginia State Police"
+             style="width:110px;height:110px;border-radius:50%;border:3px solid #00ff88;box-shadow:0 0 20px #00ff88;background:black;object-fit:cover;">
+
+        <img src="amherst_badge.png"
+             alt="Amherst County Sheriff"
+             style="width:110px;height:110px;border-radius:12px;border:3px solid #00aaff;box-shadow:0 0 20px #00aaff;background:black;object-fit:contain;padding:5px;">
+
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;">
+        <button onclick="showPage('operationsPage')">LIVE OPS</button>
+        <button onclick="showPage('reportsPage')">REPORTS</button>
+        <button onclick="showPage('k9Page')">K9 OPS</button>
+        <button onclick="showPage('lawPage')">CASE LAW</button>
+        <button onclick="showPage('adminPage')">ADMIN</button>
+    </div>
+    <h1>TACNET</h1>
+    <h2>NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE SEARCH APP</h2>
+    <div>FEDERAL • STATE • LOCAL</div>
+</div>
+
+<div id="operationsPage" class="pageSection">
+<div class="grid">
+
+    <div>
+
+        <div class="panel">
+            <h3>1. SEARCH ADDRESS</h3>
+            <input type="text" id="address" placeholder="Enter Address">
+            <button onclick="respondToAddress()">GO</button>
+        </div>
+
+        <div class="panel">
+            <h3>2. INFORMATION</h3>
+            <textarea rows="6" placeholder="Last known location, travel direction, suspect info..."></textarea>
+        </div>
+
+        <div class="panel">
+            <h3>3. SET PERIMETER</h3>
+            <button onclick="drawPerimeter()">DRAW PERIMETER</button>
+        </div>
+
+        <div class="panel">
+            <h3>4. PERSONNEL DEPLOYMENT</h3>
+            <select id="unitType">
+                <option>Law Enforcement</option>
+                <option>K9 Unit</option>
+                <option>SAR</option>
+                <option>Civilian</option>
+                <option>Person of Interest</option>
+            </select>
+            <button onclick="addPersonnel()">ADD PERSONNEL</button>
+        </div>
+
+        <div class="panel">
+            <h3>ACCESS AUTHENTICATION</h3>
+            <button onclick="generateCode()">GENERATE ACCESS CODE</button>
+            <input type="text" id="accessCode" readonly>
+            <div id="expireTimer"></div>
+        </div>
+
+    </div>
+
+    <div>
+
+        <div class="panel">
+            <h3>LIVE GPS MAP</h3>
+            <div id="map"></div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-box">
+                SYSTEM ONLINE
+            </div>
+            <div class="status-box" id="timeBox">
+                TIME
+            </div>
+            <div class="status-box">
+                SECURE CONNECTION
+            </div>
+            <div class="status-box">
+                GPS ACTIVE
+            </div>
+        </div>
+
+    </div>
+
+    <div>
+
+        <div class="panel">
+            <h3 class="red">5. EMERGENCY SOS</h3>
+            <button onclick="officerDown()">OFFICER DOWN</button>
+        </div>
+
+        <div class="panel">
+            <h3>EVIDENCE MARKER</h3>
+            <button onclick="markEvidence()">MARK EVIDENCE</button>
+        </div>
+
+        <div class="panel">
+            <h3>6. TERMINATE SEARCH</h3>
+            <button onclick="terminateSearch()">END SEARCH</button>
+        </div>
+
+        <div class="panel">
+            <h3>7. MISSION REPORT</h3>
+            <button onclick="generateReport()">GENERATE REPORT</button>
+        </div>
+
+        <div class="panel">
+            <h3>8. K9 FIRST AID</h3>
+            <select>
+                <option>CPR K9</option>
+                <option>Snakebites</option>
+                <option>Eye Injuries</option>
+                <option>Heat Exhaustion</option>
+                <option>Excessive Bleeding</option>
+                <option>Paw Injuries</option>
+                <option>Gunshot</option>
+            </select>
+            <button onclick="speakInstructions()">VOICE INSTRUCTIONS</button>
+        </div>
+
+        <div class="panel">
+            <h3>9. VETERINARIANS</h3>
+            <div>
+                Peaks View Animal Hospital<br>
+                Lynchburg, VA
+            </div>
+            <hr>
+            <div>
+                Forest Animal Hospital<br>
+                Forest, VA
+            </div>
+            <hr>
+            <div>
+                Riverviews Veterinary Service<br>
+                Lynchburg, VA
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+<div id="reportsPage" class="pageSection" style="display:none;">
+    <div class="panel" style="margin-top:10px;">
+        <h2>MISSION REPORTING CENTER</h2>
+        <textarea rows="10" placeholder="Mission notes, timeline, officer actions, evidence recovered..."></textarea>
+        <button onclick="generateReport()">GENERATE FINAL PDF REPORT</button>
+        <button onclick="markEvidence()">ADD EVIDENCE ENTRY</button>
+        <button onclick="terminateSearch()">CLOSE MISSION</button>
+    </div>
+
+    <div class="panel" style="margin-top:10px;">
+        <h2>EVIDENCE TRACKING</h2>
+        <input type="text" placeholder="Evidence Number">
+        <input type="text" placeholder="Officer Name">
+        <textarea rows="5" placeholder="Evidence Description"></textarea>
+        <button>UPLOAD PHOTO</button>
+    </div>
+</div>
+
+<div id="k9Page" class="pageSection" style="display:none;">
+    <div class="panel" style="margin-top:10px;">
+        <h2>K9 FIRST AID</h2>
+        <select>
+            <option>CPR K9</option>
+            <option>Snakebite Emergency</option>
+            <option>Heat Exhaustion</option>
+            <option>Gunshot Trauma</option>
+            <option>Eye Injuries</option>
+        </select>
+        <button onclick="speakInstructions()">VOICE INSTRUCTIONS</button>
+    </div>
+
+    <div class="panel" style="margin-top:10px;">
+        <h2>TRAINING RECORDS</h2>
+        <input type="date">
+        <input type="text" placeholder="Training Location">
+        <input type="text" placeholder="Training Aid Used">
+        <textarea rows="5" placeholder="K9 Performance Notes"></textarea>
+        <button onclick="saveTraining()">SAVE TRAINING RECORD</button>
+    </div>
+</div>
+
+<div id="lawPage" class="pageSection" style="display:none;">
+<div class="panel" style="margin-top:10px;">
+    <h3>10. CASE LAW LIBRARY</h3>
+    <ul>
+        <li>Fourth Amendment</li>
+        <li>Probable Cause</li>
+        <li>Vehicle Searches</li>
+        <li>Consent Searches</li>
+        <li>K9 Deployment</li>
+        <li>Use of Force</li>
+        <li>Holding Times</li>
+        <li>Search Warrants</li>
+        <li>Officer Safety</li>
+        <li>Canine Warning Procedures</li>
+    </ul>
+</div>
+
+</div>
+</div>
+
+<div id="adminPage" class="pageSection" style="display:none;">
+<div class="panel" style="margin-top:10px;">
+    <h2>AGENCY ACCESS CONTROL</h2>
+    <button onclick="generateCode()">GENERATE SECURE MISSION CODE</button>
+    <input type="text" id="agencyCode" placeholder="Mission Access Code">
+    <button>AUTHORIZE FEDERAL/STATE ACCESS</button>
+    <button>REMOVE ACCESS</button>
+</div>
+
+<div class="panel" style="margin-top:10px;">
+    <h2>LIVE UNIT MANAGEMENT</h2>
+    <button>VIEW CONNECTED UNITS</button>
+    <button>REMOVE UNIT</button>
+    <button>LOCK MISSION</button>
+</div>
+
+<div class="panel" style="margin-top:10px;">
+    <h3>11. TRAINING RECORDS</h3>
+
+    <input type="date">
+    <input type="text" placeholder="Training Location">
+    <input type="text" placeholder="Weather">
+    <input type="text" placeholder="Temperature">
+    <input type="text" placeholder="Training Aid Used">
+    <textarea rows="4" placeholder="Dog Performance Notes"></textarea>
+
+    <button onclick="saveTraining()">SAVE TRAINING RECORD</button>
+</div>
+</div>
+
+<div class="footer">
+    MISSION READY • TACNET SYSTEM ACTIVE<br>
+    DEPUTY SHERIFF RETIRED EARL A. WOOD
+</div>
+
+</div>
+
+<script>
+
+let map = L.map('map').setView([37.4138, -79.1422], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap'
+}).addTo(map);
+
+navigator.geolocation.watchPosition(position => {
+    let lat = position.coords.latitude;
+    let lon = position.coords.longitude;
+
+    L.marker([lat, lon]).addTo(map)
+        .bindPopup('YOUR LOCATION')
+        .openPopup();
+});
+
+function respondToAddress() {
+    let address = document.getElementById('address').value;
+    alert('Responding to: ' + address);
+}
+
+function drawPerimeter() {
+    alert('Perimeter tool activated');
+}
+
+function addPersonnel() {
+    let unit = document.getElementById('unitType').value;
+
+    let colors = {
+        'Law Enforcement': 'blue',
+        'K9 Unit': 'cyan',
+        'SAR': 'red',
+        'Civilian': 'green',
+        'Person of Interest': 'purple'
+    };
+
+    let marker = L.circleMarker(map.getCenter(), {
+        radius: 10,
+        color: colors[unit]
+    }).addTo(map);
+
+    marker.bindPopup(unit);
+}
+
+function officerDown() {
+    alert('SOS ALERT SENT TO ALL UNITS');
+}
+
+function markEvidence() {
+    let marker = L.marker(map.getCenter()).addTo(map);
+    marker.bindPopup('Evidence Marker').openPopup();
+}
+
+function terminateSearch() {
+    alert('Mission Completed');
+}
+
+function generateReport() {
+    alert('Generating Incident Report PDF');
+}
+
+function speakInstructions() {
+    let speech = new SpeechSynthesisUtterance('K9 emergency medical instructions activated.');
+    speechSynthesis.speak(speech);
+}
+
+function saveTraining() {
+    alert('Training Record Saved');
+}
+
+function generateCode() {
+    let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'TAC-';
+
+    for(let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    document.getElementById('accessCode').value = result;
+
+    let duration = 7200;
+
+    let timer = setInterval(function() {
+
+        let hours = Math.floor(duration / 3600);
+        let minutes = Math.floor((duration % 3600) / 60);
+        let seconds = duration % 60;
+
+        document.getElementById('expireTimer').innerHTML =
+            'EXPIRES IN: ' +
+            hours + 'h ' +
+            minutes + 'm ' +
+            seconds + 's';
+
+        duration--;
+
+        if(duration < 0) {
+            clearInterval(timer);
+            document.getElementById('expireTimer').innerHTML = 'CODE EXPIRED';
+        }
+
+    }, 1000);
+}
+
+function showPage(pageId) {
+    let sections = document.querySelectorAll('.pageSection');
+
+    sections.forEach(section => {
+        section.style.display = 'none';
+    });
+
+    document.getElementById(pageId).style.display = 'block';
+}
+
+setInterval(() => {
+    let now = new Date();
+    document.getElementById('timeBox').innerHTML = now.toLocaleString();
+}, 1000);
+
+</script>
+
+</body>
+</html>
