@@ -246,14 +246,16 @@ document.getElementById("unitType");
 let color =
 dropdown.options[dropdown.selectedIndex].value;
 
-        let marker =
-        L.circleMarker(
-        [e.latlng.lat,e.latlng.lng],
-        {
-            radius:10,
-            color:color,
-            fillColor:color,
-            fillOpacity:0.9
+       let marker =
+L.circleMarker(
+[e.latlng.lat,e.latlng.lng],
+{
+    radius:16,
+    color:"#ffffff",
+    weight:3,
+    fillColor:color,
+    fillOpacity:1
+})
         })
 
         .addTo(map)
