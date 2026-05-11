@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +16,7 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 body{
     margin:0;
     background:#081018;
-    color:#dff;
+    color:white;
     font-family:Arial,sans-serif;
 }
 
@@ -26,7 +25,6 @@ body{
     padding:15px;
     text-align:center;
     border-bottom:1px solid #00e5ff;
-    backdrop-filter:blur(10px);
 }
 
 .header h1{
@@ -37,15 +35,9 @@ body{
     text-shadow:0 0 12px #00e5ff;
 }
 
-.header p{
-    margin-top:8px;
-    font-size:16px;
-}
-
 .controls{
     padding:12px;
-    background:rgba(15,25,35,0.8);
-    backdrop-filter:blur(10px);
+    background:rgba(15,25,35,0.85);
 }
 
 input,select{
@@ -60,7 +52,7 @@ input,select{
     background:rgba(255,255,255,0.08);
     color:white;
 
-    border:1px solid rgba(0,229,255,0.35);
+    border:1px solid rgba(0,229,255,0.4);
 }
 
 button{
@@ -77,25 +69,21 @@ button{
 .searchBtn{
     background:rgba(0,229,255,0.25);
     border:1px solid #00e5ff;
-    box-shadow:0 0 12px #00e5ff;
 }
 
 .perimeterBtn{
-    background:rgba(255,140,0,0.25);
+    background:rgba(255,150,0,0.25);
     border:1px solid #ff9500;
-    box-shadow:0 0 12px #ff9500;
-}
-
-.resetBtn{
-    background:rgba(255,0,120,0.25);
-    border:1px solid #ff0077;
-    box-shadow:0 0 12px #ff0077;
 }
 
 .sosBtn{
     background:rgba(255,0,0,0.25);
     border:1px solid #ff3333;
-    box-shadow:0 0 15px #ff3333;
+}
+
+.resetBtn{
+    background:rgba(255,0,120,0.25);
+    border:1px solid #ff0077;
 }
 
 #map{
@@ -106,9 +94,8 @@ button{
 .status{
     text-align:center;
     padding:10px;
-    background:rgba(10,20,30,0.9);
+    background:#101820;
     color:#00e5ff;
-    border-top:1px solid #00e5ff;
 }
 
 </style>
@@ -117,8 +104,8 @@ button{
 <body>
 
 <div class="header">
-    <h1>TACNET</h1>
-    <p>CORE SYSTEM ONLINE</p>
+<h1>TACNET</h1>
+<p>CORE SYSTEM ONLINE</p>
 </div>
 
 <div class="controls">
@@ -240,27 +227,29 @@ function enableDeployment(){
 
     map.on('click', function(e){
 
-       let dropdown =
-document.getElementById("unitType");
+        let dropdown =
+        document.getElementById("unitType");
 
-let color =
-dropdown.options[dropdown.selectedIndex].value;
+        let color =
+        dropdown.options[
+        dropdown.selectedIndex
+        ].value;
 
-       let marker =
-L.circleMarker(
-[e.latlng.lat,e.latlng.lng],
-{
-    radius:16,
-    color:"#ffffff",
-    weight:3,
-    fillColor:color,
-    fillOpacity:1
-})
+        let marker =
+
+        L.circleMarker(
+        [e.latlng.lat,e.latlng.lng],
+        {
+            radius:16,
+            color:"#ffffff",
+            weight:3,
+            fillColor:color,
+            fillOpacity:1
         })
 
-        .addTo(map)
+        .addTo(map);
 
-        .bindPopup("DEPLOYED UNIT");
+        marker.bindPopup("DEPLOYED UNIT");
 
         marker.on('click', function(){
 
@@ -277,31 +266,35 @@ L.circleMarker(
 function drawPerimeter(){
 
     if(!userMarker){
+
         alert("GPS not available");
         return;
+
     }
 
-    let pos = userMarker.getLatLng();
+    let pos =
+    userMarker.getLatLng();
 
     if(perimeterCircle){
+
         map.removeLayer(perimeterCircle);
+
     }
 
     perimeterCircle =
+
     L.circle(pos,{
         radius:1609,
         color:'#ff9500',
         fillColor:'#ff9500',
         fillOpacity:0.15
-    }).addTo(map);
+    })
 
-    map.fitBounds(perimeterCircle.getBounds());
+    .addTo(map);
 
-}
-
-function sosAlert(){
-
-    alert("SOS ALERT ACTIVATED");
+    map.fitBounds(
+    perimeterCircle.getBounds()
+    );
 
 }
 
@@ -320,6 +313,12 @@ function resetMap(){
         map.removeLayer(perimeterCircle);
 
     }
+
+}
+
+function sosAlert(){
+
+    alert("SOS ALERT ACTIVATED");
 
 }
 
