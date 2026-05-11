@@ -240,8 +240,11 @@ function enableDeployment(){
 
     map.on('click', function(e){
 
-        let color =
-        document.getElementById("unitType").value;
+       let dropdown =
+document.getElementById("unitType");
+
+let color =
+dropdown.options[dropdown.selectedIndex].value;
 
         let marker =
         L.circleMarker(
