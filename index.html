@@ -110,6 +110,18 @@ button{
 
 <div class="controls">
 
+<select id="deployMode">
+
+<option value="unit">
+DEPLOY SEARCH UNIT
+</option>
+
+<option value="evidence">
+PLACE EVIDENCE
+</option>
+
+</select>
+
 <select id="unitType">
 
 <option value="#1e90ff">
@@ -235,21 +247,44 @@ function enableDeployment(){
         dropdown.selectedIndex
         ].value;
 
-        let marker =
+        let mode =
+        document.getElementById("deployMode").value;
 
-        L.circleMarker(
-        [e.latlng.lat,e.latlng.lng],
-        {
-            radius:16,
-            color:"#ffffff",
-            weight:3,
-            fillColor:color,
-            fillOpacity:1
-        })
+        let marker;
 
-        .addTo(map);
+        if(mode === "unit"){
 
-        marker.bindPopup("DEPLOYED UNIT");
+            marker =
+
+            L.circleMarker(
+            [e.latlng.lat,e.latlng.lng],
+            {
+                radius:16,
+                color:"#ffffff",
+                weight:3,
+                fillColor:color,
+                fillOpacity:1
+            })
+
+            .addTo(map);
+
+            marker.bindPopup("DEPLOYED UNIT");
+
+        }else{
+
+            marker =
+
+            L.marker(
+            [e.latlng.lat,e.latlng.lng]
+            )
+
+            .addTo(map);
+
+            marker.bindPopup(
+            "EVIDENCE MARKER"
+            );
+
+        }
 
         marker.on('click', function(){
 
