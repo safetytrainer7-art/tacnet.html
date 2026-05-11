@@ -1,398 +1,332 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TACNET COMMAND</title>
 
-<title>TACNET CORE</title>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    background:#081018;
-    color:white;
     font-family:Arial,sans-serif;
+    background:#050b12;
+    color:white;
+    overflow:hidden;
+}
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+    linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
 }
 
 .header{
-    background:rgba(10,20,30,0.9);
-    padding:15px;
-    text-align:center;
+    height:70px;
+    background:rgba(8,15,25,0.95);
     border-bottom:1px solid #00e5ff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    box-shadow:0 0 20px rgba(0,229,255,0.25);
 }
 
-.header h1{
+.logo h1{
     margin:0;
     color:#00e5ff;
-    font-size:34px;
     letter-spacing:4px;
-    text-shadow:0 0 12px #00e5ff;
+    font-size:30px;
+    text-shadow:0 0 15px #00e5ff;
 }
 
-.controls{
-    padding:12px;
-    background:rgba(15,25,35,0.85);
+.logo p{
+    margin:0;
+    color:#7ddfff;
+    font-size:12px;
 }
 
-input,select{
+.statusBar{
+    display:flex;
+    gap:12px;
+}
+
+.statusItem{
+    padding:8px 14px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(0,229,255,0.25);
+    color:#9befff;
+    font-size:13px;
+}
+
+.main{
+    display:flex;
+    height:calc(100vh - 70px);
+}
+
+.sidebar{
+    width:320px;
+    background:rgba(10,18,28,0.92);
+    border-right:1px solid rgba(0,229,255,0.25);
+    padding:18px;
+    overflow-y:auto;
+}
+
+.panel{
+    margin-bottom:18px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(0,229,255,0.18);
+    border-radius:18px;
+    padding:16px;
+    backdrop-filter:blur(12px);
+    box-shadow:0 0 18px rgba(0,229,255,0.08);
+}
+
+.panel h2{
+    margin-top:0;
+    color:#00e5ff;
+    font-size:16px;
+    letter-spacing:2px;
+}
+
+.deployGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.deployBtn{
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+}
+
+.deployBtn.active{
+    box-shadow:0 0 18px currentColor;
+}
+
+.law{ color:#1e90ff; }
+.k9{ color:#00e5ff; }
+.sar{ color:#ff9500; }
+.civ{ color:#00ffaa; }
+.poi{ color:#ff00aa; }
+.ev{ color:#ffffff; }
+
+input{
     width:100%;
     padding:14px;
-    margin-bottom:10px;
-    border:none;
     border-radius:12px;
-    font-size:18px;
-    box-sizing:border-box;
-
+    border:none;
     background:rgba(255,255,255,0.08);
     color:white;
-
-    border:1px solid rgba(0,229,255,0.4);
+    margin-bottom:10px;
+    border:1px solid rgba(0,229,255,0.18);
 }
 
-button{
+.actionBtn{
     width:100%;
     padding:14px;
     margin-bottom:10px;
     border:none;
     border-radius:12px;
-    font-size:18px;
-    font-weight:bold;
     color:white;
+    font-weight:bold;
+    cursor:pointer;
 }
 
 .searchBtn{
-    background:rgba(0,229,255,0.25);
+    background:rgba(0,229,255,0.18);
     border:1px solid #00e5ff;
 }
 
 .perimeterBtn{
-    background:rgba(255,150,0,0.25);
+    background:rgba(255,149,0,0.18);
     border:1px solid #ff9500;
 }
 
+.resetBtn{
+    background:rgba(255,0,120,0.18);
+    border:1px solid #ff0077;
+}
+
 .sosBtn{
-    background:rgba(255,0,0,0.25);
+    background:rgba(255,0,0,0.18);
     border:1px solid #ff3333;
 }
 
-.resetBtn{
-    background:rgba(255,0,120,0.25);
-    border:1px solid #ff0077;
+.mapArea{
+    position:relative;
+    flex:1;
 }
 
 #map{
     width:100%;
-    height:70vh;
+    height:100%;
 }
 
-.status{
-    text-align:center;
-    padding:10px;
-    background:#101820;
+.compass{
+    position:absolute;
+    top:20px;
+    right:20px;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:rgba(0,0,0,0.55);
+    border:2px solid #00e5ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#00e5ff;
+    font-size:28px;
+    box-shadow:0 0 18px rgba(0,229,255,0.4);
+    backdrop-filter:blur(10px);
+}
+
+.windBox{
+    position:absolute;
+    bottom:20px;
+    right:20px;
+    width:220px;
+    background:rgba(0,0,0,0.55);
+    border:1px solid rgba(0,229,255,0.35);
+    border-radius:16px;
+    padding:16px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 0 18px rgba(0,229,255,0.2);
+}
+
+.windBox h3{
+    margin-top:0;
     color:#00e5ff;
 }
 
 </style>
 </head>
-
 <body>
 
 <div class="header">
-<h1>TACNET</h1>
-<p>CORE SYSTEM ONLINE</p>
-</div>
 
-<div class="controls">
+    <div class="logo">
+        <h1>TACNET</h1>
+        <p>FEDERAL • STATE • LOCAL • TACTICAL NETWORK</p>
+    </div>
 
-<select id="deployMode">
-
-<option value="unit">
-DEPLOY SEARCH UNIT
-</option>
-
-<option value="evidence">
-PLACE EVIDENCE
-</option>
-
-</select>
-
-<select id="unitType">
-
-<option value="#1e90ff">
-LAW ENFORCEMENT
-</option>
-
-<option value="#00e5ff">
-K9 UNIT
-</option>
-
-<option value="#ff9500">
-SEARCH & RESCUE
-</option>
-
-<option value="#00ffaa">
-CIVILIAN
-</option>
-
-<option value="#ff00aa">
-PERSON OF INTEREST
-</option>
-
-</select>
-
-<input
-type="text"
-id="address"
-placeholder="Enter Address">
-
-<button
-class="searchBtn"
-onclick="searchLocation()">
-SEARCH LOCATION
-</button>
-
-<button
-class="perimeterBtn"
-onclick="drawPerimeter()">
-CREATE PERIMETER
-</button>
-
-<button
-class="sosBtn"
-onclick="sosAlert()">
-SOS OFFICER DOWN
-</button>
-
-<button
-class="resetBtn"
-onclick="resetMap()">
-RESET MAP
-</button>
+    <div class="statusBar">
+        <div class="statusItem">GPS ONLINE</div>
+        <div class="statusItem">MISSION ACTIVE</div>
+        <div class="statusItem">CORE SYSTEM STABLE</div>
+    </div>
 
 </div>
 
-<div id="map"></div>
+<div class="main">
 
-<div class="status" id="status">
-Initializing GPS...
+    <div class="sidebar">
+
+        <div class="panel">
+            <h2>DEPLOYMENT</h2>
+
+            <div class="deployGrid">
+
+                <button class="deployBtn law active">LAW</button>
+                <button class="deployBtn k9">K9</button>
+                <button class="deployBtn sar">SAR</button>
+                <button class="deployBtn civ">CIV</button>
+                <button class="deployBtn poi">POI</button>
+                <button class="deployBtn ev">EVIDENCE</button>
+
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>SEARCH LOCATION</h2>
+
+            <input type="text" placeholder="Enter Address">
+
+            <button class="actionBtn searchBtn">
+                SEARCH LOCATION
+            </button>
+        </div>
+
+        <div class="panel">
+            <h2>MISSION CONTROLS</h2>
+
+            <button class="actionBtn perimeterBtn">
+                CREATE PERIMETER
+            </button>
+
+            <button class="actionBtn sosBtn">
+                SOS OFFICER DOWN
+            </button>
+
+            <button class="actionBtn resetBtn">
+                RESET MAP
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="mapArea">
+
+        <div id="map"></div>
+
+        <div class="compass">
+            N
+        </div>
+
+        <div class="windBox">
+            <h3>ENVIRONMENT</h3>
+            <p>Wind: 8 MPH NW</p>
+            <p>Temp: 61°F</p>
+            <p>Conditions: Clear</p>
+        </div>
+
+    </div>
+
 </div>
 
 <script>
 
-let map;
-let userMarker;
-let perimeterCircle;
-let deployedMarkers = [];
+const map = L.map('map').setView([37.4138,-79.1422],13);
 
-function initMap(){
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    attribution:'OpenStreetMap'
+}).addTo(map);
 
-    map = L.map('map').setView([37.4138,-79.1422],13);
+navigator.geolocation.getCurrentPosition(function(pos){
 
-    L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    {
-        attribution:'OpenStreetMap'
-    }).addTo(map);
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
 
-    if(navigator.geolocation){
+    map.setView([lat,lon],15);
 
-        navigator.geolocation.getCurrentPosition(
+    L.marker([lat,lon])
+    .addTo(map)
+    .bindPopup('COMMAND POSITION')
+    .openPopup();
 
-        function(position){
-
-            let lat = position.coords.latitude;
-            let lon = position.coords.longitude;
-
-            map.setView([lat,lon],15);
-
-            userMarker =
-            L.marker([lat,lon])
-            .addTo(map)
-            .bindPopup("YOUR LOCATION")
-            .openPopup();
-
-            document.getElementById("status").innerHTML =
-            "GPS CONNECTED";
-
-        },
-
-        function(){
-
-            document.getElementById("status").innerHTML =
-            "GPS FAILED";
-
-        });
-
-    }
-
-    enableDeployment();
-
-}
-
-function enableDeployment(){
-
-    map.on('click', function(e){
-
-        let dropdown =
-        document.getElementById("unitType");
-
-        let color =
-        dropdown.options[
-        dropdown.selectedIndex
-        ].value;
-
-        let mode =
-        document.getElementById("deployMode").value;
-
-        let marker;
-
-        if(mode === "unit"){
-
-            marker =
-
-            L.circleMarker(
-            [e.latlng.lat,e.latlng.lng],
-            {
-                radius:16,
-                color:"#ffffff",
-                weight:3,
-                fillColor:color,
-                fillOpacity:1
-            })
-
-            .addTo(map);
-
-            marker.bindPopup("DEPLOYED UNIT");
-
-        }else{
-
-            marker =
-
-            L.marker(
-            [e.latlng.lat,e.latlng.lng]
-            )
-
-            .addTo(map);
-
-            marker.bindPopup(
-            "EVIDENCE MARKER"
-            );
-
-        }
-
-        marker.on('click', function(){
-
-            map.removeLayer(marker);
-
-        });
-
-        deployedMarkers.push(marker);
-
-    });
-
-}
-
-function drawPerimeter(){
-
-    if(!userMarker){
-
-        alert("GPS not available");
-        return;
-
-    }
-
-    let pos =
-    userMarker.getLatLng();
-
-    if(perimeterCircle){
-
-        map.removeLayer(perimeterCircle);
-
-    }
-
-    perimeterCircle =
-
-    L.circle(pos,{
-        radius:1609,
-        color:'#ff9500',
-        fillColor:'#ff9500',
-        fillOpacity:0.15
-    })
-
-    .addTo(map);
-
-    map.fitBounds(
-    perimeterCircle.getBounds()
-    );
-
-}
-
-function resetMap(){
-
-    deployedMarkers.forEach(marker => {
-
-        map.removeLayer(marker);
-
-    });
-
-    deployedMarkers = [];
-
-    if(perimeterCircle){
-
-        map.removeLayer(perimeterCircle);
-
-    }
-
-}
-
-function sosAlert(){
-
-    alert("SOS ALERT ACTIVATED");
-
-}
-
-function searchLocation(){
-
-    let address =
-    document.getElementById("address").value;
-
-    fetch(
-    'https://nominatim.openstreetmap.org/search?format=json&q='
-    + encodeURIComponent(address))
-
-    .then(response => response.json())
-
-    .then(data => {
-
-        if(data.length > 0){
-
-            let lat = data[0].lat;
-            let lon = data[0].lon;
-
-            map.setView([lat,lon],15);
-
-            L.marker([lat,lon])
-            .addTo(map)
-            .bindPopup(address)
-            .openPopup();
-
-        }else{
-
-            alert("Address not found");
-
-        }
-
-    });
-
-}
-
-initMap();
+});
 
 </script>
 
