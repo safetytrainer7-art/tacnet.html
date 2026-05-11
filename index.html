@@ -1,0 +1,315 @@
+# TACNET V2 — CLEAN STABLE MOBILE BUILD
+
+## GOAL
+
+This version is focused on:
+
+* stability
+* mobile usability
+* presentation readiness
+* clean tactical workflow
+
+This build removes:
+
+* broken image links
+* overcrowded layout
+* unstable edits
+
+---
+
+# STEP 1 — GITHUB FILE STRUCTURE
+
+Your GitHub repository should ONLY contain:
+
+```text
+index.html
+```
+
+That’s it for now.
+
+NO:
+
+* zip files
+* image folders
+* patch graphics
+* extra assets
+
+We stabilize FIRST.
+
+---
+
+# STEP 2 — USE THIS COMPLETE index.html
+
+Replace EVERYTHING inside your current index.html with this:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACNET V2</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body {
+    margin: 0;
+    background: #102414;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+    background: #132d18;
+    border-bottom: 2px solid #2cff88;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 42px;
+    color: #ffd700;
+    letter-spacing: 4px;
+}
+
+.header p {
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+.nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+}
+
+.nav button {
+    background: #1d4726;
+    color: white;
+    border: 1px solid #2cff88;
+    padding: 14px 18px;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+.panel {
+    padding: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 10px;
+}
+
+button.action {
+    width: 100%;
+    background: #2cff88;
+    color: black;
+    font-size: 20px;
+    padding: 16px;
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#map {
+    height: 450px;
+    width: 100%;
+    border-radius: 10px;
+}
+
+.legend {
+    margin-top: 15px;
+    line-height: 2;
+    font-size: 18px;
+}
+
+.dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.red { background: red; }
+.blue { background: #00aaff; }
+.green { background: #00ff88; }
+.purple { background: purple; }
+.lightblue { background: #66ccff; }
+
+.page {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>TACNET</h1>
+    <p>Federal • State • Local Tactical Coordination</p>
+</div>
+
+<div class="nav">
+    <button onclick="showPage('ops')">LIVE OPS</button>
+    <button onclick="showPage('reports')">REPORTS</button>
+    <button onclick="showPage('k9')">K9 OPS</button>
+    <button onclick="showPage('law')">CASE LAW</button>
+    <button onclick="showPage('admin')">ADMIN</button>
+</div>
+
+<div id="ops" class="page active">
+    <div class="panel">
+        <input type="text" placeholder="Enter Address">
+
+        <button class="action">GO TO LOCATION</button>
+
+        <div id="map"></div>
+
+        <button class="action" style="background:red;color:white;">
+            SOS OFFICER DOWN
+        </button>
+
+        <div class="legend">
+            <div><span class="dot blue"></span> Law Enforcement</div>
+            <div><span class="dot lightblue"></span> K9 Units</div>
+            <div><span class="dot red"></span> Search & Rescue</div>
+            <div><span class="dot green"></span> Civilians</div>
+            <div><span class="dot purple"></span> Person of Interest</div>
+        </div>
+    </div>
+</div>
+
+<div id="reports" class="page">
+    <div class="panel">
+        <h2>Mission Reports</h2>
+        <textarea style="width:100%;height:200px;border-radius:10px;padding:10px;font-size:18px;"></textarea>
+
+        <button class="action">GENERATE REPORT</button>
+    </div>
+</div>
+
+<div id="k9" class="page">
+    <div class="panel">
+        <h2>K9 Emergency Operations</h2>
+
+        <button class="action">K9 CPR</button>
+        <button class="action">Snakebite</button>
+        <button class="action">Heat Exhaustion</button>
+        <button class="action">Gunshot Trauma</button>
+    </div>
+</div>
+
+<div id="law" class="page">
+    <div class="panel">
+        <h2>Case Law & Legal Reference</h2>
+
+        <p>Federal and Virginia K9 deployment laws and search procedures.</p>
+    </div>
+</div>
+
+<div id="admin" class="page">
+    <div class="panel">
+        <h2>Agency Access</h2>
+
+        <button class="action">GENERATE ACCESS CODE</button>
+        <button class="action">LOCK MISSION</button>
+    </div>
+</div>
+
+<div class="footer">
+TACNET V2 Tactical Prototype
+</div>
+
+<script>
+function showPage(pageId) {
+    let pages = document.querySelectorAll('.page');
+
+    pages.forEach(page => {
+        page.classList.remove('active');
+    });
+
+    document.getElementById(pageId).classList.add('active');
+}
+
+var map = L.map('map').setView([37.4138, -79.1422], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap'
+}).addTo(map);
+
+L.marker([37.4138, -79.1422])
+    .addTo(map)
+    .bindPopup('TACNET Command Center')
+    .openPopup();
+</script>
+
+</body>
+</html>
+```
+
+---
+
+# STEP 3 — SAVE IN GITHUB
+
+Commit changes.
+
+Wait 30 seconds.
+
+Refresh your TACNET GitHub Pages site in Safari.
+
+---
+
+# EXPECTED RESULT
+
+You should now have:
+
+* stable TACNET homepage
+* working mobile layout
+* clean navigation
+* live map
+* SOS button
+* separate pages
+* readable tactical interface
+
+WITHOUT the broken image problems.
+
+---
+
+# IMPORTANT
+
+This is now your CLEAN FOUNDATION BUILD.
+
+From here we improve:
+
+* realtime tracking
+* reports
+* Firebase
+* better graphics
+* authentication
+* K9 systems
+* agency integrations
+
+ONE STABLE STEP AT A TIME.
