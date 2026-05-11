@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,26 +16,36 @@ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 body{
     margin:0;
-    background:#102414;
-    color:white;
+    background:#081018;
+    color:#dff;
     font-family:Arial,sans-serif;
 }
 
 .header{
-    background:#132d18;
+    background:rgba(10,20,30,0.9);
     padding:15px;
     text-align:center;
+    border-bottom:1px solid #00e5ff;
+    backdrop-filter:blur(10px);
 }
 
 .header h1{
     margin:0;
-    color:#ffd700;
+    color:#00e5ff;
     font-size:34px;
+    letter-spacing:4px;
+    text-shadow:0 0 12px #00e5ff;
+}
+
+.header p{
+    margin-top:8px;
+    font-size:16px;
 }
 
 .controls{
-    padding:10px;
-    background:#18361f;
+    padding:12px;
+    background:rgba(15,25,35,0.8);
+    backdrop-filter:blur(10px);
 }
 
 input,select{
@@ -43,9 +53,14 @@ input,select{
     padding:14px;
     margin-bottom:10px;
     border:none;
-    border-radius:8px;
+    border-radius:12px;
     font-size:18px;
     box-sizing:border-box;
+
+    background:rgba(255,255,255,0.08);
+    color:white;
+
+    border:1px solid rgba(0,229,255,0.35);
 }
 
 button{
@@ -53,34 +68,47 @@ button{
     padding:14px;
     margin-bottom:10px;
     border:none;
-    border-radius:8px;
+    border-radius:12px;
     font-size:18px;
     font-weight:bold;
+    color:white;
 }
 
 .searchBtn{
-    background:#2cff88;
+    background:rgba(0,229,255,0.25);
+    border:1px solid #00e5ff;
+    box-shadow:0 0 12px #00e5ff;
 }
 
 .perimeterBtn{
-    background:#0077ff;
-    color:white;
+    background:rgba(255,140,0,0.25);
+    border:1px solid #ff9500;
+    box-shadow:0 0 12px #ff9500;
+}
+
+.resetBtn{
+    background:rgba(255,0,120,0.25);
+    border:1px solid #ff0077;
+    box-shadow:0 0 12px #ff0077;
 }
 
 .sosBtn{
-    background:red;
-    color:white;
+    background:rgba(255,0,0,0.25);
+    border:1px solid #ff3333;
+    box-shadow:0 0 15px #ff3333;
 }
 
 #map{
-    height:70vh;
     width:100%;
+    height:70vh;
 }
 
 .status{
     text-align:center;
     padding:10px;
-    background:#132d18;
+    background:rgba(10,20,30,0.9);
+    color:#00e5ff;
+    border-top:1px solid #00e5ff;
 }
 
 </style>
@@ -89,15 +117,15 @@ button{
 <body>
 
 <div class="header">
-<h1>TACNET</h1>
-<p>CORE SYSTEM ONLINE</p>
+    <h1>TACNET</h1>
+    <p>CORE SYSTEM ONLINE</p>
 </div>
 
 <div class="controls">
 
 <select id="unitType">
 
-<option value="blue">
+<option value="#00e5ff">
 LAW ENFORCEMENT
 </option>
 
@@ -105,15 +133,15 @@ LAW ENFORCEMENT
 K9 UNIT
 </option>
 
-<option value="red">
+<option value="#ff9500">
 SEARCH & RESCUE
 </option>
 
-<option value="#00ff88">
+<option value="#00ffaa">
 CIVILIAN
 </option>
 
-<option value="purple">
+<option value="#ff00aa">
 PERSON OF INTEREST
 </option>
 
@@ -142,6 +170,12 @@ onclick="sosAlert()">
 SOS OFFICER DOWN
 </button>
 
+<button
+class="resetBtn"
+onclick="resetMap()">
+RESET MAP
+</button>
+
 </div>
 
 <div id="map"></div>
@@ -155,6 +189,7 @@ Initializing GPS...
 let map;
 let userMarker;
 let perimeterCircle;
+let deployedMarkers = [];
 
 function initMap(){
 
@@ -208,6 +243,7 @@ function enableDeployment(){
         let color =
         document.getElementById("unitType").value;
 
+        let marker =
         L.circleMarker(
         [e.latlng.lat,e.latlng.lng],
         {
@@ -220,6 +256,14 @@ function enableDeployment(){
         .addTo(map)
 
         .bindPopup("DEPLOYED UNIT");
+
+        marker.on('click', function(){
+
+            map.removeLayer(marker);
+
+        });
+
+        deployedMarkers.push(marker);
 
     });
 
@@ -241,9 +285,9 @@ function drawPerimeter(){
     perimeterCircle =
     L.circle(pos,{
         radius:1609,
-        color:'red',
-        fillColor:'#f03',
-        fillOpacity:0.2
+        color:'#ff9500',
+        fillColor:'#ff9500',
+        fillOpacity:0.15
     }).addTo(map);
 
     map.fitBounds(perimeterCircle.getBounds());
@@ -253,6 +297,24 @@ function drawPerimeter(){
 function sosAlert(){
 
     alert("SOS ALERT ACTIVATED");
+
+}
+
+function resetMap(){
+
+    deployedMarkers.forEach(marker => {
+
+        map.removeLayer(marker);
+
+    });
+
+    deployedMarkers = [];
+
+    if(perimeterCircle){
+
+        map.removeLayer(perimeterCircle);
+
+    }
 
 }
 
