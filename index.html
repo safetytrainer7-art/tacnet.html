@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TACNET CORE V2</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    background:#102414;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.header{
+    text-align:center;
+    padding:15px;
+    background:#132d18;
+    border-bottom:2px solid #2cff88;
+}
+
+.header h1{
+    margin:0;
+    color:#ffd700;
+    font-size:36px;
+    letter-spacing:3px;
+}
+
+.controls{
+    padding:10px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    margin-bottom:10px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.searchBtn{
+    background:#2cff88;
+    color:black;
+}
+
+.perimeterBtn{
+    background:#0088ff;
+    color:white;
+}
+
+.sosBtn{
+    background:red;
+    color:white;
+}
+
+#map{
+    height:70vh;
+    width:100%;
+}
+
+.status{
+    padding:10px;
+    text-align:center;
+    background:#1d4726;
+}
+
+.legend{
+    padding:10px;
+    line-height:2;
+    background:#132d18;
+}
+
+.dot{
+    display:inline-block;
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    margin-right:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>TACNET</h1>
+    <p>Core Tactical Mapping System</p>
+</div>
+
+<div class="controls">
+
+<input type="text"
+id="address"
+placeholder="Enter Address">
+
+<button class="searchBtn"
+onclick="searchLocation()">
+SEARCH LOCATION
+</button>
+
+<button class="perimeterBtn"
+onclick="drawPerimeter()">
+CREATE 1-MILE PERIMETER
+</button>
+
+<button class="sosBtn"
+onclick="sosAlert()">
+SOS OFFICER DOWN
+</button>
+
+</div>
+
+<div id="map"></div>
+
+<div class="legend">
+
+<div>
+<span class="dot"
+style="background:blue;"></span>
+LAW ENFORCEMENT
+</div>
+
+<div>
+<span class="dot"
+style="background:#66ccff;"></span>
+K9 UNITS
+</div>
+
+<div>
+<span class="dot"
+style="background:red;"></span>
+SEARCH & RESCUE
+</div>
+
+<div>
+<span class="dot"
+style="background:#00ff88;"></span>
+CIVILIANS
+</div>
+
+<div>
+<span class="dot"
+style="background:purple;"></span>
+PERSON OF INTEREST
+</div>
+
+</div>
+
+<div class="status" id="status">
+Initializing GPS...
+</div>
+
+<script>
+
+let map;
+let userMarker;
+let perimeterCircle;
+
+function initMap(){
+
+    map = L.map('map').setView([37.4138,-79.1422],13);
+
+    L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+        attribution:'OpenStreetMap'
+    }).addTo(map);
+
+    if(navigator.geolocation){
+
+        navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+
+            map.setView([lat,lon],15);
+
+            userMarker = L.marker([lat,lon])
+            .addTo(map)
+            .bindPopup("YOUR LOCATION")
+            .openPopup();
+
+            document.getElementById("status").innerHTML =
+            "GPS CONNECTED";
+
+            addPersonnelMarkers();
+
+        },
+
+        function(){
+
+            document.getElementById("status").innerHTML =
+            "GPS FAILED";
+
+        });
+
+    }else{
+
+        document.getElementById("status").innerHTML =
+        "GEOLOCATION NOT SUPPORTED";
+    }
+}
+
+function drawPerimeter(){
+
+    if(!userMarker){
+        alert("GPS location not available");
+        return;
+    }
+
+    let pos = userMarker.getLatLng();
+
+    if(perimeterCircle){
+        map.removeLayer(perimeterCircle);
+    }
+
+    perimeterCircle = L.circle(pos,{
+        radius:1609,
+        color:'red',
+        fillColor:'#f03',
+        fillOpacity:0.2
+    }).addTo(map);
+
+    map.fitBounds(perimeterCircle.getBounds());
+}
+
+function sosAlert(){
+
+    alert("SOS ALERT ACTIVATED");
+}
+
+function searchLocation(){
+
+    let address =
+    document.getElementById("address").value;
+
+    if(address.length < 3){
+        alert("Enter address");
+        return;
+    }
+
+    fetch(
+    'https://nominatim.openstreetmap.org/search?format=json&q='
+    + encodeURIComponent(address))
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.length > 0){
+
+            let lat = data[0].lat;
+            let lon = data[0].lon;
+
+            map.setView([lat,lon],15);
+
+            L.marker([lat,lon])
+            .addTo(map)
+            .bindPopup(address)
+            .openPopup();
+
+        }else{
+
+            alert("Address not found");
+        }
+
+    });
+
+}
+
+function addPersonnelMarkers(){
+
+    let personnel = [
+
+    {
+        type:"LAW ENFORCEMENT",
+        lat:37.4138,
+        lon:-79.1422,
+        color:"blue"
+    },
+
+    {
+        type:"K9 UNIT",
+        lat:37.4238,
+        lon:-79.1522,
+        color:"#66ccff"
+    },
+
+    {
+        type:"SEARCH & RESCUE",
+        lat:37.4038,
+        lon:-79.1322,
+        color:"red"
+    },
+
+    {
+        type:"CIVILIAN",
+        lat:37.4188,
+        lon:-79.1222,
+        color:"#00ff88"
+    },
+
+    {
+        type:"PERSON OF INTEREST",
+        lat:37.4288,
+        lon:-79.1622,
+        color:"purple"
+    }
+
+    ];
+
+    personnel.forEach(unit => {
+
+        L.circleMarker([unit.lat, unit.lon],{
+
+            radius:10,
+            color:unit.color,
+            fillColor:unit.color,
+            fillOpacity:0.9
+
+        })
+
+        .addTo(map)
+
+        .bindPopup(unit.type);
+
+    });
+
+}
+
+initMap();
+
+</script>
+
+</body>
+</html>
