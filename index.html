@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TACNET COMMAND</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<title>TACNET NEXTGEN</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
@@ -17,45 +20,61 @@
 body{
     margin:0;
     font-family:Arial,sans-serif;
-    background:#050b12;
+    background:#04070d;
     color:white;
     overflow:hidden;
 }
+
+/* TACTICAL GRID */
 
 body::before{
     content:"";
     position:fixed;
     inset:0;
+
     background:
     linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
+
     background-size:40px 40px;
+
     pointer-events:none;
 }
 
+/* HEADER */
+
 .header{
-    height:70px;
-    background:rgba(8,15,25,0.95);
+    height:72px;
+
+    background:rgba(5,10,18,0.96);
+
     border-bottom:1px solid #00e5ff;
+
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
+
     padding:0 20px;
-    box-shadow:0 0 20px rgba(0,229,255,0.25);
+
+    box-shadow:0 0 25px rgba(0,229,255,0.25);
 }
 
 .logo h1{
     margin:0;
+
     color:#00e5ff;
+
+    font-size:32px;
+
     letter-spacing:4px;
-    font-size:30px;
+
     text-shadow:0 0 15px #00e5ff;
 }
 
 .logo p{
     margin:0;
-    color:#7ddfff;
-    font-size:12px;
+    font-size:11px;
+    color:#89e8ff;
 }
 
 .statusBar{
@@ -65,58 +84,99 @@ body::before{
 
 .statusItem{
     padding:8px 14px;
-    border-radius:10px;
+
+    border-radius:12px;
+
     background:rgba(255,255,255,0.05);
+
     border:1px solid rgba(0,229,255,0.25);
-    color:#9befff;
-    font-size:13px;
+
+    color:#9cefff;
+
+    font-size:12px;
+
+    backdrop-filter:blur(10px);
 }
+
+/* MAIN */
 
 .main{
     display:flex;
-    height:calc(100vh - 70px);
+    height:calc(100vh - 72px);
 }
 
+/* SIDEBAR */
+
 .sidebar{
-    width:320px;
-    background:rgba(10,18,28,0.92);
-    border-right:1px solid rgba(0,229,255,0.25);
+    width:330px;
+
+    background:rgba(10,18,28,0.94);
+
+    border-right:1px solid rgba(0,229,255,0.18);
+
     padding:18px;
+
     overflow-y:auto;
 }
 
 .panel{
     margin-bottom:18px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid rgba(0,229,255,0.18);
-    border-radius:18px;
+
     padding:16px;
+
+    border-radius:18px;
+
+    background:rgba(255,255,255,0.04);
+
+    border:1px solid rgba(0,229,255,0.18);
+
     backdrop-filter:blur(12px);
-    box-shadow:0 0 18px rgba(0,229,255,0.08);
+
+    box-shadow:0 0 20px rgba(0,229,255,0.08);
 }
 
 .panel h2{
     margin-top:0;
+
     color:#00e5ff;
-    font-size:16px;
+
+    font-size:15px;
+
     letter-spacing:2px;
 }
 
+/* DEPLOYMENT */
+
 .deployGrid{
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:10px;
 }
 
 .deployBtn{
     padding:14px;
+
     border:none;
+
     border-radius:14px;
+
     color:white;
+
     font-weight:bold;
+
     cursor:pointer;
-    background:rgba(255,255,255,0.08);
+
+    background:rgba(255,255,255,0.06);
+
     border:1px solid rgba(255,255,255,0.12);
+
+    transition:0.2s;
+}
+
+.deployBtn:hover{
+    transform:scale(1.03);
 }
 
 .deployBtn.active{
@@ -130,26 +190,50 @@ body::before{
 .poi{ color:#ff00aa; }
 .ev{ color:#ffffff; }
 
+/* INPUTS */
+
 input{
     width:100%;
+
     padding:14px;
-    border-radius:12px;
-    border:none;
-    background:rgba(255,255,255,0.08);
-    color:white;
+
     margin-bottom:10px;
+
+    border:none;
+
+    border-radius:12px;
+
+    color:white;
+
+    background:rgba(255,255,255,0.08);
+
     border:1px solid rgba(0,229,255,0.18);
 }
 
+/* ACTION BUTTONS */
+
 .actionBtn{
     width:100%;
+
     padding:14px;
+
     margin-bottom:10px;
+
     border:none;
+
     border-radius:12px;
+
     color:white;
+
     font-weight:bold;
+
     cursor:pointer;
+
+    transition:0.2s;
+}
+
+.actionBtn:hover{
+    transform:scale(1.02);
 }
 
 .searchBtn{
@@ -172,6 +256,8 @@ input{
     border:1px solid #ff3333;
 }
 
+/* MAP AREA */
+
 .mapArea{
     position:relative;
     flex:1;
@@ -182,44 +268,116 @@ input{
     height:100%;
 }
 
+/* COMPASS */
+
 .compass{
     position:absolute;
+
     top:20px;
     right:20px;
-    width:90px;
-    height:90px;
+
+    width:95px;
+    height:95px;
+
     border-radius:50%;
+
     background:rgba(0,0,0,0.55);
+
     border:2px solid #00e5ff;
+
     display:flex;
     align-items:center;
     justify-content:center;
+
     color:#00e5ff;
-    font-size:28px;
-    box-shadow:0 0 18px rgba(0,229,255,0.4);
+
+    font-size:34px;
+
+    font-weight:bold;
+
     backdrop-filter:blur(10px);
+
+    box-shadow:0 0 20px rgba(0,229,255,0.4);
+
+    animation:rotateCompass 10s linear infinite;
 }
 
-.windBox{
+@keyframes rotateCompass{
+
+    0%{
+        transform:rotate(0deg);
+    }
+
+    100%{
+        transform:rotate(360deg);
+    }
+
+}
+
+/* WEATHER HUD */
+
+.weatherBox{
     position:absolute;
+
     bottom:20px;
     right:20px;
-    width:220px;
-    background:rgba(0,0,0,0.55);
+
+    width:230px;
+
+    background:rgba(0,0,0,0.58);
+
     border:1px solid rgba(0,229,255,0.35);
-    border-radius:16px;
+
+    border-radius:18px;
+
     padding:16px;
-    backdrop-filter:blur(10px);
-    box-shadow:0 0 18px rgba(0,229,255,0.2);
+
+    backdrop-filter:blur(12px);
+
+    box-shadow:0 0 20px rgba(0,229,255,0.2);
 }
 
-.windBox h3{
+.weatherBox h3{
     margin-top:0;
     color:#00e5ff;
 }
 
+/* MISSION STATUS */
+
+.missionBar{
+    position:absolute;
+
+    left:20px;
+    bottom:20px;
+
+    width:320px;
+
+    background:rgba(0,0,0,0.55);
+
+    border:1px solid rgba(0,229,255,0.3);
+
+    border-radius:18px;
+
+    padding:16px;
+
+    backdrop-filter:blur(12px);
+
+    box-shadow:0 0 20px rgba(0,229,255,0.2);
+}
+
+.missionBar h3{
+    margin-top:0;
+    color:#00e5ff;
+}
+
+.missionStatus{
+    color:#85f7ff;
+    line-height:1.7;
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="header">
@@ -230,43 +388,79 @@ input{
     </div>
 
     <div class="statusBar">
-        <div class="statusItem">GPS ONLINE</div>
-        <div class="statusItem">MISSION ACTIVE</div>
-        <div class="statusItem">CORE SYSTEM STABLE</div>
+
+        <div class="statusItem">
+            GPS ONLINE
+        </div>
+
+        <div class="statusItem">
+            COMMAND ACTIVE
+        </div>
+
+        <div class="statusItem">
+            NEXTGEN SYSTEM
+        </div>
+
     </div>
 
 </div>
 
 <div class="main">
 
+    <!-- SIDEBAR -->
+
     <div class="sidebar">
 
         <div class="panel">
+
             <h2>DEPLOYMENT</h2>
 
             <div class="deployGrid">
 
-                <button class="deployBtn law active">LAW</button>
-                <button class="deployBtn k9">K9</button>
-                <button class="deployBtn sar">SAR</button>
-                <button class="deployBtn civ">CIV</button>
-                <button class="deployBtn poi">POI</button>
-                <button class="deployBtn ev">EVIDENCE</button>
+                <button class="deployBtn law active">
+                    LAW
+                </button>
+
+                <button class="deployBtn k9">
+                    K9
+                </button>
+
+                <button class="deployBtn sar">
+                    SAR
+                </button>
+
+                <button class="deployBtn civ">
+                    CIV
+                </button>
+
+                <button class="deployBtn poi">
+                    POI
+                </button>
+
+                <button class="deployBtn ev">
+                    EVIDENCE
+                </button>
 
             </div>
+
         </div>
 
         <div class="panel">
+
             <h2>SEARCH LOCATION</h2>
 
-            <input type="text" placeholder="Enter Address">
+            <input
+            type="text"
+            placeholder="Enter Address">
 
             <button class="actionBtn searchBtn">
                 SEARCH LOCATION
             </button>
+
         </div>
 
         <div class="panel">
+
             <h2>MISSION CONTROLS</h2>
 
             <button class="actionBtn perimeterBtn">
@@ -285,19 +479,47 @@ input{
 
     </div>
 
+    <!-- MAP -->
+
     <div class="mapArea">
 
         <div id="map"></div>
+
+        <!-- COMPASS -->
 
         <div class="compass">
             N
         </div>
 
-        <div class="windBox">
+        <!-- WEATHER -->
+
+        <div class="weatherBox">
+
             <h3>ENVIRONMENT</h3>
-            <p>Wind: 8 MPH NW</p>
-            <p>Temp: 61°F</p>
+
+            <p>Wind: 11 MPH NW</p>
+            <p>Temp: 63°F</p>
+            <p>Humidity: 54%</p>
             <p>Conditions: Clear</p>
+
+        </div>
+
+        <!-- MISSION STATUS -->
+
+        <div class="missionBar">
+
+            <h3>MISSION STATUS</h3>
+
+            <div class="missionStatus">
+
+                SYSTEM STATUS: ONLINE<br>
+                GPS STATUS: ACTIVE<br>
+                DEPLOYMENT GRID: READY<br>
+                PERIMETER CONTROL: STANDBY<br>
+                EVIDENCE SYSTEM: READY<br>
+
+            </div>
+
         </div>
 
     </div>
@@ -306,27 +528,50 @@ input{
 
 <script>
 
-const map = L.map('map').setView([37.4138,-79.1422],13);
+/* MAP */
+
+const map =
+L.map('map').setView(
+[37.4138,-79.1422],
+13
+);
+
+/* TILE LAYER */
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
     attribution:'OpenStreetMap'
-}).addTo(map);
+}
+).addTo(map);
 
-navigator.geolocation.getCurrentPosition(function(pos){
+/* GPS */
 
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
+navigator.geolocation.getCurrentPosition(
+
+function(pos){
+
+    const lat =
+    pos.coords.latitude;
+
+    const lon =
+    pos.coords.longitude;
 
     map.setView([lat,lon],15);
 
     L.marker([lat,lon])
+
     .addTo(map)
-    .bindPopup('COMMAND POSITION')
+
+    .bindPopup(
+    'COMMAND POSITION'
+    )
+
     .openPopup();
 
-});
+}
+
+);
 
 </script>
 
