@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TACNET MOBILE COMMAND</title>
+<title>TACNET CENTRAL COMMAND</title>
 
 <link
 rel="stylesheet"
@@ -24,11 +23,67 @@ src="https://unpkg.com/leaflet/dist/leaflet.js">
 }
 
 body{
+
     margin:0;
-    font-family:Arial,sans-serif;
-    overflow:hidden;
+
     background:#050b12;
+
     color:white;
+
+    font-family:Arial,sans-serif;
+
+    overflow:hidden;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    height:100vh;
+}
+
+/* MAIN COMMAND AREA */
+
+.commandCenter{
+
+    position:relative;
+
+    width:95vw;
+
+    height:95vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+/* MAP VIEWPORT */
+
+.mapViewport{
+
+    position:relative;
+
+    width:78vw;
+
+    height:78vh;
+
+    border:2px solid #00e5ff;
+
+    border-radius:24px;
+
+    overflow:hidden;
+
+    box-shadow:0 0 30px rgba(0,229,255,0.25);
+}
+
+#map{
+
+    width:100%;
+
+    height:100%;
 }
 
 /* HEADER */
@@ -37,15 +92,23 @@ body{
 
     position:absolute;
 
-    top:0;
-    left:0;
-    right:0;
+    top:12px;
 
-    height:60px;
+    left:50%;
 
-    background:rgba(5,10,18,0.92);
+    transform:translateX(-50%);
 
-    border-bottom:1px solid #00e5ff;
+    z-index:3000;
+
+    width:92%;
+
+    height:55px;
+
+    background:rgba(5,10,18,0.9);
+
+    border:1px solid rgba(0,229,255,0.3);
+
+    border-radius:16px;
 
     display:flex;
 
@@ -55,8 +118,6 @@ body{
 
     padding:0 15px;
 
-    z-index:3000;
-
     backdrop-filter:blur(10px);
 }
 
@@ -64,13 +125,11 @@ body{
 
     margin:0;
 
-    font-size:24px;
-
     color:#00e5ff;
 
-    letter-spacing:3px;
+    font-size:22px;
 
-    text-shadow:0 0 12px #00e5ff;
+    letter-spacing:3px;
 }
 
 .logo p{
@@ -91,34 +150,25 @@ body{
     text-align:right;
 }
 
-/* MAP */
-
-#map{
-
-    width:100vw;
-
-    height:100vh;
-}
-
 /* SEARCH */
 
 .searchBox{
 
     position:absolute;
 
-    top:75px;
+    top:80px;
 
     left:50%;
 
     transform:translateX(-50%);
 
-    width:92%;
+    width:70%;
 
     z-index:3000;
 
     display:flex;
 
-    gap:8px;
+    gap:10px;
 }
 
 .searchBox input{
@@ -131,16 +181,16 @@ body{
 
     border-radius:14px;
 
-    background:rgba(0,0,0,0.7);
+    background:rgba(0,0,0,0.72);
 
     color:white;
 
-    border:1px solid rgba(0,229,255,0.35);
+    border:1px solid rgba(0,229,255,0.3);
 }
 
 .searchBtn{
 
-    padding:14px 18px;
+    width:90px;
 
     border:none;
 
@@ -155,73 +205,11 @@ body{
     font-weight:bold;
 }
 
-/* COMPASS */
+/* CONTROL GROUPS */
 
-.compass{
-
-    position:absolute;
-
-    top:145px;
-
-    right:15px;
-
-    width:75px;
-
-    height:75px;
-
-    border-radius:50%;
-
-    background:rgba(0,0,0,0.65);
-
-    border:2px solid #00e5ff;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    color:#00e5ff;
-
-    font-size:28px;
-
-    z-index:3000;
-}
-
-/* WEATHER */
-
-.weather{
+.controlGroup{
 
     position:absolute;
-
-    bottom:120px;
-
-    right:15px;
-
-    width:170px;
-
-    padding:12px;
-
-    border-radius:16px;
-
-    background:rgba(0,0,0,0.65);
-
-    border:1px solid rgba(0,229,255,0.3);
-
-    z-index:3000;
-
-    font-size:12px;
-}
-
-/* FLOATING TOOLS */
-
-.floatingTools{
-
-    position:absolute;
-
-    left:15px;
-
-    bottom:120px;
 
     z-index:3000;
 
@@ -232,77 +220,56 @@ body{
     gap:10px;
 }
 
-.floatBtn{
+.leftControls{
 
-    width:95px;
+    left:10px;
 
-    height:52px;
+    top:50%;
 
-    border:none;
-
-    border-radius:14px;
-
-    font-weight:bold;
-
-    color:white;
+    transform:translateY(-50%);
 }
 
-.perimeterBtn{
+.rightControls{
 
-    background:rgba(255,149,0,0.2);
+    right:10px;
 
-    border:1px solid #ff9500;
+    top:50%;
+
+    transform:translateY(-50%);
 }
 
-.sosBtn{
+.bottomControls{
 
-    background:rgba(255,0,0,0.2);
+    bottom:10px;
 
-    border:1px solid #ff3333;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    flex-direction:row;
 }
 
-/* TOOLBAR */
-
-.toolbar{
-
-    position:absolute;
-
-    bottom:0;
-
-    left:0;
-
-    right:0;
-
-    height:95px;
-
-    background:rgba(5,10,18,0.94);
-
-    border-top:1px solid #00e5ff;
-
-    z-index:3000;
-
-    display:flex;
-
-    overflow-x:auto;
-
-    padding:10px;
-
-    gap:10px;
-}
+/* BUTTONS */
 
 .toolBtn{
 
-    min-width:85px;
+    width:95px;
+
+    height:55px;
 
     border:none;
 
     border-radius:16px;
 
-    background:rgba(255,255,255,0.06);
+    background:rgba(0,0,0,0.7);
 
-    border:1px solid rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.14);
+
+    color:white;
 
     font-weight:bold;
+
+    backdrop-filter:blur(10px);
 }
 
 /* COLORS */
@@ -331,8 +298,74 @@ body{
     color:#ffffff;
 }
 
+.perim{
+    color:#ff9500;
+}
+
+.sos{
+    color:#ff3333;
+}
+
 .reset{
     color:#ff3377;
+}
+
+/* WEATHER */
+
+.weather{
+
+    position:absolute;
+
+    right:15px;
+
+    top:150px;
+
+    z-index:3000;
+
+    width:160px;
+
+    padding:12px;
+
+    border-radius:16px;
+
+    background:rgba(0,0,0,0.65);
+
+    border:1px solid rgba(0,229,255,0.25);
+
+    font-size:12px;
+}
+
+/* COMPASS */
+
+.compass{
+
+    position:absolute;
+
+    left:15px;
+
+    top:150px;
+
+    z-index:3000;
+
+    width:75px;
+
+    height:75px;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,0.65);
+
+    border:2px solid #00e5ff;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:#00e5ff;
+
+    font-size:28px;
 }
 
 </style>
@@ -341,125 +374,139 @@ body{
 
 <body>
 
-<!-- HEADER -->
+<div class="commandCenter">
 
-<div class="header">
+    <div class="mapViewport">
 
-    <div class="logo">
+        <!-- HEADER -->
 
-        <h1>TACNET</h1>
+        <div class="header">
 
-        <p>
-        FEDERAL • STATE • LOCAL
-        </p>
+            <div class="logo">
+
+                <h1>TACNET</h1>
+
+                <p>
+                FEDERAL • STATE • LOCAL
+                </p>
+
+            </div>
+
+            <div class="status">
+
+                GPS ONLINE<br>
+                COMMAND ACTIVE
+
+            </div>
+
+        </div>
+
+        <!-- SEARCH -->
+
+        <div class="searchBox">
+
+            <input
+            type="text"
+            id="address"
+            placeholder="Search Address">
+
+            <button
+            class="searchBtn"
+            onclick="searchLocation()">
+
+            GO
+
+            </button>
+
+        </div>
+
+        <!-- LEFT CONTROLS -->
+
+        <div class="controlGroup leftControls">
+
+            <button class="toolBtn law">
+            LAW
+            </button>
+
+            <button class="toolBtn k9">
+            K9
+            </button>
+
+            <button class="toolBtn sar">
+            SAR
+            </button>
+
+        </div>
+
+        <!-- RIGHT CONTROLS -->
+
+        <div class="controlGroup rightControls">
+
+            <button class="toolBtn civ">
+            CIV
+            </button>
+
+            <button class="toolBtn poi">
+            POI
+            </button>
+
+            <button class="toolBtn ev">
+            EVID
+            </button>
+
+        </div>
+
+        <!-- BOTTOM CONTROLS -->
+
+        <div class="controlGroup bottomControls">
+
+            <button
+            class="toolBtn perim"
+            onclick="togglePerimeter()">
+
+            PERIM
+
+            </button>
+
+            <button
+            class="toolBtn sos"
+            onclick="sosAlert()">
+
+            SOS
+
+            </button>
+
+            <button
+            class="toolBtn reset"
+            onclick="resetMap()">
+
+            RESET
+
+            </button>
+
+        </div>
+
+        <!-- COMPASS -->
+
+        <div class="compass">
+        N
+        </div>
+
+        <!-- WEATHER -->
+
+        <div class="weather">
+
+            Wind: 8 MPH NW<br>
+            Temp: 61°F<br>
+            Clear Conditions
+
+        </div>
+
+        <!-- MAP -->
+
+        <div id="map"></div>
 
     </div>
-
-    <div class="status">
-
-        GPS ONLINE<br>
-        COMMAND ACTIVE
-
-    </div>
-
-</div>
-
-<!-- SEARCH -->
-
-<div class="searchBox">
-
-    <input
-    type="text"
-    id="address"
-    placeholder="Search Address">
-
-    <button
-    class="searchBtn"
-    onclick="searchLocation()">
-
-    GO
-
-    </button>
-
-</div>
-
-<!-- COMPASS -->
-
-<div class="compass">
-N
-</div>
-
-<!-- WEATHER -->
-
-<div class="weather">
-
-Wind: 8 MPH NW<br>
-Temp: 61°F<br>
-Conditions: Clear
-
-</div>
-
-<!-- FLOATING TOOLS -->
-
-<div class="floatingTools">
-
-    <button
-    class="floatBtn perimeterBtn"
-    onclick="togglePerimeter()">
-
-    PERIM
-
-    </button>
-
-    <button
-    class="floatBtn sosBtn"
-    onclick="sosAlert()">
-
-    SOS
-
-    </button>
-
-</div>
-
-<!-- MAP -->
-
-<div id="map"></div>
-
-<!-- TOOLBAR -->
-
-<div class="toolbar">
-
-    <button class="toolBtn law">
-    LAW
-    </button>
-
-    <button class="toolBtn k9">
-    K9
-    </button>
-
-    <button class="toolBtn sar">
-    SAR
-    </button>
-
-    <button class="toolBtn civ">
-    CIV
-    </button>
-
-    <button class="toolBtn poi">
-    POI
-    </button>
-
-    <button class="toolBtn ev">
-    EVID
-    </button>
-
-    <button
-    class="toolBtn reset"
-    onclick="resetMap()">
-
-    RESET
-
-    </button>
 
 </div>
 
@@ -471,8 +518,6 @@ const map = L.map('map').setView(
 [37.4138,-79.1422],
 13
 );
-
-/* MOBILE FIX */
 
 setTimeout(function(){
 
@@ -495,11 +540,8 @@ navigator.geolocation.getCurrentPosition(
 
 function(pos){
 
-    const lat =
-    pos.coords.latitude;
-
-    const lon =
-    pos.coords.longitude;
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
 
     map.setView([lat,lon],15);
 
@@ -507,9 +549,7 @@ function(pos){
 
     .addTo(map)
 
-    .bindPopup(
-    'COMMAND POSITION'
-    )
+    .bindPopup('COMMAND POSITION')
 
     .openPopup();
 
@@ -557,7 +597,7 @@ function searchLocation(){
 
 }
 
-/* SEARCHERS */
+/* SEARCHER COLORS */
 
 let activeColor = '#1e90ff';
 
@@ -590,7 +630,27 @@ document
 
 });
 
-/* MAP MARKERS */
+/* PERIMETER MODE */
+
+let perimeterMode = false;
+
+function togglePerimeter(){
+
+    perimeterMode = !perimeterMode;
+
+    if(perimeterMode){
+
+        alert('PERIMETER MODE ACTIVE');
+
+    }else{
+
+        alert('PERIMETER MODE OFF');
+
+    }
+
+}
+
+/* MAP CLICKS */
 
 map.on('click', function(e){
 
@@ -635,26 +695,6 @@ map.on('click', function(e){
     }
 
 });
-
-/* PERIMETER */
-
-let perimeterMode = false;
-
-function togglePerimeter(){
-
-    perimeterMode = !perimeterMode;
-
-    if(perimeterMode){
-
-        alert('PERIMETER MODE ACTIVE');
-
-    }else{
-
-        alert('PERIMETER MODE OFF');
-
-    }
-
-}
 
 /* SOS */
 
