@@ -572,7 +572,65 @@ function(pos){
 }
 
 );
+let activeColor = '#1e90ff';
 
+document.querySelectorAll('.deployBtn')
+
+.forEach(btn => {
+
+    btn.addEventListener('click', function(){
+
+        document
+        .querySelectorAll('.deployBtn')
+
+        .forEach(b => {
+
+            b.style.boxShadow = 'none';
+
+        });
+
+        this.style.boxShadow =
+        '0 0 20px currentColor';
+
+        if(this.classList.contains('law'))
+        activeColor = '#1e90ff';
+
+        if(this.classList.contains('k9'))
+        activeColor = '#00e5ff';
+
+        if(this.classList.contains('sar'))
+        activeColor = '#ff9500';
+
+        if(this.classList.contains('civ'))
+        activeColor = '#00ffaa';
+
+        if(this.classList.contains('poi'))
+        activeColor = '#ff00aa';
+
+        if(this.classList.contains('ev'))
+        activeColor = '#ffffff';
+
+    });
+
+});
+
+map.on('click', function(e){
+
+    L.circleMarker(
+
+    [e.latlng.lat,e.latlng.lng],
+
+    {
+        radius:12,
+        color:'#ffffff',
+        weight:2,
+        fillColor:activeColor,
+        fillOpacity:1
+    })
+
+    .addTo(map);
+
+});
 /* SEARCH FUNCTION */
 
 function searchLocation(){
