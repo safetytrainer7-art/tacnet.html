@@ -26,9 +26,9 @@ src="https://unpkg.com/leaflet/dist/leaflet.js">
 body{
     margin:0;
     font-family:Arial,sans-serif;
+    overflow:hidden;
     background:#050b12;
     color:white;
-    overflow:hidden;
 }
 
 /* HEADER */
@@ -55,7 +55,7 @@ body{
 
     padding:0 15px;
 
-    z-index:2000;
+    z-index:3000;
 
     backdrop-filter:blur(10px);
 }
@@ -64,9 +64,9 @@ body{
 
     margin:0;
 
-    color:#00e5ff;
-
     font-size:24px;
+
+    color:#00e5ff;
 
     letter-spacing:3px;
 
@@ -84,9 +84,9 @@ body{
 
 .status{
 
-    color:#8eefff;
-
     font-size:11px;
+
+    color:#8eefff;
 
     text-align:right;
 }
@@ -100,7 +100,7 @@ body{
     height:100vh;
 }
 
-/* SEARCH BAR */
+/* SEARCH */
 
 .searchBox{
 
@@ -114,7 +114,7 @@ body{
 
     width:92%;
 
-    z-index:2000;
+    z-index:3000;
 
     display:flex;
 
@@ -136,8 +136,6 @@ body{
     color:white;
 
     border:1px solid rgba(0,229,255,0.35);
-
-    backdrop-filter:blur(10px);
 }
 
 .searchBtn{
@@ -148,7 +146,7 @@ body{
 
     border-radius:14px;
 
-    background:rgba(0,229,255,0.18);
+    background:rgba(0,229,255,0.2);
 
     border:1px solid #00e5ff;
 
@@ -163,7 +161,7 @@ body{
 
     position:absolute;
 
-    top:140px;
+    top:145px;
 
     right:15px;
 
@@ -179,17 +177,15 @@ body{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
+
+    align-items:center;
 
     color:#00e5ff;
 
     font-size:28px;
 
-    z-index:2000;
-
-    backdrop-filter:blur(10px);
+    z-index:3000;
 }
 
 /* WEATHER */
@@ -198,7 +194,7 @@ body{
 
     position:absolute;
 
-    bottom:110px;
+    bottom:120px;
 
     right:15px;
 
@@ -212,14 +208,60 @@ body{
 
     border:1px solid rgba(0,229,255,0.3);
 
-    z-index:2000;
-
-    backdrop-filter:blur(10px);
+    z-index:3000;
 
     font-size:12px;
 }
 
-/* BOTTOM TOOLBAR */
+/* FLOATING TOOLS */
+
+.floatingTools{
+
+    position:absolute;
+
+    left:15px;
+
+    bottom:120px;
+
+    z-index:3000;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+}
+
+.floatBtn{
+
+    width:95px;
+
+    height:52px;
+
+    border:none;
+
+    border-radius:14px;
+
+    font-weight:bold;
+
+    color:white;
+}
+
+.perimeterBtn{
+
+    background:rgba(255,149,0,0.2);
+
+    border:1px solid #ff9500;
+}
+
+.sosBtn{
+
+    background:rgba(255,0,0,0.2);
+
+    border:1px solid #ff3333;
+}
+
+/* TOOLBAR */
 
 .toolbar{
 
@@ -237,7 +279,7 @@ body{
 
     border-top:1px solid #00e5ff;
 
-    z-index:2000;
+    z-index:3000;
 
     display:flex;
 
@@ -246,8 +288,6 @@ body{
     padding:10px;
 
     gap:10px;
-
-    backdrop-filter:blur(12px);
 }
 
 .toolBtn{
@@ -258,13 +298,11 @@ body{
 
     border-radius:16px;
 
-    color:white;
-
-    font-weight:bold;
-
     background:rgba(255,255,255,0.06);
 
-    border:1px solid rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.12);
+
+    font-weight:bold;
 }
 
 /* COLORS */
@@ -361,6 +399,28 @@ Conditions: Clear
 
 </div>
 
+<!-- FLOATING TOOLS -->
+
+<div class="floatingTools">
+
+    <button
+    class="floatBtn perimeterBtn"
+    onclick="togglePerimeter()">
+
+    PERIM
+
+    </button>
+
+    <button
+    class="floatBtn sosBtn"
+    onclick="sosAlert()">
+
+    SOS
+
+    </button>
+
+</div>
+
 <!-- MAP -->
 
 <div id="map"></div>
@@ -412,7 +472,7 @@ const map = L.map('map').setView(
 13
 );
 
-/* FIX MOBILE */
+/* MOBILE FIX */
 
 setTimeout(function(){
 
@@ -497,7 +557,7 @@ function searchLocation(){
 
 }
 
-/* DEPLOYMENT */
+/* SEARCHERS */
 
 let activeColor = '#1e90ff';
 
@@ -530,25 +590,81 @@ document
 
 });
 
-/* PLACE MARKERS */
+/* MAP MARKERS */
 
 map.on('click', function(e){
 
-    L.circleMarker(
+    if(perimeterMode){
 
-    [e.latlng.lat,e.latlng.lng],
+        L.circle(
 
-    {
-        radius:10,
-        color:'#ffffff',
-        weight:2,
-        fillColor:activeColor,
-        fillOpacity:1
-    })
+        [e.latlng.lat,e.latlng.lng],
 
-    .addTo(map);
+        {
+            radius:300,
+
+            color:'#ff9500',
+
+            fillColor:'#ff9500',
+
+            fillOpacity:0.15
+        })
+
+        .addTo(map);
+
+    }else{
+
+        L.circleMarker(
+
+        [e.latlng.lat,e.latlng.lng],
+
+        {
+            radius:10,
+
+            color:'#ffffff',
+
+            weight:2,
+
+            fillColor:activeColor,
+
+            fillOpacity:1
+        })
+
+        .addTo(map);
+
+    }
 
 });
+
+/* PERIMETER */
+
+let perimeterMode = false;
+
+function togglePerimeter(){
+
+    perimeterMode = !perimeterMode;
+
+    if(perimeterMode){
+
+        alert('PERIMETER MODE ACTIVE');
+
+    }else{
+
+        alert('PERIMETER MODE OFF');
+
+    }
+
+}
+
+/* SOS */
+
+function sosAlert(){
+
+    alert('SOS OFFICER DOWN');
+
+    navigator.vibrate?.(500);
+
+}
 
 /* RESET */
 
