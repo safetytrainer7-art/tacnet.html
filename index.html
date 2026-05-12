@@ -43,8 +43,6 @@ body{
     height:100vh;
 }
 
-/* MAIN COMMAND AREA */
-
 .commandCenter{
 
     position:relative;
@@ -59,8 +57,6 @@ body{
 
     align-items:center;
 }
-
-/* MAP VIEWPORT */
 
 .mapViewport{
 
@@ -85,8 +81,6 @@ body{
 
     height:100%;
 }
-
-/* HEADER */
 
 .header{
 
@@ -150,8 +144,6 @@ body{
     text-align:right;
 }
 
-/* SEARCH */
-
 .searchBox{
 
     position:absolute;
@@ -205,8 +197,6 @@ body{
     font-weight:bold;
 }
 
-/* CONTROL GROUPS */
-
 .controlGroup{
 
     position:absolute;
@@ -249,8 +239,6 @@ body{
     flex-direction:row;
 }
 
-/* BUTTONS */
-
 .toolBtn{
 
     width:95px;
@@ -271,8 +259,6 @@ body{
 
     backdrop-filter:blur(10px);
 }
-
-/* COLORS */
 
 .law{
     color:#1e90ff;
@@ -310,8 +296,6 @@ body{
     color:#ff3377;
 }
 
-/* WEATHER */
-
 .weather{
 
     position:absolute;
@@ -334,8 +318,6 @@ body{
 
     font-size:12px;
 }
-
-/* COMPASS */
 
 .compass{
 
@@ -378,8 +360,6 @@ body{
 
     <div class="mapViewport">
 
-        <!-- HEADER -->
-
         <div class="header">
 
             <div class="logo">
@@ -401,8 +381,6 @@ body{
 
         </div>
 
-        <!-- SEARCH -->
-
         <div class="searchBox">
 
             <input
@@ -420,8 +398,6 @@ body{
 
         </div>
 
-        <!-- LEFT CONTROLS -->
-
         <div class="controlGroup leftControls">
 
             <button class="toolBtn law">
@@ -438,283 +414,7 @@ body{
 
         </div>
 
-        <!-- RIGHT CONTROLS -->
-
         <div class="controlGroup rightControls">
 
             <button class="toolBtn civ">
             CIV
-            </button>
-
-            <button class="toolBtn poi">
-            POI
-            </button>
-
-            <button class="toolBtn ev">
-            EVID
-            </button>
-
-        </div>
-
-        <!-- BOTTOM CONTROLS -->
-
-        <div class="controlGroup bottomControls">
-
-            <button
-            class="toolBtn perim"
-            onclick="togglePerimeter()">
-
-            PERIM
-
-            </button>
-
-            <button
-            class="toolBtn sos"
-            onclick="sosAlert()">
-
-            SOS
-
-            </button>
-
-            <button
-            class="toolBtn reset"
-            onclick="resetMap()">
-
-            RESET
-
-            </button>
-
-        </div>
-
-        <!-- COMPASS -->
-
-        <div class="compass">
-        N
-        </div>
-
-        <!-- WEATHER -->
-
-        <div class="weather">
-
-            Wind: 8 MPH NW<br>
-            Temp: 61°F<br>
-            Clear Conditions
-
-        </div>
-
-        <!-- MAP -->
-
-        <div id="map"></div>
-
-    </div>
-
-</div>
-
-<script>
-
-/* MAP */
-
-const map = L.map('map').setView(
-[37.4138,-79.1422],
-13
-);
-
-setTimeout(function(){
-
-    map.invalidateSize();
-
-},500);
-
-/* TILES */
-
-L.tileLayer(
-'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    attribution:'OpenStreetMap'
-}
-).addTo(map);
-
-/* GPS */
-
-navigator.geolocation.getCurrentPosition(
-
-function(pos){
-
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-
-    map.setView([lat,lon],15);
-
-    L.marker([lat,lon])
-
-    .addTo(map)
-
-    .bindPopup('COMMAND POSITION')
-
-    .openPopup();
-
-}
-
-);
-
-/* SEARCH */
-
-function searchLocation(){
-
-    const address =
-    document.getElementById('address').value;
-
-    fetch(
-    'https://nominatim.openstreetmap.org/search?format=json&q='
-    + encodeURIComponent(address)
-    )
-
-    .then(response => response.json())
-
-    .then(data => {
-
-        if(data.length > 0){
-
-            const lat =
-            parseFloat(data[0].lat);
-
-            const lon =
-            parseFloat(data[0].lon);
-
-            map.setView([lat,lon],15);
-
-            L.marker([lat,lon])
-
-            .addTo(map)
-
-            .bindPopup(address)
-
-            .openPopup();
-
-        }
-
-    });
-
-}
-
-/* SEARCHER COLORS */
-
-let activeColor = '#1e90ff';
-
-document
-.querySelectorAll('.toolBtn')
-
-.forEach(btn => {
-
-    btn.addEventListener('click', function(){
-
-        if(this.classList.contains('law'))
-        activeColor = '#1e90ff';
-
-        if(this.classList.contains('k9'))
-        activeColor = '#00e5ff';
-
-        if(this.classList.contains('sar'))
-        activeColor = '#ff9500';
-
-        if(this.classList.contains('civ'))
-        activeColor = '#00ffaa';
-
-        if(this.classList.contains('poi'))
-        activeColor = '#ff00aa';
-
-        if(this.classList.contains('ev'))
-        activeColor = '#ffffff';
-
-    });
-
-});
-
-/* PERIMETER MODE */
-
-let perimeterMode = false;
-
-function togglePerimeter(){
-
-    perimeterMode = !perimeterMode;
-
-    if(perimeterMode){
-
-        alert('PERIMETER MODE ACTIVE');
-
-    }else{
-
-        alert('PERIMETER MODE OFF');
-
-    }
-
-}
-
-/* MAP CLICKS */
-
-map.on('click', function(e){
-
-    if(perimeterMode){
-
-        L.circle(
-
-        [e.latlng.lat,e.latlng.lng],
-
-        {
-            radius:300,
-
-            color:'#ff9500',
-
-            fillColor:'#ff9500',
-
-            fillOpacity:0.15
-        })
-
-        .addTo(map);
-
-    }else{
-
-        L.circleMarker(
-
-        [e.latlng.lat,e.latlng.lng],
-
-        {
-            radius:10,
-
-            color:'#ffffff',
-
-            weight:2,
-
-            fillColor:activeColor,
-
-            fillOpacity:1
-        })
-
-        .addTo(map);
-
-    }
-
-});
-
-/* SOS */
-
-function sosAlert(){
-
-    alert('SOS OFFICER DOWN');
-
-    navigator.vibrate?.(500);
-
-}
-
-/* RESET */
-
-function resetMap(){
-
-    location.reload();
-
-}
-
-</script>
-
-</body>
-</html>
