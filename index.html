@@ -1,19 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TACNET CENTRAL COMMAND</title>
+    .then(response => response.json())
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    .then(data => {
 
-<style>
+        if(data.length > 0){
 
-*{
-    box-sizing:border-box;
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+
+            map.setView([lat,lon],15);
+
+            L.marker([lat,lon])
+            .addTo(map)
+            .bindPopup(address)
+            .openPopup();
+
+        }
+
+    });
+
 }
 
-body{
-    margin:0;
-    bac
+let activeColor = '#1e90ff';
+
+const buttons = document.querySelectorAll('.toolBtn');
+
+buttons.forEach(btn => {
+
+    btn.addEventListener('click', function(){
+
+        if(this.classList.contains('law')) activeColor = '#1e90ff';
+        if(this.classList.contains('k9')) activeColor = '#00e5ff';
+        if(this.classList.contains('sar')) activeColor = '#ff9500';
+        if(this.classList.contains('civ')) activeColor = '#00ffaa';
+        if(this.classList.contains('poi')) activeColor = '#ff00aa';
+        if(this.classList.contains('ev')) activeColor = '#ffffff';
+
+    });
+
+});
+
+let perimeterMode = false;
+
+function togglePerimeter(){
+
+    perimeterMode = true;
+
+    alert('PLACE ONE PERIMETER');
+
+}
+
+map.on('click', function(e){
+
+    if(perimeterMode){
+
+        L.circle(
+        [e.latlng.lat,e.latlng.lng],
+        {
+            radius:300,
+            color:'#ff9500',
+            fillColor:'#ff9500',
+            fillOpacity:0.15
+        })
+        .addTo(map);
+
+        perimeterMode = false;
+
+    }else{
+
+        L.circleMarker(
+        [e.latlng.lat,e.latlng.lng],
+        {
+            radius:10,
+            color:'#ffffff',
+            weight:2,
+            fillColor:activeColor,
+            fillOpacity:1
+        })
+</html>
