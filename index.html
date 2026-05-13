@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>TACNET V1</title>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial,sans-serif;
+background:#08131d;
+color:white;
+overflow:hidden;
+}
+
+/* HOMEPAGE */
+
+#homepage{
+
+position:absolute;
+top:0;
+left:0;
+
+width:100%;
+height:100vh;
+
+background:
+linear-gradient(
+135deg,
+#102235,
+#17364d,
+#204761
+);
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+z-index:9999;
+
+}
+
+.homeContainer{
+
+width:92%;
+max-width:760px;
+
+background:rgba(0,0,0,0.72);
+
+padding:50px;
+
+border-radius:30px;
+
+border:1px solid rgba(0,229,255,0.25);
+
+backdrop-filter:blur(8px);
+
+box-shadow:
+0 0 40px rgba(0,229,255,0.12);
+
+}
+
+.homeTitle{
+
+font-size:62px;
+letter-spacing:6px;
+color:#00e5ff;
+margin-bottom:12px;
+
+}
+
+.homeSub{
+
+font-size:18px;
+margin-bottom:30px;
+color:#d9f6ff;
+
+}
+
+.homeInfo{
+
+line-height:2;
+font-size:18px;
+margin-bottom:30px;
+
+}
+
+input{
+
+width:100%;
+padding:16px;
+
+border:none;
+border-radius:14px;
+
+font-size:18px;
+
+background:#071019;
+color:white;
+
+margin-bottom:20px;
+
+border:1px solid rgba(0,229,255,0.15);
+
+}
+
+.enterBtn{
+
+width:100%;
+padding:18px;
+
+border:none;
+border-radius:16px;
+
+font-size:20px;
+font-weight:bold;
+
+background:#00e5ff;
+color:black;
+
+cursor:pointer;
+
+}
+
+.footer{
+
+margin-top:30px;
+font-size:12px;
+opacity:0.8;
+
+}
+
+/* OPERATIONS */
+
+#operations{
+display:none;
+width:100%;
+height:100vh;
+}
+
+.topbar{
+
+width:100%;
+padding:10px;
+
+background:#0d1e2b;
+
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+
+justify-content:center;
+
+border-bottom:
+1px solid rgba(0,229,255,0.15);
+
+}
+
+.topbar button{
+
+padding:12px 14px;
+
+border:none;
+border-radius:10px;
+
+font-weight:bold;
+
+background:#00e5ff;
+color:black;
+
+cursor:pointer;
+
+font-size:13px;
+
+}
+
+#map{
+width:100%;
+height:70vh;
+}
+
+.panel{
+
+width:100%;
+height:30vh;
+
+overflow:auto;
+
+background:#0b1620;
+
+padding:15px;
+
+border-top:
+1px solid rgba(0,229,255,0.15);
+
+}
+
+.eventItem{
+
+padding:8px;
+margin-bottom:8px;
+
+background:#132432;
+
+border-radius:8px;
+
+font-size:14px;
+
+}
+
+.status{
+
+margin-top:10px;
+font-size:14px;
+opacity:0.8;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- HOMEPAGE -->
+
+<div id="homepage">
+
+<div class="homeContainer">
+
+<div class="homeTitle">
+TACNET
+</div>
+
+<div class="homeSub">
+Federal • State • Local Tactical Coordination
+</div>
+
+<div class="homeInfo">
+
+✓ Respond To Address / Scene<br>
+✓ Point Of Interest (POI)<br>
+✓ Mission Marker<br>
+✓ Evidence Marker<br>
+✓ Set Up Perimeter<br>
+✓ Add Searchers<br>
+✓ K9 Tracking<br>
+✓ GPS Tracking<br>
+✓ Make Apprehension<br>
+✓ Terminate Search<br>
+✓ SOS Officer Alert<br>
+✓ Auto Report Start To Finish<br>
+✓ Voice Activated First Aid<br>
+✓ Federal & State Laws<br>
+✓ Federal & State Case Laws<br>
+✓ Reports & Training Forms<br>
+✓ Live Shared Officer Operations
+
+</div>
+
+<input
+type="password"
+id="accessCode"
+placeholder="ENTER ACCESS CODE">
+
+<button
+class="enterBtn"
+onclick="enterTacnet()">
+
+ENTER TACNET
+
+</button>
+
+<div class="footer">
+
+APP CREATED BY<br>
+EARL A. WOOD<br>
+DEPUTY SHERIFF RETIRED
+
+</div>
+
+</div>
+
+</div>
+
+<!-- OPERATIONS -->
+
+<div id="operations">
+
+<div class="topbar">
+
+<button onclick="addEvent('ADDRESS RESPONSE')">
+SCENE
+</button>
+
+<button onclick="addEvent('POI DEPLOYED')">
+POI
+</button>
+
+<button onclick="addMissionMarker()">
+MISSION
+</button>
+
+<button onclick="addEvidenceMarker()">
+EVIDENCE
+</button>
+
+<button onclick="drawPerimeter()">
+PERIMETER
+</button>
+
+<button onclick="addSearchers()">
+SEARCHERS
+</button>
+
+<button onclick="addEvent('K9 TRACK INITIATED')">
+K9
+</button>
+
+<button onclick="addEvent('APPREHENSION MADE')">
+APPREHEND
+</button>
+
+<button onclick="terminateSearch()">
+TERMINATE
+</button>
+
+<button onclick="sosAlert()">
+SOS
+</button>
+
+<button onclick="generateFullReport()">
+REPORT
+</button>
+
+</div>
+
+<div id="map"></div>
+
+<div class="panel">
+
+<h3>TACTICAL EVENT FEED</h3>
+
+<div id="eventFeed"></div>
+
+<div class="status">
+LIVE TACTICAL SYSTEM ACTIVE
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* =====================================================
+ACCESS SYSTEM
+===================================================== */
+
+function enterTacnet(){
+
+const code =
+document.getElementById('accessCode').value;
+
+if(code === 'TACNET123'){
+
+document.getElementById('homepage')
+.style.display='none';
+
+document.getElementById('operations')
+.style.display='block';
+
+initializeMap();
+
+initializeFirebase();
+
+addEvent('TACNET ACCESS GRANTED');
+
+}else{
+
+alert('ACCESS DENIED');
+
+}
+
+}
+
+/* =====================================================
+MAP SYSTEM
+===================================================== */
+
+let map;
+let perimeterCircle;
+
+function initializeMap(){
+
+map = L.map('map').setView(
+[37.4138,-79.1422],
+13
+);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+attribution:'OpenStreetMap'
+}
+).addTo(map);
+
+L.marker([37.4138,-79.1422])
+.addTo(map)
+.bindPopup('TACNET COMMAND')
+.openPopup();
+
+}
+
+/* =====================================================
+EVENT SYSTEM
+===================================================== */
+
+function addEvent(text){
+
+const feed =
+document.getElementById('eventFeed');
+
+const item =
+document.createElement('div');
+
+item.className='eventItem';
+
+const timestamp =
+new Date().toLocaleTimeString();
+
+item.innerHTML =
+timestamp + ' — ' + text;
+
+feed.prepend(item);
+
+if(firebaseReady){
+
+db.ref('tacnet/events').push({
+
+callsign:callsign,
+event:text,
+time:timestamp
+
+});
+
+}
+
+}
+
+/* =====================================================
+PERIMETER
+===================================================== */
+
+function drawPerimeter(){
+
+if(perimeterCircle){
+
+map.removeLayer(perimeterCircle);
+
+}
+
+perimeterCircle =
+L.circle(
+[37.4138,-79.1422],
+{
+radius:1609,
+color:'red',
+fillColor:'#f03',
+fillOpacity:0.15
+}
+).addTo(map);
+
+addEvent('PERIMETER DEPLOYED');
+
+}
+
+/* =====================================================
+MISSION MARKER
+===================================================== */
+
+function addMissionMarker(){
+
+const marker =
+L.marker(map.getCenter())
+.addTo(map)
+.bindPopup('MISSION MARKER');
+
+addEvent('MISSION MARKER ADDED');
+
+}
+
+/* =====================================================
+EVIDENCE MARKER
+===================================================== */
+
+function addEvidenceMarker(){
+
+const marker =
+L.circleMarker(
+map.getCenter(),
+{
+radius:8,
+color:'yellow',
+fillColor:'yellow',
+fillOpacity:1
+}
+)
+.addTo(map)
+.bindPopup('EVIDENCE');
+
+addEvent('EVIDENCE MARKER ADDED');
+
+}
+
+/* =====================================================
+SEARCHERS
+===================================================== */
+
+function addSearchers(){
+
+const center = map.getCenter();
+
+for(let i=0;i<5;i++){
+
+const marker =
+L.circleMarker(
+
+[
+center.lat + ((Math.random()-0.5)*0.01),
+center.lng + ((Math.random()-0.5)*0.01)
+],
+
+{
+radius:6,
+color:'#00ff88',
+fillColor:'#00ff88',
+fillOpacity:1
+}
+
+).addTo(map);
+
+}
+
+addEvent('SEARCHERS DEPLOYED');
+
+}
+
+/* =====================================================
+TERMINATE
+===================================================== */
+
+function terminateSearch(){
+
+addEvent('SEARCH TERMINATED');
+
+}
+
+/* =====================================================
+SOS
+===================================================== */
+
+function sosAlert(){
+
+addEvent('SOS OFFICER ALERT ACTIVATED');
+
+alert('SOS ALERT ACTIVATED');
+
+}
+
+/* =====================================================
+FIREBASE
+===================================================== */
+
+let db;
+let firebaseReady = false;
+let officerMarkers = {};
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCvuvc6EAoh5S0O3kPcrGEhccTtjagSl_A",
+
+authDomain:
+"safe-encounter-7a43a.firebaseapp.com",
+
+databaseURL:
+"https://safe-encounter-7a43a-default-rtdb.firebaseio.com",
+
+projectId:
+"safe-encounter-7a43a",
+
+storageBucket:
+"safe-encounter-7a43a.firebasestorage.app",
+
+messagingSenderId:
+"633429430474",
+
+appId:
+"1:633429430474:web:9458093c40c218ca42e433",
+
+measurementId:
+"G-GKE7J9EYQB"
+
+};
+
+let callsign = 'UNIT';
+
+function initializeFirebase(){
+
+firebase.initializeApp(firebaseConfig);
+
+db = firebase.database();
+
+firebaseReady = true;
+
+callsign =
+prompt(
+'ENTER UNIT CALLSIGN',
+'LAW-01'
+) || 'UNIT';
+
+startLiveTracking();
+
+listenForOfficers();
+
+addEvent('LIVE SHARED OPS ACTIVE');
+
+}
+
+/* =====================================================
+LIVE GPS
+===================================================== */
+
+function startLiveTracking(){
+
+if(!navigator.geolocation){
+
+alert('GPS NOT SUPPORTED');
+
+return;
+
+}
+
+navigator.geolocation.watchPosition(position => {
+
+const lat = position.coords.latitude;
+const lng = position.coords.longitude;
+
+db.ref('tacnet/live/' + callsign).set({
+
+callsign:callsign,
+lat:lat,
+lng:lng,
+updated:Date.now()
+
+});
+
+});
+
+}
+
+/* =====================================================
+SHARED OFFICERS
+===================================================== */
+
+function listenForOfficers(){
+
+db.ref('tacnet/live').on('value', snapshot => {
+
+const data = snapshot.val();
+
+if(!data) return;
+
+Object.keys(data).forEach(key => {
+
+const unit = data[key];
+
+if(officerMarkers[key]){
+
+officerMarkers[key]
+.setLatLng([unit.lat,unit.lng]);
+
+}else{
+
+const marker =
+
+L.circleMarker(
+
+[unit.lat,unit.lng],
+
+{
+radius:8,
+color:'#00e5ff',
+fillColor:'#00e5ff',
+fillOpacity:1
+}
+
+)
+.addTo(map)
+.bindPopup(unit.callsign);
+
+officerMarkers[key] = marker;
+
+}
+
+});
+
+});
+
+}
+
+/* =====================================================
+REPORT SYSTEM
+===================================================== */
+
+function generateFullReport(){
+
+const reportWindow =
+window.open('', '_blank');
+
+const reportHTML = `
+
+<html>
+
+<head>
+
+<title>TACNET REPORT</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:40px;
+line-height:1.8;
+}
+
+h1{
+color:#0b3c5d;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>TACNET OPERATION REPORT</h1>
+
+<p><strong>UNIT:</strong> ${callsign}</p>
+
+<p><strong>GENERATED:</strong>
+${new Date().toLocaleString()}</p>
+
+<h2>TACTICAL EVENT LOG</h2>
+
+<table>
+
+<tr>
+
+<th>TIME</th>
+<th>EVENT</th>
+
+</tr>
+
+${Array.from(
+document.querySelectorAll('.eventItem')
+).map(item => {
+
+const parts =
+item.innerText.split(' — ');
+
+return `
+
+<tr>
+
+<td>${parts[0]}</td>
+
+<td>${parts[1]}</td>
+
+</tr>
+
+`;
+
+}).join('')}
+
+</table>
+
+<script>
+
+window.print();
+
+<\/script>
+
+</body>
+
+</html>
+
+`;
+
+reportWindow.document.write(reportHTML);
+
+reportWindow.document.close();
+
+}
+
+</script>
+
+</body>
+</html>
