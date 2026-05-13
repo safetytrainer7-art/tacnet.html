@@ -1,0 +1,275 @@
+```html
+<!-- FIREBASE -->
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCvuvc6EAoh5S0O3kPcrGEhccTtjagSl_A",
+
+authDomain:
+"safe-encounter-7a43a.firebaseapp.com",
+
+databaseURL:
+"https://safe-encounter-7a43a-default-rtdb.firebaseio.com",
+
+projectId:
+"safe-encounter-7a43a",
+
+storageBucket:
+"safe-encounter-7a43a.firebasestorage.app",
+
+messagingSenderId:
+"633429430474",
+
+appId:
+"1:633429430474:web:9458093c40c218ca42e433",
+
+measurementId:
+"G-GKE7J9EYQB"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+/* =====================================================
+   LIVE OFFICER SYSTEM
+===================================================== */
+
+let officerMarkers = {};
+
+let callsign =
+prompt(
+'ENTER UNIT CALLSIGN',
+'LAW-01'
+) || 'UNIT';
+
+function startLiveTracking(){
+
+if(!navigator.geolocation){
+
+alert('GPS NOT SUPPORTED');
+
+return;
+
+}
+
+navigator.geolocation.watchPosition(position => {
+
+const lat = position.coords.latitude;
+const lng = position.coords.longitude;
+
+db.ref('tacnet/live/' + callsign).set({
+
+callsign:callsign,
+lat:lat,
+lng:lng,
+updated:Date.now()
+
+});
+
+});
+
+}
+
+db.ref('tacnet/live').on('value', snapshot => {
+
+const data = snapshot.val();
+
+if(!data) return;
+
+Object.keys(data).forEach(key => {
+
+const unit = data[key];
+
+if(officerMarkers[key]){
+
+officerMarkers[key]
+.setLatLng([unit.lat,unit.lng]);
+
+}else{
+
+const marker = L.circleMarker(
+
+[unit.lat,unit.lng],
+
+{
+radius:8,
+color:'#00e5ff',
+fillColor:'#00e5ff',
+fillOpacity:1
+}
+
+)
+.addTo(map)
+.bindPopup(unit.callsign);
+
+officerMarkers[key] = marker;
+
+}
+
+});
+
+});
+
+/* =====================================================
+   SHARED EVENT SYSTEM
+===================================================== */
+
+function syncEvent(eventText){
+
+db.ref('tacnet/events').push({
+
+callsign:callsign,
+event:eventText,
+time:new Date().toLocaleTimeString()
+
+});
+
+}
+
+/* =====================================================
+   OVERRIDE EXISTING EVENT SYSTEM
+===================================================== */
+
+const originalAddEvent = addEvent;
+
+addEvent = function(text){
+
+originalAddEvent(text);
+
+syncEvent(text);
+
+};
+
+/* =====================================================
+   AUTO PDF REPORT SYSTEM
+===================================================== */
+
+function generateFullReport(){
+
+const reportWindow =
+window.open('', '_blank');
+
+const reportHTML = `
+
+<html>
+
+<head>
+
+<title>TACNET REPORT</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:40px;
+line-height:1.8;
+}
+
+h1{
+color:#0b3c5d;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>TACNET OPERATION REPORT</h1>
+
+<p><strong>UNIT:</strong> ${callsign}</p>
+
+<p><strong>GENERATED:</strong>
+${new Date().toLocaleString()}</p>
+
+<h2>TACTICAL EVENT LOG</h2>
+
+<table>
+
+<tr>
+
+<th>TIME</th>
+<th>EVENT</th>
+
+</tr>
+
+${Array.from(
+document.querySelectorAll('.eventItem')
+).map(item => {
+
+const parts =
+item.innerText.split(' — ');
+
+return `
+
+<tr>
+
+<td>${parts[0]}</td>
+
+<td>${parts[1]}</td>
+
+</tr>
+
+`;
+
+}).join('')}
+
+</table>
+
+<script>
+
+window.print();
+
+<\/script>
+
+</body>
+
+</html>
+
+`;
+
+reportWindow.document.write(reportHTML);
+
+reportWindow.document.close();
+
+}
+
+/* =====================================================
+   REPLACE OLD REPORT BUTTON
+===================================================== */
+
+window.generateReport = generateFullReport;
+
+/* =====================================================
+   START LIVE SYSTEM
+===================================================== */
+
+startLiveTracking();
+
+addEvent('LIVE SHARED OPS ACTIVE');
+
+</script>
+```
