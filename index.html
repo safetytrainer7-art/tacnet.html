@@ -1,90 +1,139 @@
-<!-- ADD TO YOUR INDEX.HTML -->
-<style>
-    /* REPORTING PANEL STYLING */
-    .report-overlay {
-        position: fixed; top: 10%; left: 10%; width: 80%; height: 80%;
-        background: rgba(0, 10, 20, 0.98); border: 3px solid var(--gold);
-        z-index: 5000; display: none; padding: 20px; color: var(--neon);
-        box-shadow: 0 0 50px #000; overflow-y: auto;
-    }
-    .log-entry { border-bottom: 1px solid var(--glass); padding: 8px; font-size: 12px; }
-    .timestamp { color: var(--gold); font-weight: bold; margin-right: 10px; }
-    .report-input { 
-        width: 100%; background: #111; border: 1px solid var(--neon); 
-        color: #fff; padding: 10px; margin-top: 10px; font-family: monospace;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TACNET V90 - TACTICAL COMMAND</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --neon: #00ff41; --gold: #ffd700; --glass: rgba(0, 20, 40, 0.95); }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--neon); font-family: 'Courier New', monospace; overflow: hidden; }
+        
+        /* ELITE HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 2px solid var(--gold); background: #000; }
+        .patch { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 0 5px var(--neon)); }
+        .title-block { text-align: center; flex: 1; }
+        .cracked { font-size: 34px; font-weight: 900; letter-spacing: 5px; margin: 0; text-shadow: 0 0 10px var(--neon); }
+        .agency-sub { font-size: 10px; color: #fff; letter-spacing: 2px; }
 
-<div id="report-panel" class="report-overlay">
-    <h2 style="text-align:center; color:var(--gold);">OFFICIAL INCIDENT LOG</h2>
-    <div id="log-container">
-        <!-- AUTOMATIC TIMESTAMPS APPEAR HERE -->
+        /* HUD LAYOUT */
+        .main-grid { display: grid; grid-template-columns: 170px 1fr 170px; gap: 10px; height: 62vh; padding: 10px; }
+        .side-panel { background: var(--glass); border: 1px solid var(--neon); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; }
+        #map { width: 100%; height: 100%; border: 1px solid var(--gold); border-radius: 5px; }
+
+        /* TACTICAL OVERLAYS */
+        .overlay { position: fixed; top: 10%; left: 5%; width: 90%; height: 75%; background: rgba(0,0,0,0.98); border: 2px solid var(--gold); z-index: 9999; display: none; padding: 25px; overflow-y: auto; box-shadow: 0 0 50px #000; }
+        .tac-btn { background: #000; border: 1.5px solid var(--neon); color: var(--neon); padding: 12px 5px; margin: 6px 0; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
+        .tac-btn:active { background: var(--neon); color: #000; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; padding: 15px; border-top: 2px solid var(--gold); color: var(--gold); font-size: 14px; background: #000; font-weight: bold; }
+        h3 { color: var(--gold); border-bottom: 1px solid var(--neon); padding-bottom: 5px; }
+        p { line-height: 1.6; font-size: 15px; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="image (2).png" class="patch"> <!-- FED -->
+    <div class="title-block">
+        <h1 class="cracked">TACNET</h1>
+        <div style="color:var(--gold); font-weight:bold; font-size:12px;">MULTI-AGENCY TACTICAL TASK FORCE</div>
+        <div class="agency-sub">FEDERAL • STATE • LOCAL</div>
     </div>
-    
-    <h4 style="color:var(--gold); margin-top:20px;">OFFICER NOTES & DISPOSITION</h4>
-    <textarea id="officer-notes" class="report-input" rows="4" placeholder="Enter search results, final disposition, and multi-agency units involved..."></textarea>
-    
-    <div style="display:flex; gap:10px; margin-top:20px;">
-        <button class="tac-btn" style="flex:1;" onclick="generatePDF()">GENERATE PDF REPORT</button>
-        <button class="tac-btn" style="flex:1; border-color:cyan; color:cyan;" onclick="sendEmail()">EMAIL TO COMMAND</button>
-        <button class="tac-btn" style="flex:1; border-color:red;" onclick="toggleReport()">CLOSE</button>
+    <img src="image (1).jpg" class="patch"> <!-- VSP -->
+</div>
+
+<div class="main-grid">
+    <div class="side-panel">
+        <button class="tac-btn" onclick="showK9()">K9 FIRST AID</button>
+        <button class="tac-btn" onclick="showLaw()">VA CASE LAW</button>
+    </div>
+    <div id="map"></div>
+    <div class="side-panel">
+        <button class="tac-btn" onclick="toggleReport()">OFFICIAL LOG</button>
+        <button class="tac-btn" style="border-color:red;" onclick="location.reload()">REBOOT</button>
     </div>
 </div>
 
+<!-- DATA OVERLAY -->
+<div id="data-screen" class="overlay">
+    <div id="data-content"></div>
+    <button class="tac-btn" style="width:100%; border-color:var(--gold); margin-top:20px;" onclick="closeData()">RETURN TO HUD</button>
+</div>
+
+<!-- REPORTING SYSTEM -->
+<div id="report-screen" class="overlay">
+    <h3>TACTICAL INCIDENT LOG</h3>
+    <div id="log-display" style="font-size:12px; margin-bottom:20px; border-bottom:1px solid var(--glass);"></div>
+    <h3>DISPOSITION & NOTES</h3>
+    <textarea id="officer-notes" style="width:100%; height:120px; background:#111; color:#fff; border:1px solid var(--neon); padding:10px;"></textarea>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="tac-btn" style="flex:1;" onclick="exportPDF()">SAVE PDF</button>
+        <button class="tac-btn" style="flex:1; border-color:cyan; color:cyan;" onclick="sendEmail()">EMAIL REPORT</button>
+    </div>
+    <button class="tac-btn" style="width:100%; border-color:red; margin-top:10px;" onclick="toggleReport()">CLOSE</button>
+</div>
+
+<div class="footer">APP CREATED BY DEPUTY SHERIFF EARL A. WOOD RETIRED</div>
+
 <script>
-    let incidentLogs = [];
+    var map = L.map('map').setView([37.5, -79.1], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // AUTOMATIC TIMESTAMP FUNCTION
-    function addToLog(action) {
-        const now = new Date();
-        const timestamp = now.toLocaleDateString() + " " + now.toLocaleTimeString();
-        const entry = { time: timestamp, event: action };
-        incidentLogs.push(entry);
+    let logs = [];
+    function logEvent(msg) {
+        let ts = new Date().toLocaleString();
+        logs.push(`[${ts}] ${msg}`);
+        document.getElementById('log-display').innerHTML += `<div style="margin-bottom:5px;"><span style="color:var(--gold)">${ts}</span>: ${msg}</div>`;
+    }
+
+    function showK9() {
+        logEvent("K9 First Aid Module Activated");
+        document.getElementById('data-screen').style.display = 'block';
+        document.getElementById('data-content').innerHTML = `
+            <h3>K9 EMERGENCY: HEAT STROKE PROTOCOL</h3>
+            <p><strong>IMMEDIATE ACTION REQUIRED:</strong> Move the canine to a shaded, well-ventilated area. Initial cooling must begin immediately. Soak the coat with tepid (cool, not freezing) water. Focus on high-vascular areas: the groin, armpits, and paw pads. DO NOT use ice-cold water, as this causes peripheral vasoconstriction, trapping heat in the core.</p>
+            <p><strong>VITAL MONITORING:</strong> Take rectal temperature every 5 minutes. Cease active cooling once the temperature reaches 103°F (39.4°C) to prevent 'hypothermic overshoot.' Provide small amounts of cool water for the dog to drink only if they are fully conscious and not vomiting. Transport to an emergency veterinary facility immediately following stabilization.</p>`;
         
-        const logHtml = `<div class="log-entry"><span class="timestamp">[${timestamp}]</span> ${action}</div>`;
-        document.getElementById('log-container').innerHTML += logHtml;
+        let speech = new SpeechSynthesisUtterance("K9 Heat Stroke Protocol Active. Move to shade. Use tepid water on groin and paws. Stop at 103 degrees.");
+        window.speechSynthesis.speak(speech);
     }
 
-    function toggleReport() {
-        const panel = document.getElementById('report-panel');
-        panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+    function showLaw() {
+        logEvent("Case Law Reference Accessed");
+        document.getElementById('data-screen').style.display = 'block';
+        document.getElementById('data-content').innerHTML = `
+            <h3>VIRGINIA V. MOORE, 553 U.S. 164 (2008)</h3>
+            <p><strong>SUMMARY:</strong> The United States Supreme Court addressed whether a warrantless arrest for a driving offense that is prohibited by state law (but supported by probable cause) violates the Fourth Amendment. In this case, Portsmouth, VA officers arrested David Lee Moore for driving on a suspended license, which was a citable offense—not an arrestable one—under Virginia statute at the time.</p>
+            <p><strong>RULING:</strong> The Court held that as long as the arrest is supported by <strong>probable cause</strong>, the Fourth Amendment is not violated, even if the arrest violates state-level procedural laws. Consequently, the search incident to that arrest (which uncovered crack cocaine) was deemed constitutional. This establishes that federal constitutional protections do not change based on varying state-level arrest statutes.</p>`;
     }
 
-    // PDF GENERATION FOR COURT RECORDS
-    function generatePDF() {
+    function closeData() { document.getElementById('data-screen').style.display = 'none'; }
+    
+    function toggleReport() { 
+        let s = document.getElementById('report-screen');
+        s.style.display = (s.style.display == 'block') ? 'none' : 'block'; 
+    }
+
+    function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const notes = document.getElementById('officer-notes').value;
-
-        doc.setFont("courier");
-        doc.text("TACNET MULTI-AGENCY TACTICAL REPORT", 10, 10);
-        doc.text("CREATED BY: DEPUTY SHERIFF EARL A. WOOD (RETIRED)", 10, 20);
-        doc.text("--------------------------------------------------", 10, 25);
-        
-        let y = 35;
-        incidentLogs.forEach(log => {
-            doc.text(`${log.time}: ${log.event}`, 10, y);
-            y += 10;
-        });
-
-        doc.text("OFFICER NOTES / DISPOSITION:", 10, y + 10);
-        doc.text(doc.splitTextToSize(notes, 180), 10, y + 20);
-        
-        doc.save("TACNET_Search_Report.pdf");
+        doc.setFont("courier", "bold");
+        doc.text("TACNET TACTICAL INCIDENT REPORT", 10, 10);
+        doc.setFontSize(10);
+        doc.text("Lead Developer: Deputy Earl A. Wood (Ret.)", 10, 20);
+        let y = 30;
+        logs.forEach(l => { doc.text(l, 10, y); y += 10; });
+        doc.text("FINAL DISPOSITION: " + document.getElementById('officer-notes').value, 10, y + 10);
+        doc.save("TACNET_Search_Record.pdf");
     }
 
-    // EMAIL INTEGRATION
     function sendEmail() {
-        const notes = document.getElementById('officer-notes').value;
-        const body = incidentLogs.map(l => `${l.time} - ${l.event}`).join('%0D%0A') + 
-                     "%0D%0A%0D%0A DISPOSITION:%0D%0A" + notes;
-        
-        window.location.href = `mailto:?subject=TACNET Incident Report&body=${body}`;
-    }
-
-    // Tying existing buttons to the auto-logger
-    function triggerMod(name) {
-        addToLog("Accessed Module: " + name);
-        // ... rest of your module logic
+        let body = logs.join('%0A') + "%0A%0A DISPOSITION: " + document.getElementById('officer-notes').value;
+        window.location.href = `mailto:?subject=TACNET Search Record&body=${body}`;
     }
 </script>
+</body>
+</html>
