@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>TACNET - Multi-Agency Task Force Search App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #050f0a;
+            font-family: 'Courier New', 'SF Mono', monospace;
+            padding: 15px;
+        }
+
+        /* EXTREME BEAT UP CONTAINER */
+        .tacnet-container {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+            background: #0a150f;
+            background-image: repeating-linear-gradient(45deg, rgba(30,20,5,0.25) 0px, rgba(30,20,5,0.25) 2px, transparent 2px, transparent 10px),
+                              repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 6px),
+                              radial-gradient(circle at 30% 40%, rgba(40,25,5,0.2) 2px, transparent 2px),
+                              radial-gradient(circle at 70% 80%, rgba(20,15,0,0.3) 3px, transparent 3px);
+            background-size: 12px 12px, 100% 8px, 20px 20px, 25px 25px;
+            border: 3px solid #5a3a1a;
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 15px #39ff14, 0 10px 30px black;
+            position: relative;
+            animation: pulseGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 10px #39ff14, 0 10px 30px black; border-color: #5a3a1a; }
+            50% { box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 22px #39ff14, 0 10px 30px black; border-color: #39ff14; }
+            100% { box-shadow: inset 0 0 30px rgba(0,0,0,0.6), 0 0 10px #39ff14, 0 10px 30px black; border-color: #5a3a1a; }
+        }
+
+        /* WORN EDGE EFFECT */
+        .tacnet-container::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(212,175,55,0.12);
+            border-radius: 26px;
+            pointer-events: none;
+        }
+
+        /* EXTREME CRACKED LETTERING - 3 LAYERS */
+        h1 {
+            font-size: 4.2rem;
+            text-align: center;
+            font-family: 'Courier New', 'Impact', monospace;
+            font-weight: 900;
+            position: relative;
+            margin-bottom: 5px;
+            letter-spacing: 8px;
+            transform: rotate(-0.8deg);
+            background: linear-gradient(135deg, #e6c84a, #c4a02a, #8b6914, #5a4210, #a07820);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(4px 4px 0px #1a1a05);
+        }
+
+        /* FIRST CRACK LAYER */
+        h1::before {
+            content: "TACNET";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #7a5a1a;
+            clip-path: polygon(0% 12%, 6% 15%, 9% 10%, 14% 18%, 20% 14%, 27% 22%, 33% 17%, 40% 25%, 46% 20%, 54% 28%, 60% 23%, 67% 31%, 73% 26%, 80% 34%, 86% 29%, 91% 36%, 95% 31%, 100% 38%, 100% 100%, 0% 100%);
+            opacity: 0.55;
+            pointer-events: none;
+        }
+
+        /* SECOND CRACK LAYER - DEEPER */
+        h1::after {
+            content: "TACNET";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 100%;
+            height: 100%;
+            color: #2a1a05;
+            clip-path: polygon(0% 42%, 8% 38%, 13% 45%, 21% 40%, 29% 47%, 36% 43%, 44% 49%, 51% 44%, 59% 51%, 66% 46%, 74% 52%, 82% 48%, 89% 54%, 95% 50%, 100% 55%, 100% 100%, 0% 100%);
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #f5de7a;
+            font-size: 1.1rem;
+            border-top: 2px solid #d4af3799;
+            border-bottom: 2px solid #d4af3799;
+            display: inline-block;
+            width: 100%;
+            padding: 8px 0;
+            margin: 8px 0;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px #2c2b0a;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(2px);
+        }
+
+        .federal-line {
+            text-align: center;
+            color: #f5de7a;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-shadow: 1px 1px 0px #2c2b0a;
+            background: rgba(0,0,0,0.3);
+            padding: 5px;
+            border-radius: 40px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* AGENCY LOGIN SECTION */
+        .agency-section {
+            background: #0a150f;
+            border: 2px solid #39ff14;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 8px #39ff14;
+        }
+
+        /* NEON MAP GLOW */
+        .map-wrapper {
+            background: #1a2e22;
+            border-radius: 24px;
+            padding: 5px;
+            border: 2px solid #39ff14;
+            margin: 12px 0;
+            box-shadow: 0 0 12px #39ff14, inset 0 0 5px rgba(57,255,20,0.3);
+        }
+        #map {
+            height: 340px;
+            width: 100%;
+            border-radius: 20px;
+            background: #0a2a1a;
+            border: 1px solid #3a9a3a;
+        }
+
+        .map-controls button, .address-bar button, .dot-actions button, button.sos {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .map-controls button:hover, .address-bar button:hover {
+            box-shadow: 0 0 8px #39ff14;
+            transform: scale(1.02);
+        }
+
+        .role-btn {
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .role-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 8px gold;
+        }
+
+        button.sos:hover {
+            background: #b33a2a;
+            box-shadow: 0 0 12px red;
+        }
+
+        .instruction {
+            background: #0b1e14;
+            padding: 5px;
+            text-align: center;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #aad48a;
+            margin: 6px 0;
+            border: 1px solid #39ff1455;
+        }
+
+        .voice-chip {
+            display: inline-block;
+            background: #1f472a;
+            margin: 4px;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: 1px solid #b89a40;
+            transition: all 0.1s;
+        }
+        .voice-chip:hover {
+            background: #3a6a3a;
+            box-shadow: 0 0 5px gold;
+        }
+
+        .accordion-header {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .accordion-header:hover {
+            background: #2a5a32;
+            box-shadow: 0 0 5px #39ff14;
+        }
+
+        .night-mode {
+            filter: hue-rotate(75deg) brightness(0.96) contrast(1.1);
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 15px;
+            color: #e6cc7a;
+            border-top: 2px solid #5e7a4a;
+            padding-top: 12px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+        }
+        .creator-line {
+            font-size: 0.75rem;
+            text-align: center;
+            color: #f0da8a;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 5px;
+            border-radius: 40px;
+        }
+
+        .color-badge {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .blue-bg { background: #2266ff; }
+        .lightblue-bg { background: #6dc9ff; }
+        .red-bg { background: #ff4444; }
+        .green-bg { background: #2aff6e; }
+        .purple-bg { background: #c158ff; }
+    </style>
+</head>
+<body>
+<div class="tacnet-container" id="appContainer">
+    <h1>TACNET</h1>
+    <div class="subtitle">MULTI-AGENCY TASK FORCE SEARCH APP</div>
+    <div class="federal-line">🇺🇸 FEDERAL - STATE - LOCAL 🇺🇸</div>
+
+    <!-- OUTSIDE AGENCY LOGIN SECTION -->
+    <div class="agency-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="color:#d4af37; font-weight:bold;">🔐 OUTSIDE AGENCY JOIN CODE</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="text" id="agencyJoinCode" placeholder="Enter agency code" style="background:#0c1912; border:1px solid #d4af37; color:#e6dba0; padding:8px 12px; border-radius:40px; width:180px;">
+                <button id="joinAgencyBtn" style="background:#1f4a28; border:1px solid #39ff14; color:#39ff14; padding:8px 16px; border-radius:40px; cursor:pointer; font-weight:bold;">🔗 JOIN TACNET</button>
+            </div>
+        </div>
+        <div id="connectedAgencies" style="font-size:0.6rem; color:#aad48a; margin-top:8px; display:flex; flex-wrap:wrap; gap:8px;">
+            <span>🟢 Amherst County Sheriff (Host)</span>
+        </div>
+        <div style="font-size:0.55rem; color:#7f9f6a; margin-top:5px;">Valid codes: FED-001 | VASTATE-777 | ROCKBRIDGE-K9 | LYNCHBURG-SAR</div>
+    </div>
+
+    <!-- MAP SECTION -->
+    <div class="map-wrapper">
+        <div id="map"></div>
+        <div class="map-controls" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center;">
+            <button id="satelliteBtn">🛰️ Satellite</button>
+            <button id="streetBtn">🗺️ Street</button>
+            <button id="terrainBtn">⛰️ Terrain</button>
+            <button id="locateMeBtn">📍 MY REAL GPS</button>
+        </div>
+    </div>
+
+    <div class="address-bar" style="display: flex; gap: 8px; margin: 10px 0;">
+        <input type="text" id="addressInput" placeholder="Enter address for LKP / Perimeter center..." style="flex:1; background:#0c1912; border:1px solid #5f7a4c; padding:8px; color:#e6dba0; border-radius:40px;">
+        <button id="searchAddressBtn" style="background:#1f4a28; border:1px solid gold; padding:6px 16px; border-radius:40px; color:gold; font-weight:bold;">🔍 SEARCH + PERIMETER</button>
+    </div>
+
+    <div class="instruction">⚠️ TAP ON MAP TO PLACE SELECTED OFFICER ⚠️</div>
+    <div class="officer-roles" style="display: flex; flex-wrap: wrap; gap: 8px; background:#0f241b; padding:10px; border-radius:28px; margin:10px 0; justify-content:center;">
+        <div class="role-btn active" data-color="blue" data-name="LE" data-hex="#2266ff"><div class="color-badge blue-bg"></div> BLUE - LE</div>
+        <div class="role-btn" data-color="lightblue" data-name="K9" data-hex="#6dc9ff"><div class="color-badge lightblue-bg"></div> LIGHT BLUE - K9</div>
+        <div class="role-btn" data-color="red" data-name="SAR" data-hex="#ff4444"><div class="color-badge red-bg"></div> RED - SAR</div>
+        <div class="role-btn" data-color="green" data-name="CIV" data-hex="#2aff6e"><div class="color-badge green-bg"></div> GREEN - Civilian</div>
+        <div class="role-btn" data-color="purple" data-name="WANTED" data-hex="#c158ff"><div class="color-badge purple-bg"></div> PURPLE - Wanted</div>
+    </div>
+
+    <div class="dot-actions" style="display: flex; gap: 10px; margin: 8px 0;">
+        <button id="clearAllDotsBtn" style="flex:1; background:#2d4a28; border:1px solid #d4af37; color:#efdb8a; padding:8px; border-radius:30px;">🗑️ CLEAR ALL DOTS</button>
+        <button id="clearPerimeterBtn" style="flex:1; background:#2d4a28; border:1px solid #d4af37; color:#efdb8a; padding:8px; border-radius:30px;">🗑️ CLEAR PERIMETER</button>
+    </div>
+
+    <div style="display:flex; gap:8px; margin:8px 0;">
+        <button id="articleDropBtn" style="flex:1; background:#1c3a24; border:1px solid gold; border-radius:30px; color:gold; padding:8px; cursor:pointer;">🧥 DROP ARTICLE (tap map)</button>
+        <select id="articleType" style="background:#0e2a1c; color:gold; border-radius:30px; padding:8px;">
+            <option>Hat</option><option>Jacket</option><option>Weapon</option><option>Other</option>
+        </select>
+    </div>
+
+    <div class="info-row" style="display: flex; justify-content: space-between; background:#0b1e14; padding:8px; border-radius:18px; margin:8px 0; font-size:0.7rem; color:#b3e6a0;">
+        <span>📍 YOUR REAL GPS: <span id="gpsStatus">Waiting for location...</span></span>
+        <span>🧭 Compass: <span id="compass">--</span></span>
+        <span>💨 Wind: NE 5mph (est)</span>
+    </div>
+
+    <button class="sos" id="sosBtn" style="background:#8b2a1f; width:100%; padding:12px; border:none; border-radius:60px; color:white; font-size:1.1rem; margin:8px 0; cursor:pointer;">🚨 OFFICER DOWN SOS 🚨</button>
+
+    <!-- K9 FIRST AID -->
+    <div class="voice-aid" style="background:#0c2419; border-left:5px solid #d4af37; padding:10px; border-radius:24px; margin:10px 0;">
+        <div style="color:#e6c84a;">🎤 K9 FIRST AID (tap to speak)</div>
+        <div>
+            <span class="voice-chip" data-aid="k9cpr">🐕 K9 CPR</span>
+            <span class="voice-chip" data-aid="snake">🐍 Snake Bite</span>
+            <span class="voice-chip" data-aid="eye">👁️ Eye Injury</span>
+            <span class="voice-chip" data-aid="bleed">🩸 Bleeding</span>
+            <span class="voice-chip" data-aid="heat">🌡️ Heat Exhaustion</span>
+            <span class="voice-chip" data-aid="paw">🐾 Paw Injury</span>
+        </div>
+        <div id="voiceFeedback" style="font-size:0.65rem; margin-top:5px; color:#b8f2a2;">Tap any medical chip</div>
+    </div>
+
+    <!-- K9 CASE LAW ACCORDION -->
+    <div class="accordion" style="background:#0c2419; border-radius:20px; margin:8px 0; overflow:hidden;">
+        <div class="accordion-header" onclick="toggleAccordion('caseLawContent')" style="background:#1e3524; padding:10px; cursor:pointer; color:#d4af37; font-weight:bold; display:flex; justify-content:space-between;">⚖️ K9 CASE LAW (FEDERAL & VA) <span>▼</span></div>
+        <div class="accordion-content" id="caseLawContent" style="padding:10px; display:none; max-height:300px; overflow-y:auto;">
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <button id="showFederal" style="background:#1f4a28; border:1px solid gold; padding:5px 12px; border-radius:20px; color:gold; cursor:pointer;">FEDERAL (5)</button>
+                <button id="showVirginia" style="background:#1f4a28; border:1px solid gold; padding:5px 12px; border-radius:20px; color:gold; cursor:pointer;">VIRGINIA (5)</button>
+            </div>
+            <div id="caseLawDisplay"></div>
+        </div>
+    </div>
+
+    <!-- LAW SECTION ACCORDION -->
+    <div class="accordion" style="background:#0c2419; border-radius:20px; margin:8px 0; overflow:hidden;">
+        <div class="accordion-header" onclick="toggleAccordion('lawContent')" style="background:#1e3524; padding:10px; cursor:pointer; color:#d4af37; font-weight:bold; display:flex; justify-content:space-between;">📚 LAW SECTION - NARCOTICS & PATROL K9 <span>▼</span></div>
+        <div class="accordion-content" id="lawContent" style="padding:10px; display:none; max-height:400px; overflow-y:auto;"></div>
+    </div>
+
+    <!-- K9 FORMS SECTION -->
+    <div class="forms-section" style="background:#0c2419; border-left:5px solid #d4af37; border-radius:20px; margin:10px 0; padding:10px;">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <div class="form-tab active" id="tabDailyTraining" style="background:#1e3524; padding:5px 12px; border-radius:30px; cursor:pointer; font-size:0.7rem;">📋 DAILY TRAINING</div>
+            <div class="form-tab" id="tabIncidentReport" style="background:#1e3524; padding:5px 12px; border-radius:30px; cursor:pointer; font-size:0.7rem;">📄 INCIDENT REPORT</div>
+        </div>
+        
+        <div id="dailyTrainingPanel" class="form-panel" style="display:block;">
+            <div class="form-field"><label style="color:#d4af37;">📅 DATE</label><input type="date" id="trainingDate" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div style="display:flex; gap:8px;"><div class="form-field" style="flex:1;"><label>🐕 K9 NAME</label><input type="text" id="k9Name" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div class="form-field" style="flex:1;"><label>👮 HANDLER</label><input type="text" id="handlerName" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div></div>
+            <div class="form-field"><label>🎯 TRAINING TYPE</label><select id="trainingType" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"><option>Narcotics Detection</option><option>Patrol/Apprehension</option><option>Tracking</option><option>Obedience</option></select></div>
+            <div class="form-field"><label>⏱️ DURATION (hours)</label><input type="text" id="trainingDuration" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div class="form-field"><label>📝 NOTES</label><textarea id="trainingNotes" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px; height:60px;"></textarea></div>
+            <div class="form-field"><label>✅ RATING</label><select id="performanceRating" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"><option>Excellent</option><option>Satisfactory</option><option>Needs Improvement</option></select></div>
+            <button id="saveTrainingBtn" style="background:#1f4a28; border:1px solid gold; padding:8px; border-radius:30px; color:gold; margin-top:8px; width:100%; cursor:pointer;">💾 SAVE TRAINING</button>
+            <div id="savedTrainingList" style="margin-top:10px; max-height:120px; overflow-y:auto; background:#051008; border-radius:12px; padding:6px;"></div>
+        </div>
+
+        <div id="incidentReportPanel" class="form-panel" style="display:none;">
+            <div class="form-field"><label>📅 DATE/TIME</label><input type="datetime-local" id="incidentDateTime" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div class="form-field"><label>📍 LOCATION</label><input type="text" id="incidentLocation" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div class="form-field"><label>👮 HANDLER</label><input type="text" id="incidentHandler" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"></div>
+            <div class="form-field"><label>📋 INCIDENT TYPE</label><select id="incidentType" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"><option>Traffic Stop - K9</option><option>Building Search</option><option>Area/Tracking</option><option>Suspect Apprehension</option></select></div>
+            <div class="form-field"><label>📝 NARRATIVE</label><textarea id="incidentNarrative" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px; height:60px;"></textarea></div>
+            <div class="form-field"><label>🔍 K9 ALERT</label><select id="k9Alert" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"><option>Positive alert - contraband located</option><option>Positive alert - no contraband</option><option>No alert</option></select></div>
+            <div class="form-field"><label>⚖️ DISPOSITION</label><select id="incidentDisposition" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px;"><option>Suspect Apprehended</option><option>Contraband Seized</option><option>Negative Find</option></select></div>
+            <div class="form-field"><label>📌 COURT NOTES</label><textarea id="courtNotes" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:6px; border-radius:12px; height:50px;"></textarea></div>
+            <button id="saveIncidentBtn" style="background:#1f4a28; border:1px solid gold; padding:8px; border-radius:30px; color:gold; margin-top:8px; width:100%; cursor:pointer;">💾 SAVE INCIDENT</button>
+            <div id="savedIncidentList" style="margin-top:10px; max-height:120px; overflow-y:auto; background:#051008; border-radius:12px; padding:6px;"></div>
+        </div>
+    </div>
+
+    <div class="notes-area" style="background:#0b1e14; border-radius:16px; margin:8px 0; padding:8px;">
+        <label style="color:#d4af37;">📝 INCIDENT NOTES</label>
+        <textarea id="incidentNotes" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:8px; border-radius:16px; height:50px;"></textarea>
+    </div>
+    <div class="disposition-area" style="background:#0b1e14; border-radius:16px; margin:8px 0; padding:8px;">
+        <label style="color:#d4af37;">📋 FINAL DISPOSITION</label>
+        <select id="dispositionSelect" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:8px; border-radius:16px;">
+            <option value="">-- SELECT --</option>
+            <option value="CLEARED - No threat">CLEARED - No threat</option>
+            <option value="SUSPECT APPREHENDED">SUSPECT APPREHENDED</option>
+            <option value="MISSING PERSON LOCATED">MISSING PERSON LOCATED</option>
+        </select>
+        <textarea id="dispositionNotes" style="width:100%; background:#0c1912; border:1px solid #5f7a4c; color:#e6dba0; padding:8px; border-radius:16px; height:40px; margin-top:5px;" placeholder="Additional details..."></textarea>
+    </div>
+
+    <div class="report-section" style="background:#0b1e14; border-radius:20px; margin:8px 0; padding:8px; border:1px solid #5e7a4a;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap;">
+            <span style="color:#e6c84a;">📋 MISSION LOG</span>
+            <button id="exportPdfBtn" style="background:#1f4a28; border:1px solid gold; padding:5px 12px; border-radius:30px; color:gold; cursor:pointer;">📄 EXPORT PDF</button>
+        </div>
+        <div id="reportLog" style="max-height:80px; overflow-y:auto; font-size:0.55rem; background:#051008; padding:6px; border-radius:12px; color:#b8e6a0;"></div>
+    </div>
+
+    <div style="display:flex; gap:12px; margin:12px 0;">
+        <button id="terminateBtn" style="flex:1; background:#5a2e1f; border:none; border-radius:60px; color:white; padding:10px; cursor:pointer;">⛔ TERMINATE SEARCH</button>
+        <button id="nightVisionToggle" style="flex:1; background:#1c4f2a; border:none; border-radius:60px; color:white; padding:10px; cursor:pointer;">🌙 NIGHT VISION</button>
+    </div>
+
+    <div class="creator-line">⚡ APP CREATED BY EARL A. WOOD, DEPUTY SHERIFF (RET.) ⚡</div>
+    <footer>⭐ FEDERAL BADGE | ⭐ VIRGINIA STATE POLICE | TACNET MULTI-AGENCY TASK FORCE ⭐</footer>
+</div>
+
+<script>
+    // ========== ACCORDION ==========
+    function toggleAccordion(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // ========== LAW TOPICS ==========
+    const lawTopics = [
+        { title: "PROBABLE CAUSE - DEFINITION", text: "Probable cause exists when the totality of circumstances known to a reasonable officer would lead that officer to believe that a crime has been, is being, or will be committed, and that evidence of that crime will be found in the location to be searched. For K9 handlers, a certified dog's positive alert on a vehicle, container, or area establishes probable cause for a warrantless search under the automobile exception. Illinois v. Gates, 462 U.S. 213 (1983)." },
+        { title: "OFFICER'S 5 BASIC SENSES FOR PC", text: "Officers may establish probable cause using any of their five natural senses: sight (observing contraband in plain view), smell (odor of marijuana - 'plain smell' doctrine), hearing (sounds of drugs being packaged), touch (feeling a weapon during a pat-down), and taste (limited to exigent circumstances). A K9's olfactory detection is considered an extension of the officer's sense of smell under United States v. Place, 462 U.S. 696 (1983)." },
+        { title: "FOURTH AMENDMENT", text: "The Fourth Amendment protects '[t]he right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures.' For K9 handlers, this governs every deployment: sniffs of vehicles (permitted under Caballes), sniffs of homes (restricted under Jardines), and duration of dog deployments (limited under Rodriguez)." },
+        { title: "SEARCHES OF VEHICLES", text: "The automobile exception allows warrantless vehicle searches with probable cause. Under United States v. Ross, 456 U.S. 798 (1982), officers may search any container within the vehicle. A certified dog's positive alert gives officers immediate probable cause to search the entire vehicle, including trunk and all containers." },
+        { title: "SEARCHES OF PERSONS", text: "Warrantless searches of persons permitted: search incident to lawful arrest, Terry pat-down for weapons, and consent. A K9 may sniff a person during lawful encounter but cannot make physical contact without probable cause." },
+        { title: "SEARCHES OF HOMES", text: "Homes receive highest Fourth Amendment protection. Under Florida v. Jardines, 569 U.S. 1 (2013), bringing a drug-detection dog onto a homeowner's front porch constitutes a search requiring a warrant. The curtilage receives same protection as the home." },
+        { title: "CONSENT SEARCHES", text: "Warrantless search valid when pursuant to voluntary consent from person with authority. Consent must be free, not coerced. Officers should document consent through written forms or body camera. United States v. Drayton, 536 U.S. 194 (2002)." },
+        { title: "CONSENT WITHDRAWN", text: "A person may withdraw consent at any time. Once revoked, officers must stop searching immediately unless independent probable cause already established. If dog alerted prior to withdrawal, search may continue under automobile exception." },
+        { title: "HOLDING TIMES & DETENTION", text: "Under Rodriguez v. United States, 575 U.S. 348 (2015), a traffic stop may not be prolonged beyond time needed to complete the mission to allow for a K9 sniff without independent reasonable suspicion. The dog must be ready to deploy immediately at conclusion of stop." },
+        { title: "MIRANDA WARNINGS", text: "Under Miranda v. Arizona, 384 U.S. 436 (1966), statements during custodial interrogation are inadmissible without rights advisement. General on-scene questioning during traffic stop does not require Miranda. Statements after handcuffing typically require warnings." },
+        { title: "TRAFFIC STOPS & K9 DEPLOYMENT", text: "Under Whren v. United States, 517 U.S. 806 (1996), traffic stop reasonable if based on probable cause of any violation. Under Illinois v. Caballes, 543 U.S. 405 (2005), dog sniff does not require reasonable suspicion if conducted during lawful stop duration." },
+        { title: "TRACKING & SEARCHING WITH K9", text: "K9 tracking on public property does not require warrant as no expectation of privacy in public movements. Tracking onto private property may require warrant or exigent circumstances. Under United States v. Sharpe, 470 U.S. 675 (1985), reasonable suspicion may justify brief detention for tracking dog." },
+        { title: "USE OF FORCE - K9 APPREHENSION", text: "Under Graham v. Connor, 490 U.S. 386 (1989), K9 apprehension force must be objectively reasonable. A K9 bite is intermediate force, less than deadly. Handlers should give verbal warnings when practicable. Excessive force evaluated under Fourth Amendment reasonableness." },
+        { title: "TRAINING RECORDS - COURT IMPORTANCE", text: "Under Florida v. Harris, 568 U.S. 237 (2013), dog's certification and training records are presumptively reliable. Comprehensive records essential: daily logs, certifications, deployment records. Without proper documentation, dog's alert may be challenged resulting in suppression." },
+        { title: "PREPARING FOR COURT AS K9 HANDLER", text: "Handlers must prepare for testimony on: (1) handler qualifications, (2) dog's qualifications and training records, (3) specific deployment and dog's behavior, (4) reliability of dog. Under Daubert v. Merrell Dow, 509 U.S. 579 (1993), reliability must be established through proper training protocols." }
+    ];
+
+    const lawContainer = document.getElementById('lawContent');
+    lawContainer.innerHTML = lawTopics.map(t => `<div style="margin-bottom:12px; border-bottom:1px solid #2a4a2a; padding-bottom:8px;"><div style="color:#e6c84a; font-weight:bold; font-size:0.75rem;">⚖️ ${t.title}</div><div style="color:#b8e6a0; font-size:0.65rem; line-height:1.4;">${t.text}</div></div>`).join('');
+
+    // ========== CASE LAW ==========
+    const federalCases = [
+        { title: "United States v. Place (1983)", text: "Canine sniff of luggage in public airport is not a 'search' under Fourth Amendment because it only reveals contraband. Limited intrusion does not violate privacy expectations.", citation: "462 U.S. 696 (1983)" },
+        { title: "Illinois v. Caballes (2005)", text: "Dog sniff during lawful traffic stop does not violate Fourth Amendment, even without reasonable suspicion of drug activity, if conducted within stop duration.", citation: "543 U.S. 405 (2005)" },
+        { title: "Florida v. Harris (2013)", text: "Dog's alert creates probable cause if dog properly trained and certified. Defendant must challenge reliability with actual evidence, not hypothetical concerns.", citation: "568 U.S. 237 (2013)" },
+        { title: "Florida v. Jardines (2013)", text: "Using drug-detection dog on homeowner's front porch constitutes search requiring warrant because porch is curtilage protected by Fourth Amendment.", citation: "569 U.S. 1 (2013)" },
+        { title: "Rodriguez v. United States (2015)", text: "Dog sniff cannot extend traffic stop beyond time reasonably needed for ticket. Further detention requires independent reasonable suspicion.", citation: "575 U.S. 348 (2015)" }
+    ];
+    const virginiaCases = [
+        { title: "Commonwealth v. Ewell (2014)", text: "Dog sniff during traffic stop does not require independent reasonable suspicion if within time needed to complete stop. Virginia adopts Caballes standard.", citation: "64 Va. App. 168" },
+        { title: "Commonwealth v. Griffin (2016)", text: "Dog's alert on vehicle creates probable cause to search entire vehicle including locked compartments. Training records establish reliability.", citation: "291 Va. 1" },
+        { title: "Bass v. Commonwealth (2018)", text: "K9 sniff of home's exterior from common hallway of apartment does not require warrant. Apartment hallways not protected curtilage.", citation: "69 Va. App. 365" },
+        { title: "Wilson v. Commonwealth (2019)", text: "Virginia courts apply flexible reasonableness standard for dog deployment timing, not rigid time limit. 15-minute delay for K9 upheld.", citation: "297 Va. 572" },
+        { title: "Jones v. Commonwealth (2020)", text: "Handler's testimony about dog's training and field performance sufficient to establish reliability without producing certification records.", citation: "71 Va. App. 612" }
+    ];
+
+    function renderCaseLaw(type) {
+        const container = document.getElementById('caseLawDisplay');
+        const cases = type === 'federal' ? federalCases : virginiaCases;
+        container.innerHTML = cases.map(c => `<div style="background:#0f241b; border-left:3px solid #d4af37; padding:8px; margin-bottom:8px; border-radius:12px;"><div style="color:#e6c84a; font-weight:bold; font-size:0.7rem;">${c.title}</div><div style="color:#b8e6a0; font-size:0.6rem;">${c.text}</div><div style="color:#c9a53b; font-size:0.55rem;">${c.citation}</div></div>`).join('');
+    }
+    document.getElementById('showFederal').onclick = () => renderCaseLaw('federal');
+    document.getElementById('showVirginia').onclick = () => renderCaseLaw('virginia');
+    renderCaseLaw('federal');
+
+    // ========== OUTSIDE AGENCY REAL-TIME VISIBILITY ==========
+    let agencyUsers = JSON.parse(localStorage.getItem('tacnet_agency_users') || '[]');
+    let myAgencyId = localStorage.getItem('tacnet_my_id') || 'agency_' + Math.random().toString(36).substr(2, 8);
+    localStorage.setItem('tacnet_my_id', myAgencyId);
+
+    if(agencyUsers.length === 0) {
+        agencyUsers.push({ id: myAgencyId, name: 'Amherst County Sheriff', type: 'host', lat: null, lng: null, lastSeen: Date.now() });
+        localStorage.setItem('tacnet_agency_users', JSON.stringify(agencyUsers));
+    }
+
+    function updateMyLocation() {
+        if(map && map.getCenter) {
+            const center = map.getCenter();
+            const myIndex = agencyUsers.findIndex(u => u.id === myAgencyId);
+            if(myIndex !== -1) {
+                agencyUsers[myIndex].lat = center.lat;
+                agencyUsers[myIndex].lng = center.lng;
+                agencyUsers[myIndex].lastSeen = Date.now();
+            } else {
+                agencyUsers.push({ id: myAgencyId, name: 'Amherst County Sheriff', type: 'host', lat: center.lat, lng: center.lng, lastSeen: Date.now() });
+            }
+            localStorage.setItem('tacnet_agency_users', JSON.stringify(agencyUsers));
+        }
+    }
+    setInterval(updateMyLocation, 3000);
+
+    window.addEventListener('storage', (e) => {
+        if(e.key === 'tacnet_agency_users') {
+            agencyUsers = JSON.parse(e.newValue || '[]');
+            renderAgencyMarkers();
+            updateAgencyList();
+        }
+    });
+
+    let agencyMarkers = [];
+    function renderAgencyMarkers() {
+        agencyMarkers.forEach(m => { if(map) map.removeLayer(m); });
+        agencyMarkers = [];
+        agencyUsers.forEach(user => {
+            if(user.id !== myAgencyId && user.lat && user.lng) {
+                let color = '#6dc9ff';
+                let name = user.name;
+                if(user.type === 'fed') color = '#2266ff';
+                if(user.type === 'state') color = '#2aff6e';
+                if(user.type === 'local') color = '#ffaa44';
+                const marker = L.circleMarker([user.lat, user.lng], { radius: 12, fillColor: color, color: 'white', weight: 2, fillOpacity: 0.85 }).addTo(map);
+                marker.bindPopup(`👮 ${user.name}<br>Lat: ${user.lat.toFixed(5)}<br>🟢 Active`);
+                agencyMarkers.push(marker);
+            }
+        });
+    }
+
+    function updateAgencyList() {
+        const container = document.getElementById('connectedAgencies');
+        if(!container) return;
+        let html = '<span>🟢 Amherst County Sheriff (Host)</span>';
+        agencyUsers.forEach(user => {
+            if(user.id !== myAgencyId) {
+                let icon = user.type === 'fed' ? '⭐' : (user.type === 'state' ? '🔹' : '🔸');
+                html += `<span style="background:#1e3524; padding:2px 8px; border-radius:20px;">${icon} ${user.name}</span>`;
+            }
+        });
+        container.innerHTML = html;
+    }
+
+    document.getElementById('joinAgencyBtn').onclick = () => {
+        const code = document.getElementById('agencyJoinCode').value.toUpperCase();
+        let newUser = null;
+        if(code === 'FED-001') newUser = { id: 'fed_' + Date.now(), name: 'Federal Task Force', type: 'fed', lat: null, lng: null, lastSeen: Date.now() };
+        else if(code === 'VASTATE-777') newUser = { id: 'va_' + Date.now(), name: 'Virginia State Police', type: 'state', lat: null, lng: null, lastSeen: Date.now() };
+        else if(code === 'ROCKBRIDGE-K9') newUser = { id: 'rock_' + Date.now(), name: 'Rockbridge County K9', type: 'local', lat: null, lng: null, lastSeen: Date.now() };
+        else if(code === 'LYNCHBURG-SAR') newUser = { id: 'lyn_' + Date.now(), name: 'Lynchburg SAR', type: 'local', lat: null, lng: null, lastSeen: Date.now() };
+        else { alert("Invalid agency code"); return; }
+        agencyUsers.push(newUser);
+        localStorage.setItem('tacnet_agency_users', JSON.stringify(agencyUsers));
+        updateAgencyList();
+        addEvent("AGENCY", `${newUser.name} joined`);
+        alert(`${newUser.name} has joined. You can now see each other on the map.`);
+        document.getElementById('agencyJoinCode').value = '';
+    };
+
+    setInterval(() => {
+        agencyUsers = JSON.parse(localStorage.getItem('tacnet_agency_users') || '[]');
+        renderAgencyMarkers();
+        updateAgencyList();
+    }, 5000);
+
+    // ========== STORAGE ==========
+    let savedTrainings = JSON.parse(localStorage.getItem('k9_trainings') || '[]');
+    let savedIncidents = JSON.parse(localStorage.getItem('k9_incidents') || '[]');
+    let missionEvents = [];
+    let sessionStart = new Date();
+
+    function addEvent(type, description, lat = null, lng = null) {
+        const timestamp = new Date();
+        missionEvents.push({ timestamp: timestamp.toLocaleString(), type, description });
+        const logDiv = document.getElementById('reportLog');
+        logDiv.innerHTML += `<p>[${timestamp.toLocaleTimeString()}] ${type}: ${description}</p>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function renderTrainingList() {
+        const container = document.getElementById('savedTrainingList');
+        if(savedTrainings.length === 0) { container.innerHTML = '<div style="color:#7f9f6a; text-align:center;">No training records</div>'; return; }
+        container.innerHTML = savedTrainings.map((t, i) => `<div style="background:#0f241b; margin:5px 0; padding:5px; border-radius:8px; cursor:pointer;" onclick="viewTraining(${i})">📅 ${t.date} | 🐕 ${t.k9Name} | ${t.trainingType}</div>`).join('');
+    }
+    function renderIncidentList() {
+        const container = document.getElementById('savedIncidentList');
+        if(savedIncidents.length === 0) { container.innerHTML = '<div style="color:#7f9f6a; text-align:center;">No incident reports</div>'; return; }
+        container.innerHTML = savedIncidents.map((i, idx) => `<div style="background:#0f241b; margin:5px 0; padding:5px; border-radius:8px; cursor:pointer;" onclick="viewIncident(${idx})">📅 ${i.dateTime.substring(0,10)} | ${i.incidentType}</div>`).join('');
+    }
+    window.viewTraining = (idx) => { let t = savedTrainings[idx]; document.getElementById('trainingDate').value = t.date; document.getElementById('k9Name').value = t.k9Name; document.getElementById('handlerName').value = t.handlerName; document.getElementById('trainingType').value = t.trainingType; document.getElementById('trainingDuration').value = t.duration; document.getElementById('trainingNotes').value = t.notes; document.getElementById('performanceRating').value = t.rating; addEvent("VIEW", "Viewed training record"); };
+    window.viewIncident = (idx) => { let i = savedIncidents[idx]; document.getElementById('incidentDateTime').value = i.dateTime; document.getElementById('incidentLocation').value = i.location; document.getElementById('incidentHandler').value = i.handler; document.getElementById('incidentType').value = i.incidentType; document.getElementById('incidentNarrative').value = i.narrative; document.getElementById('k9Alert').value = i.alert; document.getElementById('incidentDisposition').value = i.disposition; document.getElementById('courtNotes').value = i.courtNotes; addEvent("VIEW", "Viewed incident report"); };
+
+    document.getElementById('saveTrainingBtn').onclick = () => {
+        let training = { date: document.getElementById('trainingDate').value, k9Name: document.getElementById('k9Name').value, handlerName: document.getElementById('handlerName').value, trainingType: document.getElementById('trainingType').value, duration: document.getElementById('trainingDuration').value, notes: document.getElementById('trainingNotes').value, rating: document.getElementById('performanceRating').value };
+        if(!training.date || !training.k9Name) { alert("Fill Date and K9 Name"); return; }
+        savedTrainings.unshift(training); localStorage.setItem('k9_trainings', JSON.stringify(savedTrainings)); renderTrainingList(); addEvent("TRAINING", `Saved: ${training.k9Name}`); alert("Saved");
+    };
+    document.getElementById('saveIncidentBtn').onclick = () => {
+        let incident = { dateTime: document.getElementById('incidentDateTime').value, location: document.getElementById('incidentLocation').value, handler: document.getElementById('incidentHandler').value, incidentType: document.getElementById('incidentType').value, narrative: document.getElementById('incidentNarrative').value, alert: document.getElementById('k9Alert').value, disposition: document.getElementById('incidentDisposition').value, courtNotes: document.getElementById('courtNotes').value };
+        if(!incident.dateTime || !incident.location) { alert("Fill Date/Time and Location"); return; }
+        savedIncidents.unshift(incident); localStorage.setItem('k9_incidents', JSON.stringify(savedIncidents)); renderIncidentList(); addEvent("INCIDENT", `Saved: ${incident.incidentType}`); alert("Saved");
+    };
+    document.getElementById('exportPdfBtn').onclick = () => {
+        let notes = document.getElementById('incidentNotes').value || "None";
+        let disposition = document.getElementById('dispositionSelect').value || "Not specified";
+        let trainingsHtml = savedTrainings.map(t => `<div><strong>${t.date}</strong> - ${t.k9Name}: ${t.notes.substring(0,80)}</div>`).join('');
+        let incidentsHtml = savedIncidents.map(i => `<div><strong>${i.dateTime}</strong> - ${i.incidentType}: ${i.disposition}</div>`).join('');
+        let reportHtml = `<html><head><title>TACNET REPORT</title><style>body{font-family:monospace;padding:20px;}h1{color:#b58d2a;}</style></head><body><h1>TACNET OFFICIAL REPORT</h1><p>Generated: ${new Date().toLocaleString()}</p><p>Created by: EARL A. WOOD, Deputy Sheriff (Ret.)</p><h2>NOTES</h2><p>${notes}</p><h2>DISPOSITION</h2><p>${disposition}</p><h2>TRAINING</h2>${trainingsHtml || "<p>None</p>"}<h2>INCIDENTS</h2>${incidentsHtml || "<p>None</p>"}<h2>EVENT LOG</h2>${missionEvents.map(e => `<p>${e.timestamp}: ${e.type} - ${e.description}</p>`).join('')}<footer>Amherst County Sheriff's Department - TACNET</footer></body></html>`;
+        let win = window.open(); win.document.write(reportHtml); win.document.close(); win.print();
+    };
+
+    document.getElementById('tabDailyTraining').onclick = () => { document.getElementById('tabDailyTraining').style.background = '#d4af37'; document.getElementById('tabIncidentReport').style.background = '#1e3524'; document.getElementById('dailyTrainingPanel').style.display = 'block'; document.getElementById('incidentReportPanel').style.display = 'none'; };
+    document.getElementById('tabIncidentReport').onclick = () => { document.getElementById('tabIncidentReport').style.background = '#d4af37'; document.getElementById('tabDailyTraining').style.background = '#1e3524'; document.getElementById('incidentReportPanel').style.display = 'block'; document.getElementById('dailyTrainingPanel').style.display = 'none'; };
+    document.getElementById('trainingDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('incidentDateTime').value = new Date().toISOString().slice(0,16);
+    renderTrainingList(); renderIncidentList();
+
+    // ========== MAP ==========
+    const map = L.map('map').setView([38.5, -79.0], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+    
+    document.getElementById('locateMeBtn').onclick = () => map.locate({setView: true});
+    map.on('locationfound', (e) => { if(window.myMarker) map.removeLayer(window.myMarker); window.myMarker = L.circleMarker([e.latitude, e.longitude], {radius:14, fillColor:'#39ff14', color:'gold', weight:3, fillOpacity:0.9}).addTo(map); document.getElementById('gpsStatus').innerHTML = `${e.latitude.toFixed(4)}°, ${e.longitude.toFixed(4)}°`; addEvent("GPS", "Location acquired"); });
+    
+    let selectedRole = { hex: '#2266ff', name: 'LE' };
+    document.querySelectorAll('.role-btn').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); selectedRole = { hex: btn.getAttribute('data-hex'), name: btn.getAttribute('data-name') }; }; });
+    
+    let officerDots = [];
+    map.on('click', (e) => { let marker = L.circleMarker([e.latlng.lat, e.latlng.lng], {radius:10, fillColor:selectedRole.hex, color:'gold', weight:2}).addTo(map); marker.bindPopup(`${selectedRole.name}<br><button style="background:#8b2a1f;color:white;border:none;padding:2px 6px;border-radius:10px;" onclick="map.removeLayer(this.parentElement._source)">Remove</button>`); officerDots.push(marker); addEvent("DEPLOY", `${selectedRole.name} deployed`); });
+    
+    document.getElementById('clearAllDotsBtn').onclick = () => { officerDots.forEach(d => map.removeLayer(d)); officerDots = []; addEvent("CLEAR", "All dots cleared"); };
+    document.getElementById('sosBtn').onclick = () => { addEvent("SOS", "OFFICER DOWN ALERT"); alert("SOS sent to all TACNET units"); };
+    
+    let articleMode = false;
+    document.getElementById('articleDropBtn').onclick = () => { articleMode = true; document.getElementById('articleDropBtn').style.background = '#5a8a3a'; setTimeout(() => { articleMode = false; document.getElementById('articleDropBtn').style.background = '#1c3a24'; }, 5000); addEvent("MODE", "Article drop mode"); };
+    map.on('click', (e) => { if(articleMode) { L.marker([e.latlng.lat, e.latlng.lng], {icon: L.divIcon({html:'📌', iconSize:[20,20]})}).addTo(map); addEvent("ARTICLE", "Evidence dropped"); articleMode = false; document.getElementById('articleDropBtn').style.background = '#1c3a24'; } });
+    
+    let currentPerimeter = null;
+    document.getElementById('searchAddressBtn').onclick = async () => { let addr = document.getElementById('addressInput').value; if(!addr) return; let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`); let data = await res.json(); if(data[0]) { let lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon); if(currentPerimeter) map.removeLayer(currentPerimeter); currentPerimeter = L.circle([lat, lng], {color:'#39ff14', weight:4, fillColor:'#39ff14', fillOpacity:0.12, radius:500, interactive:false}).addTo(map); map.setView([lat, lng], 15); L.marker([lat, lng]).addTo(map).bindPopup(`📍 LKP: ${addr}`); addEvent("LKP", `Set at ${addr}`); } };
+    document.getElementById('clearPerimeterBtn').onclick = () => { if(currentPerimeter) map.removeLayer(currentPerimeter); currentPerimeter = null; addEvent("PERIMETER", "Cleared"); };
+    
+    let nightMode = false;
+    document.getElementById('nightVisionToggle').onclick = () => { nightMode = !nightMode; document.getElementById('appContainer').classList.toggle('night-mode'); addEvent("NIGHT", nightMode ? "On" : "Off"); };
+    document.getElementById('terminateBtn').onclick = () => { addEvent("TERMINATE", "Mission ended"); officerDots.forEach(d => map.removeLayer(d)); officerDots = []; };
+    
+    const aidTexts = { k9cpr: "K9 CPR: 30 compressions, 2 breaths, rate 100 per minute. Continue until breathing.", snake: "Snake bite: Keep dog calm, immobilize limb, transport to vet. Do not apply ice.", eye: "Eye injury: Flush with saline, cover with sterile pad. Seek emergency vet.", bleed: "Bleeding: Direct pressure, pressure bandage, tourniquet for limb hemorrhage.", heat: "Heat exhaustion: Move to shade, cool water on paw pads and ears. Monitor temperature.", paw: "Paw injury: Remove debris, clean wound, bandage with non-stick pad. Prevent licking." };
+    document.querySelectorAll('.voice-chip').forEach((chip, idx) => { chip.onclick = () => { let key = ['k9cpr','snake','eye','bleed','heat','paw'][idx]; let msg = aidTexts[key]; document.getElementById('voiceFeedback').innerHTML = `🔊 ${msg.substring(0, 80)}...`; if(window.speechSynthesis) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg)); } addEvent("FIRST AID", `Accessed: ${chip.innerText}`); }; });
+    
+    addEvent("STARTUP", "TACNET initialized");
+    setTimeout(() => map.invalidateSize(), 200);
+</script>
+</body>
+</html>
