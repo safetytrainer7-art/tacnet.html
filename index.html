@@ -3,141 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET V90 - MULTI-AGENCY HUD</title>
+    <title>TACNET V90 - TACTICAL TERMINAL</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root {
-            --neon-green: #00ff41;
-            --gold: #ffd700;
-            --glass: rgba(0, 20, 40, 0.85);
-            --border: 2px solid rgba(0, 255, 65, 0.4);
-        }
-
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background: radial-gradient(circle, #0a1520 0%, #000 100%);
-            color: var(--neon-green); font-family: 'Courier New', monospace;
-            overflow: hidden;
-        }
-
-        /* TACTICAL HEADER */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 20px; border-bottom: 2px solid var(--gold);
-            background: rgba(0,0,0,0.9);
-        }
-        .patch-fed { width: 90px; filter: drop-shadow(0 0 8px var(--neon-green)); }
-        .patch-va { width: 90px; filter: drop-shadow(0 0 8px var(--neon-green)); }
+        :root { --neon: #00ff41; --gold: #ffd700; --glass: rgba(0, 15, 30, 0.9); }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--neon); font-family: 'Courier New', monospace; overflow: hidden; }
         
-        .title-block { text-align: center; }
-        .cracked-text { 
-            font-size: 42px; font-weight: 900; margin: 0; color: var(--neon-green);
-            text-shadow: 0 0 15px var(--neon-green), 2px 2px #000;
-            letter-spacing: 6px;
-        }
-        .sub-text { font-size: 13px; color: var(--gold); font-weight: bold; margin: 4px 0; }
-        .agencies { font-size: 11px; color: #fff; letter-spacing: 2px; }
+        /* HEADER - BALANCED PATCHES */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 2px solid var(--gold); background: #000; }
+        .patch { width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 0 5px var(--neon)); }
+        .title-block { text-align: center; flex: 1; }
+        .cracked { font-size: 36px; font-weight: 900; letter-spacing: 5px; margin: 0; text-shadow: 0 0 10px var(--neon); }
+        .sub { font-size: 11px; color: var(--gold); font-weight: bold; }
 
         /* CENTER BADGE */
-        .badge-row { display: flex; justify-content: center; margin: 10px 0; }
-        .sheriff-star { width: 75px; filter: drop-shadow(0 0 12px var(--gold)); }
+        .badge-center { display: block; margin: 5px auto; width: 55px; }
 
-        /* MAIN INTERFACE GRID */
-        .terminal-layout {
-            display: grid; grid-template-columns: 1fr 2.5fr 1fr;
-            gap: 15px; padding: 0 15px; height: 55vh;
+        /* MAIN LAYOUT - WIDE MAP VIEW */
+        .main-grid { display: grid; grid-template-columns: 160px 1fr 160px; gap: 5px; height: 65vh; padding: 5px; }
+        .side-panel { background: var(--glass); border: 1px solid var(--neon); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; z-index: 1000; }
+        #map { width: 100%; height: 100%; border: 1px solid var(--gold); border-radius: 5px; background: #111; }
+
+        /* MODULE DISPLAY OVERLAY */
+        #display-screen { 
+            position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+            width: 90%; height: 250px; background: rgba(0,0,0,0.95); 
+            border: 2px solid var(--gold); display: none; z-index: 2000;
+            padding: 15px; overflow-y: auto; color: #fff; font-size: 14px;
         }
 
-        .panel {
-            background: var(--glass); border: var(--border);
-            border-radius: 12px; padding: 12px; display: flex;
-            flex-direction: column; box-shadow: 0 0 20px rgba(0,255,65,0.15);
-            backdrop-filter: blur(5px);
-        }
-
-        /* MAP TERMINAL */
-        #map-display { width: 100%; height: 100%; border-radius: 8px; border: 1px solid var(--gold); }
-
-        /* BUTTON DESIGN */
-        .tac-btn {
-            background: rgba(0,0,0,0.7); border: 1.5px solid var(--neon-green);
-            color: var(--neon-green); padding: 14px 8px; margin: 6px 0;
-            font-weight: bold; text-transform: uppercase; cursor: pointer;
-            border-radius: 6px; font-size: 11px; transition: all 0.2s;
-        }
-        .tac-btn:active { background: var(--neon-green); color: #000; box-shadow: 0 0 25px var(--neon-green); }
-        .gold-line { border-color: var(--gold); color: var(--gold); }
-
-        /* FOOTER CREDIT */
-        .footer {
-            position: fixed; bottom: 0; width: 100%;
-            text-align: center; padding: 12px;
-            background: rgba(0,0,0,0.95); border-top: 2px solid var(--gold);
-            color: var(--gold); font-weight: bold; font-size: 14px;
-        }
-
-        /* NIGHT VISION OVERLAY */
-        .nv-active { filter: invert(1) hue-rotate(180deg) brightness(0.6) contrast(1.4) !important; }
+        .tac-btn { background: #000; border: 1px solid var(--neon); color: var(--neon); padding: 10px 5px; margin: 4px 0; font-size: 11px; font-weight: bold; border-radius: 4px; }
+        .tac-btn:active { background: var(--neon); color: #000; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; padding: 10px; border-top: 2px solid var(--gold); color: var(--gold); font-size: 13px; background: #000; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <img src="image (2).png" class="patch-fed" alt="FEDERAL">
+    <img src="image (2).png" class="patch" alt="FED">
     <div class="title-block">
-        <h1 class="cracked-text">TACNET</h1>
-        <div class="sub-text">MULTI-AGENCY TACTICAL TASK FORCE SEARCH APP</div>
-        <div class="agencies">FEDERAL • STATE • LOCAL</div>
+        <h1 class="cracked">TACNET</h1>
+        <div class="sub">MULTI-AGENCY TACTICAL TASK FORCE</div>
+        <div class="sub" style="font-size: 9px; color: #fff;">FEDERAL • STATE • LOCAL</div>
     </div>
-    <img src="image (1).jpg" class="patch-va" alt="VIRGINIA">
+    <img src="image (1).jpg" class="patch" alt="VSP">
 </div>
 
-<div class="badge-row">
-    <img src="image.jpg" class="sheriff-star" alt="SHERIFF">
-</div>
+<img src="image.jpg" class="badge-center">
 
-<div class="terminal-layout">
-    <!-- LEFT WING: K9 & OPS -->
-    <div class="panel">
-        <h3 style="text-align:center; color:var(--gold); margin:0 0 10px 0; font-size:14px;">K9 TACTICAL</h3>
-        <button class="tac-btn" onclick="triggerMod('K9 First Aid')">K9 FIRST AID</button>
-        <button class="tac-btn" onclick="triggerMod('Training')">TRAINING LOG</button>
-        <button class="tac-btn gold-line" onclick="toggleNV()">NIGHT VISION</button>
+<div class="main-grid">
+    <div class="side-panel">
+        <button class="tac-btn" onclick="showModule('k9')">K9 FIRST AID</button>
+        <button class="tac-btn" onclick="showModule('case')">CASE LAW</button>
     </div>
-
-    <!-- MAIN CENTER: GPS HUB -->
-    <div class="panel" style="padding:5px;">
-        <div id="map-display"></div>
-    </div>
-
-    <!-- RIGHT WING: LEGAL & ADMIN -->
-    <div class="panel">
-        <h3 style="text-align:center; color:var(--gold); margin:0 0 10px 0; font-size:14px;">LEGAL REF</h3>
-        <button class="tac-btn" onclick="triggerMod('Case Law')">CASE LAW BANK</button>
-        <button class="tac-btn" onclick="triggerMod('Reports')">INCIDENT RPT</button>
-        <button class="tac-btn gold-line" onclick="location.reload()">REBOOT SYS</button>
+    <div id="map"></div>
+    <div class="side-panel">
+        <button class="tac-btn" onclick="setMarker('K9')">ADD K9</button>
+        <button class="tac-btn" onclick="setMarker('CMD')">ADD CP</button>
     </div>
 </div>
 
-<div class="footer">
-    APP CREATED BY DEPUTY SHERIFF EARL A. WOOD RETIRED
+<div id="display-screen">
+    <div id="module-content"></div>
+    <button class="tac-btn" style="width:100%; margin-top:10px; border-color:red;" onclick="document.getElementById('display-screen').style.display='none'">CLOSE MODULE</button>
 </div>
+
+<div class="footer">APP CREATED BY DEPUTY SHERIFF EARL A. WOOD RETIRED</div>
 
 <script>
-    // Map Initialization
-    var map = L.map('map-display', { zoomControl: false }).setView([37.4138, -79.1422], 13);
+    // Initialize Search Map (Centered on Amherst County area)
+    var map = L.map('map').setView([37.58, -79.05], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    function toggleNV() {
-        document.body.classList.toggle('nv-active');
+    function showModule(type) {
+        let content = "";
+        let screen = document.getElementById('display-screen');
+        let box = document.getElementById('module-content');
+        screen.style.display = 'block';
+
+        if(type === 'k9') {
+            content = "<h3>VOICE COMMAND: HEAT STROKE</h3><p>1. MOVE TO SHADE.<br>2. APPLY COOL WATER TO BELLY/PAWS.<br>3. DO NOT USE ICE WATER.</p>";
+            var msg = new SpeechSynthesisUtterance("K9 Heat Stroke Protocol: Move to shade. Apply cool water to paws and belly.");
+            window.speechSynthesis.speak(msg);
+        } else if(type === 'case') {
+            content = "<h3>VIRGINIA V. MOORE (2008)</h3><p>The U.S. Supreme Court held that a warrantless arrest for a driving offense that is prohibited under state law, but supported by probable cause, does not violate the Fourth Amendment, even if the state law only allows for a citation.</p>";
+        }
+        box.innerHTML = content;
     }
 
-    function triggerMod(name) {
-        alert("ACCESSING " + name.toUpperCase() + " DATA...");
+    function setMarker(label) {
+        map.on('click', function(e) {
+            L.marker(e.latlng).addTo(map).bindPopup(label + " UNIT ATTACHED").openPopup();
+            map.off('click');
+        });
+        alert("TAP MAP TO PLACE " + label);
     }
 </script>
-
 </body>
 </html>
