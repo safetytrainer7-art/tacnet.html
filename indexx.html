@@ -1,0 +1,24 @@
+# TACNET MAP ENGINE - PERIMETER & GRID LOGIC
+# STRICTLY FOR LAW ENFORCEMENT USE
+
+class TacnetMap:
+    def __init__(self):
+        self.perimeter_color = "NEON_GREEN_TRANSLUCENT" # #39FF14 with 40% Opacity
+        self.grid_clear_color = "SOLID_GREEN_TRANSPARENT" # #008000
+        self.lkp_marker = "PURPLE_PIN"
+
+    def on_long_press_drag(self):
+        # Initiates the Search Perimeter
+        # User holds finger and drags to encircle the search area
+        create_polygon(border="NEON_GREEN", fill="TRANSLUCENT")
+        calculate_acreage() # Automatically tells the Commander how big the area is
+
+    def drop_article_marker(self, officer_id, item_type):
+        # DROPS A GOLD CIRCLE ICON AT CURRENT GPS COORDINATE
+        # Example: "Hat found by K9-1"
+        place_icon(type="GOLD_CIRCLE", label=item_type, timestamp=True)
+        broadcast_to_all_units(message=f"ARTICLE FOUND: {item_type}")
+
+    def mark_grid_cleared(self, grid_id):
+        # Changes the specific searched grid to Solid Green
+        update_layer(grid_id, color=self.grid_clear_color)
