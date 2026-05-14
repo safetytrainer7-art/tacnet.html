@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>TACNET - Multi-Agency Task Force Search App</title>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#0b1b12;
+    color:#d6b45f;
+    overflow:hidden;
+}
+
+/* =========================================================
+BACKGROUND
+========================================================= */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.85)),
+    repeating-linear-gradient(
+        0deg,
+        rgba(0,255,120,.03),
+        rgba(0,255,120,.03) 1px,
+        transparent 1px,
+        transparent 40px
+    ),
+    repeating-linear-gradient(
+        90deg,
+        rgba(0,255,120,.03),
+        rgba(0,255,120,.03) 1px,
+        transparent 1px,
+        transparent 40px
+    );
+    z-index:-1;
+}
+
+/* =========================================================
+HEADER
+========================================================= */
+
+.header{
+    width:100%;
+    padding:14px;
+    text-align:center;
+    border-bottom:2px solid #8d6f2e;
+    background:linear-gradient(to bottom,#122218,#08120c);
+    box-shadow:0 0 20px rgba(0,255,120,.15);
+}
+
+.title{
+    font-size:42px;
+    font-weight:900;
+    letter-spacing:5px;
+    color:#d9b95d;
+    text-shadow:
+        0 0 5px rgba(255,215,0,.5),
+        0 0 15px rgba(255,215,0,.2),
+        2px 2px 0 #000;
+}
+
+.subtitle{
+    margin-top:6px;
+    font-size:20px;
+    font-weight:bold;
+    color:#d6b45f;
+}
+
+.agency{
+    margin-top:4px;
+    font-size:14px;
+    color:#9ab7ff;
+    letter-spacing:3px;
+}
+
+/* =========================================================
+MAP
+========================================================= */
+
+#map{
+    width:100%;
+    height:60vh;
+    border-top:2px solid #0aff78;
+    border-bottom:2px solid #0aff78;
+}
+
+/* =========================================================
+TACTICAL PANEL
+========================================================= */
+
+.panel{
+    height:calc(40vh - 20px);
+    overflow-y:auto;
+    padding:12px;
+}
+
+.section{
+    margin-bottom:16px;
+    border:1px solid rgba(255,215,0,.3);
+    border-radius:12px;
+    padding:12px;
+    background:rgba(0,0,0,.35);
+    box-shadow:0 0 10px rgba(0,255,120,.08);
+}
+
+.section-title{
+    font-size:18px;
+    margin-bottom:10px;
+    color:#ffe07a;
+    letter-spacing:1px;
+}
+
+/* =========================================================
+BUTTONS
+========================================================= */
+
+.btn-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+button{
+    background:#14261c;
+    color:#d9b95d;
+    border:2px solid #7c6529;
+    border-radius:14px;
+    padding:14px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+    box-shadow:0 0 8px rgba(0,255,120,.08);
+}
+
+button:hover{
+    background:#1d3628;
+    transform:scale(1.02);
+}
+
+.gold-ring{
+    border-radius:50px;
+}
+
+/* =========================================================
+SOS
+========================================================= */
+
+.sos{
+    background:#5b0000;
+    color:#fff;
+    border:2px solid #ff2b2b;
+    animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse{
+    0%{box-shadow:0 0 0 rgba(255,0,0,.8);}
+    50%{box-shadow:0 0 20px rgba(255,0,0,1);}
+    100%{box-shadow:0 0 0 rgba(255,0,0,.8);}
+}
+
+/* =========================================================
+INPUTS
+========================================================= */
+
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    margin-bottom:10px;
+    background:#09120c;
+    color:#d9b95d;
+    border:1px solid rgba(255,215,0,.25);
+}
+
+/* =========================================================
+STATUS
+========================================================= */
+
+.status{
+    margin-top:8px;
+    font-size:14px;
+    color:#89ffb8;
+}
+
+/* =========================================================
+NIGHT MODE
+========================================================= */
+
+.nightVision{
+    filter:
+        brightness(1.05)
+        contrast(1.15)
+        saturate(0)
+        hue-rotate(60deg);
+}
+
+/* =========================================================
+LEGEND
+========================================================= */
+
+.legend{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    margin-top:10px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+}
+
+.dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+}
+
+.blue{background:#00a2ff;}
+.lightblue{background:#89e4ff;}
+.red{background:#ff2f2f;}
+.green{background:#00ff66;}
+.purple{background:#bf5cff;}
+
+</style>
+</head>
+
+<body>
+
+<!-- ======================================================
+HEADER
+====================================================== -->
+
+<div class="header">
+    <div class="title">TACNET</div>
+
+    <div class="subtitle">
+        MULTI-AGENCY TASK FORCE SEARCH APP
+    </div>
+
+    <div class="agency">
+        FEDERAL • STATE • LOCAL
+    </div>
+</div>
+
+<!-- ======================================================
+MAP
+====================================================== -->
+
+<div id="map"></div>
+
+<!-- ======================================================
+TACTICAL CONTROLS
+====================================================== -->
+
+<div class="panel">
+
+    <!-- SEARCH -->
+    <div class="section">
+
+        <div class="section-title">
+            ADDRESS SEARCH
+        </div>
+
+        <input
+            type="text"
+            placeholder="Enter Address or Coordinates"
+            id="searchInput"
+        />
+
+        <button onclick="searchLocation()">
+            SEARCH LOCATION
+        </button>
+
+        <div class="status" id="status">
+            SYSTEM READY
+        </div>
+
+    </div>
+
+    <!-- OPERATIONS -->
+    <div class="section">
+
+        <div class="section-title">
+            TACTICAL OPERATIONS
+        </div>
+
+        <div class="btn-grid">
+
+            <button class="gold-ring" onclick="toggleNightVision()">
+                NIGHT VISION
+            </button>
+
+            <button class="gold-ring" onclick="dropLKP()">
+                LKP MARKER
+            </button>
+
+            <button class="gold-ring" onclick="dropEvidence()">
+                ARTICLE DROP
+            </button>
+
+            <button class="gold-ring" onclick="drawPerimeter()">
+                DRAW PERIMETER
+            </button>
+
+            <button class="gold-ring" onclick="clearGrid()">
+                GRID CLEARED
+            </button>
+
+            <button class="gold-ring" onclick="showCompass()">
+                COMPASS
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- OFFICER SAFETY -->
+    <div class="section">
+
+        <div class="section-title">
+            OFFICER SAFETY
+        </div>
+
+        <div class="btn-grid">
+
+            <button class="sos" onclick="officerDown()">
+                OFFICER DOWN SOS
+            </button>
+
+            <button onclick="terminateSearch()">
+                TERMINATE SEARCH
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- K9 FIRST AID -->
+    <div class="section">
+
+        <div class="section-title">
+            K9 FIRST AID VOICE ASSIST
+        </div>
+
+        <div class="btn-grid">
+
+            <button onclick="speakGuide('k9')">
+                K9 CPR
+            </button>
+
+            <button onclick="speakGuide('snake')">
+                SNAKE BITE
+            </button>
+
+            <button onclick="speakGuide('eye')">
+                EYE INJURY
+            </button>
+
+            <button onclick="speakGuide('bleeding')">
+                BLEEDING
+            </button>
+
+            <button onclick="speakGuide('heat')">
+                HEAT EXHAUSTION
+            </button>
+
+            <button onclick="speakGuide('paw')">
+                PAW INJURY
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div class="section">
+
+        <div class="section-title">
+            UNIT LEGEND
+        </div>
+
+        <div class="legend">
+
+            <div class="legend-item">
+                <div class="dot blue"></div>
+                LAW ENFORCEMENT
+            </div>
+
+            <div class="legend-item">
+                <div class="dot lightblue"></div>
+                K9
+            </div>
+
+            <div class="legend-item">
+                <div class="dot red"></div>
+                SEARCH & RESCUE
+            </div>
+
+            <div class="legend-item">
+                <div class="dot green"></div>
+                CIVILIAN
+            </div>
+
+            <div class="legend-item">
+                <div class="dot purple"></div>
+                TARGET / LKP
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+MAP SETUP
+========================================================= */
+
+const map = L.map('map').setView([37.3349, -79.5236], 13);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    attribution:'TACNET'
+}
+).addTo(map);
+
+let userMarker;
+
+/* =========================================================
+LIVE GPS
+========================================================= */
+
+navigator.geolocation.watchPosition(
+
+(position)=>{
+
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    if(!userMarker){
+
+        userMarker = L.circleMarker(
+            [lat,lng],
+            {
+                radius:10,
+                color:'#ffffff',
+                fillColor:'#00a2ff',
+                fillOpacity:1,
+                weight:3
+            }
+        ).addTo(map);
+
+        map.setView([lat,lng],15);
+
+    }else{
+
+        userMarker.setLatLng([lat,lng]);
+
+    }
+
+    document.getElementById("status").innerHTML =
+    "LIVE GPS ACTIVE";
+
+},
+
+(error)=>{
+
+    document.getElementById("status").innerHTML =
+    "GPS ACCESS DENIED";
+
+}
+
+);
+
+/* =========================================================
+SEARCH LOCATION
+========================================================= */
+
+function searchLocation(){
+
+    const input =
+    document.getElementById("searchInput").value;
+
+    alert(
+        "Tactical Search Activated For: " + input
+    );
+
+}
+
+/* =========================================================
+NIGHT VISION
+========================================================= */
+
+function toggleNightVision(){
+
+    document.body.classList.toggle("nightVision");
+
+}
+
+/* =========================================================
+LKP
+========================================================= */
+
+function dropLKP(){
+
+    if(!userMarker) return;
+
+    const latlng = userMarker.getLatLng();
+
+    L.circleMarker(
+        latlng,
+        {
+            radius:12,
+            color:'#ffffff',
+            fillColor:'#bf5cff',
+            fillOpacity:1,
+            weight:3
+        }
+    )
+    .addTo(map)
+    .bindPopup("LAST KNOWN POSITION");
+
+}
+
+/* =========================================================
+ARTICLE DROP
+========================================================= */
+
+function dropEvidence(){
+
+    if(!userMarker) return;
+
+    const latlng = userMarker.getLatLng();
+
+    L.marker(latlng)
+    .addTo(map)
+    .bindPopup("ARTICLE / EVIDENCE DROP");
+
+}
+
+/* =========================================================
+PERIMETER
+========================================================= */
+
+function drawPerimeter(){
+
+    if(!userMarker) return;
+
+    const latlng = userMarker.getLatLng();
+
+    L.circle(
+        latlng,
+        {
+            radius:250,
+            color:'#00ff66',
+            fillColor:'#00ff66',
+            fillOpacity:.2,
+            weight:3
+        }
+    ).addTo(map);
+
+}
+
+/* =========================================================
+GRID CLEAR
+========================================================= */
+
+function clearGrid(){
+
+    alert(
+        "SEARCH GRID MARKED CLEARED"
+    );
+
+}
+
+/* =========================================================
+COMPASS
+========================================================= */
+
+function showCompass(){
+
+    alert(
+        "TACTICAL COMPASS ACTIVE"
+    );
+
+}
+
+/* =========================================================
+SOS
+========================================================= */
+
+function officerDown(){
+
+    alert(
+        "!!! OFFICER DOWN SOS ACTIVATED !!!"
+    );
+
+    speech(
+        "Officer down emergency activated."
+    );
+
+}
+
+/* =========================================================
+TERMINATE SEARCH
+========================================================= */
+
+function terminateSearch(){
+
+    alert(
+        "SEARCH TERMINATED"
+    );
+
+}
+
+/* =========================================================
+VOICE SYSTEM
+========================================================= */
+
+function speech(text){
+
+    const msg =
+    new SpeechSynthesisUtterance(text);
+
+    window.speechSynthesis.speak(msg);
+
+}
+
+/* =========================================================
+K9 MEDICAL
+========================================================= */
+
+function speakGuide(type){
+
+    let text = "";
+
+    if(type === "k9"){
+
+        text =
+        "Begin K9 CPR. Lay dog on right side. Check airway. Begin chest compressions.";
+
+    }
+
+    if(type === "snake"){
+
+        text =
+        "Keep canine calm. Limit movement. Seek emergency veterinary care immediately.";
+
+    }
+
+    if(type === "eye"){
+
+        text =
+        "Flush eye gently with clean water. Prevent pawing at injury.";
+
+    }
+
+    if(type === "bleeding"){
+
+        text =
+        "Apply direct pressure immediately. Elevate wound if possible.";
+
+    }
+
+    if(type === "heat"){
+
+        text =
+        "Move canine to shade. Apply cool water to paws and abdomen.";
+
+    }
+
+    if(type === "paw"){
+
+        text =
+        "Inspect paw carefully. Remove debris and wrap securely.";
+
+    }
+
+    speech(text);
+
+}
+
+/* =========================================================
+WELCOME
+========================================================= */
+
+speech(
+"TacNet Tactical Search System Activated."
+);
+
+</script>
+
+</body>
+</html>
