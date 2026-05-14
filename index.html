@@ -19,19 +19,25 @@
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
         }
 
-        /* RESTORED TEXT HEADER */
+        /* OFFICIAL HEADER IMAGE SECTION */
         .hud-header {
-            position: absolute; top: 0; width: 100%; z-index: 10;
-            background: linear-gradient(to bottom, var(--glass), transparent);
-            text-align: center; padding: 10px 0; border-bottom: 1px solid var(--gold);
+            position: absolute; 
+            top: 0; 
+            width: 100%; 
+            z-index: 10;
+            background: #000;
+            border-bottom: 2px solid var(--neon-green);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .title-main {
-            font-size: 2.2rem; font-weight: bold; letter-spacing: 4px; margin: 0;
-            text-shadow: 2px 2px 0px #000;
+        .header-banner {
+            width: 100%;
+            max-width: 800px; /* Adjust based on your preference */
+            height: auto;
+            display: block;
         }
-
-        .title-sub { font-size: 0.8rem; letter-spacing: 2px; }
 
         /* FULL SCREEN MAP BACKGROUND */
         #main-map {
@@ -42,7 +48,7 @@
 
         /* HUD OVERLAYS */
         .hud-left, .hud-right {
-            position: absolute; top: 120px; z-index: 10;
+            position: absolute; top: 160px; z-index: 10;
             display: flex; flex-direction: column; gap: 10px; padding: 10px;
         }
 
@@ -66,13 +72,16 @@
             border-radius: 50%; display: flex; align-items: center;
             justify-content: center; background: var(--hunter-green);
             cursor: pointer; font-weight: bold; font-size: 0.75rem;
-            text-align: center; line-height: 1.1;
+            text-align: center; line-height: 1;
         }
+
+        .icon-circle:active { background: var(--gold); color: #000; }
 
         .btn-sos {
             background: var(--sos-red); color: #fff; border: 2px solid #fff;
             padding: 15px; font-weight: bold; border-radius: 8px;
             animation: pulse 1.5s infinite; cursor: pointer;
+            text-transform: uppercase;
         }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -85,36 +94,45 @@
             background: rgba(57, 255, 20, 0.15);
             border-radius: 50%; display: none; z-index: 5;
         }
+
+        .night-vision-mode {
+            filter: brightness(0.8) contrast(1.2) sepia(100%) hue-rotate(80deg);
+        }
     </style>
 </head>
 <body id="tacnet-ui">
 
+    <!-- HUD: TOP BAR WITH tnet.png -->
+    <div class="hud-header">
+        <img src="tnet.png" alt="TACNET Header" class="header-banner">
+    </div>
+
+    <!-- THE MAP IS THE BACKGROUND -->
     <div id="main-map"></div>
     <div id="perimeter-visual"></div>
 
-    <div class="hud-header">
-        <div class="title-main">TACNET</div>
-        <div class="title-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
-    </div>
-
+    <!-- HUD: LEFT (COMMAND ICONS) -->
     <div class="hud-left">
         <div class="icon-circle" onclick="togglePerimeter()">PERIM<br>SET</div>
         <div class="icon-circle" onclick="dropMarker()">ARTCL<br>DROP</div>
         <div class="icon-circle" onclick="toggleNightVision()">NVG<br>MODE</div>
+        <div class="icon-circle" onclick="window.location.reload()">SYNC<br>GPS</div>
     </div>
 
+    <!-- HUD: RIGHT (MISSION DATA) -->
     <div class="hud-right">
         <div class="tactical-box">
             <div style="color: var(--neon-green); border-bottom: 1px solid var(--gold); font-weight: bold;">OP: ALPHA-247</div>
             <div style="font-size: 0.8rem; margin-top: 5px;">
-                AMHERST CO, VA<br>
                 UNITS: 7 LEO / 2 K9<br>
-                TEMP: 72°F / CLEAR
+                TEMP: 72°F / CLEAR<br>
+                WIND: 8MPH NW
             </div>
         </div>
         <button class="btn-sos" onclick="triggerSOS()">SOS EMERGENCY</button>
     </div>
 
+    <!-- HUD: BOTTOM (NAVIGATION) -->
     <div class="hud-bottom">
         <button onclick="alert('Live Ops Active')">LIVE OPS</button>
         <button onclick="startK9Guide()">K9 OPS</button>
@@ -126,22 +144,26 @@
         function togglePerimeter() {
             const p = document.getElementById('perimeter-visual');
             p.style.display = p.style.display === 'none' ? 'block' : 'none';
+            if(p.style.display === 'block') alert("Tactical Perimeter Set.");
         }
 
-        function dropMarker() { alert("Article Drop: GPS Tagged."); }
+        function dropMarker() {
+            alert("Article Drop: GPS Tagged at current location.");
+        }
 
         function toggleNightVision() {
-            document.getElementById('tacnet-ui').style.filter = 
-                document.getElementById('tacnet-ui').style.filter === 'sepia(100%) hue-rotate(80deg)' ? 'none' : 'sepia(100%) hue-rotate(80deg)';
+            document.getElementById('tacnet-ui').classList.toggle('night-vision-mode');
         }
 
         function startK9Guide() {
             const synth = window.speechSynthesis;
-            const utter = new SpeechSynthesisUtterance("TACNET K9 Guide Online.");
+            const utter = new SpeechSynthesisUtterance("TACNET K9 Guide Online. State command for hands-free aid.");
             synth.speak(utter);
         }
 
-        function triggerSOS() { alert("EMERGENCY SOS BROADCASTED."); }
+        function triggerSOS() {
+            alert("EMERGENCY SOS: Location broadcasted to Task Force.");
+        }
     </script>
 </body>
 </html>
