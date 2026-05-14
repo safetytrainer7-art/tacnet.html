@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TACNET V90-TACTICAL PRO</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+        
+        #gate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050b12; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .gate-box { width: 85%; max-width: 350px; text-align: center; border: 2px solid #00e5ff; padding: 30px; border-radius: 15px; background: #001a2c; }
+        .gate-box input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #00e5ff; color: #00e5ff; border-radius: 8px; font-size: 18px; outline: none; }
+
+        /* MAP LAYERS */
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; visibility: hidden; }
+        .night-vision-filter { filter: invert(1) hue-rotate(180deg) brightness(0.6) contrast(1.5) !important; }
+
+        .ui-overlay { position: absolute; z-index: 5000; pointer-events: none; }
+        .active-touch { pointer-events: auto; }
+        
+        .top-ui { top: 10px; left: 2%; width: 96%; display: flex; flex-direction: column; gap: 8px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border: 1px solid #00e5ff; padding: 8px 12px; border-radius: 8px; color: white; }
+        
+        .search-row { display: flex; gap: 5px; }
+        .search-row input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #00e5ff; background: #000; color: white; font-size: 16px; }
+        .btn-go { background: #00e5ff; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; }
+        .btn-term { background: #ff3333; color: white; border: none; padding: 0 10px; border-radius: 8px; font-weight: bold; font-size: 10px; }
+
+        /* TACTICAL SUMMARY BOX (RIGHT SIDE) */
+        .incident-box { right: 10px; top: 120px; width: 160px; height: 65%; background: #000; border: 2px solid #333; border-radius: 10px; display: flex; flex-direction: column; color: #00e5ff; font-family: monospace; font-size: 10px; box-shadow: 0 0 15px rgba(0,0,0,1); }
+        .box-header { background: #1a1a1a; padding: 5px; border-bottom: 1px solid #333; font-weight: bold; text-align: center; color: #fff; }
+        .box-body { flex: 1; overflow-y: auto; padding: 8px; line-height: 1.4; }
+        .box-footer { padding: 5px; background: #111; border-top: 1px solid #333; }
+        .box-footer input { width: 100%; background: #000; border: 1px solid #00e5ff; color: #fff; font-size: 9px; padding: 4px; margin-bottom: 4px; }
+        
+        /* SIDE TRAY */
+        .side-tray { left: 10px; top: 55%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 3px; }
+        .t-btn { width: 68px; height: 40px; background: rgba(0,0,0,0.95); border: 1px solid #fff; border-radius: 6px; color: white; font-weight: bold; font-size: 9px; }
+        .btn-law { border-color: #1e90ff; color: #1e90ff; }
+        .btn-k9 { border-color: #00e5ff; color: #00e5ff; }
+        .btn-sar { border-color: #ff9500; color: #ff9500; }
+        .btn-poi { border-color: #ff3333; color: #ff3333; }
+        .btn-art { border-color: #eab308; color: #eab308; }
+        .btn-view { border-color: #555; background: #222; }
+        .selected { background: #fff !important; color: #000 !important; }
+        .print-btn { width: 100%; padding: 8px; background: #22c55e; border: none; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="gate">
+    <div class="gate-box">
+        <h2 style="color:#00e5ff; margin-top:0;">TACNET V90</h2>
+        <input type="text" id="agency" placeholder="AGENCY">
+        <input type="password" id="code" placeholder="10-8 CODE">
+        <button onclick="unlock()" class="active-touch" style="width:100%; padding:15px; background:#00e5ff; border:none; border-radius:8px; font-weight:bold;">ACCESS SYSTEM</button>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<div class="ui-overlay top-ui">
+    <div class="header-row">
+        <div style="font-weight:bold; font-size:11px;">AGENCY: <span id="unitTag" style="color:#00e5ff;">---</span></div>
+        <div id="liveClock" style="font-size:10px; font-family:monospace;">00:00:00</div>
+    </div>
+    <div class="search-row active-touch">
+        <input type="text" id="targetAddr" placeholder="TARGET ADDRESS...">
+        <button class="btn-go" onclick="runSearch()">GO</button>
+        <button class="btn-term" onclick="terminateSearch()">TERM</button>
+    </div>
+</div>
+
+<div class="ui-overlay side-tray">
+    <button id="LAW" class="active-touch t-btn btn-law selected" onclick="setU('LAW','#1e90ff')">LAW</button>
+    <button id="K9" class="active-touch t-btn btn-k9" onclick="setU('K9','#00e5ff')">K9</button>
+    <button id="SAR" class="active-touch t-btn btn-sar" onclick="setU('SAR','#ff9500')">SAR</button>
+    <button id="POI" class="active-touch t-btn btn-poi" onclick="setU('POI','#ff3333')">POI</button>
+    <button id="CIV" class="active-touch t-btn btn-civ" style="border-color:#22c55e;color:#22c55e" onclick="setU('CIV','#22c55e')">CIVIL</button>
+    <button id="ART" class="active-touch t-btn btn-art" onclick="setU('ARTICLE','#eab308')">ARTICLE</button>
+    <hr style="width:100%; border:0; border-top:1px solid #444; margin: 2px 0;">
+    <button id="V_STREET" class="active-touch t-btn btn-view selected" onclick="setView('street')">STREET</button>
+    <button id="V_TOPO" class="active-touch t-btn btn-view" onclick="setView('topo')">TERRAIN</button>
+    <button id="V_SAT" class="active-touch t-btn btn-view" onclick="setView('sat')">SAT</button>
+    <button id="n-icon" class="active-touch t-btn" onclick="toggleNight()" style="color:#00e5ff; border-color:#00e5ff; height:25px;">NIGHT</button>
+    <button class="active-touch t-btn" onclick="location.reload()" style="background:#400; border-color:#f00;">RELOAD</button>
+</div>
+
+<div class="ui-overlay incident-box active-touch">
+    <div class="box-header">INCIDENT REFERENCE</div>
+    <div class="box-body" id="feedList">
+        <div id="refData">
+            <b>DATE:</b> <span id="refDate">--/--/--</span><br>
+            <b>LOC:</b> <span id="refLoc">WAITING GPS...</span><br>
+            <hr style="border:0; border-top:1px solid #333;">
+        </div>
+    </div>
+    <div class="box-footer">
+        <input type="text" id="caseNum" placeholder="INCIDENT/CASE #">
+        <input type="text" id="dispoNotes" placeholder="DISPOSITION...">
+        <button class="print-btn" onclick="genReport()">REPORT PDF</button>
+    </div>
+</div>
+
+<script>
+    var map, feed = [];
+    var curM = 'LAW', curC = '#1e90ff';
+    var targetMarker, targetCircle;
+
+    // Fixed Terrain & Sat Layers
+    var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
+    var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+
+    function unlock() {
+        var a = document.getElementById('agency').value;
+        var c = document.getElementById('code').value;
+        if(a !== "" && c === "10-8") {
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('map').style.visibility = 'visible';
+            document.getElementById('unitTag').innerText = a.toUpperCase();
+            document.getElementById('refDate').innerText = new Date().toLocaleDateString();
+            
+            map = L.map('map', { zoomControl: false, layers: [street], tap: false }).setView([37.4138, -79.1422], 14);
+
+            map.on('click', function(e) {
+                var m = L.circleMarker(e.latlng, { radius: 12, fillColor: curC, color: '#fff', weight: 3, fillOpacity: 0.9 }).addTo(map);
+                var ts = new Date().toLocaleTimeString();
+                var entry = { type: curM, time: ts, lat: e.latlng.lat.toFixed(5), lng: e.latlng.lng.toFixed(5) };
+
+                m.on('mousedown touchstart', function(ev) {
+                    L.DomEvent.stopPropagation(ev);
+                    map.removeLayer(m);
+                    updateFeed({ type: "REMOVED " + entry.type, time: new Date().toLocaleTimeString() });
+                });
+
+                feed.push(entry);
+                updateFeed(entry);
+                document.getElementById('refLoc').innerText = entry.lat + ", " + entry.lng;
+            });
+            
+            setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleTimeString(); }, 1000);
+            setTimeout(() => { map.invalidateSize(); }, 500);
+        } else { alert("INVALID CODE"); }
+    }
+
+    function runSearch() {
+        var val = document.getElementById('targetAddr').value;
+        if(!val) return;
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(val))
+        .then(r => r.json()).then(d => {
+            if(d.length > 0) {
+                terminateSearch();
+                var lat = d[0].lat, lon = d[0].lon;
+                map.setView([lat, lon], 18);
+                targetCircle = L.circle([lat, lon], {radius: 60, color: 'red', weight: 4, fillOpacity: 0.2}).addTo(map);
+                targetMarker = L.marker([lat, lon]).addTo(map).bindPopup("<b>OBJECTIVE</b>").openPopup();
+                feed.push({ type: "SEARCH: " + val, time: new Date().toLocaleTimeString(), lat: lat, lng: lon });
+            }
+        });
+    }
+
+    function terminateSearch() {
+        if(targetMarker) { map.removeLayer(targetMarker); targetMarker = null; }
+        if(targetCircle) { map.removeLayer(targetCircle); targetCircle = null; }
+        document.getElementById('targetAddr').value = "";
+    }
+
+    function setView(type) {
+        map.removeLayer(street); map.removeLayer(topo); map.removeLayer(sat);
+        document.querySelectorAll('.btn-view').forEach(b => b.classList.remove('selected'));
+        if(type === 'street') { street.addTo(map); document.getElementById('V_STREET').classList.add('selected'); }
+        if(type === 'topo') { topo.addTo(map); document.getElementById('V_TOPO').classList.add('selected'); }
+        if(type === 'sat') { sat.addTo(map); document.getElementById('V_SAT').classList.add('selected'); }
+    }
+
+    function setU(m, c) {
+        curM = m; curC = c;
+        document.querySelectorAll('.t-btn').forEach(b => { if(!b.classList.contains('btn-view')) b.classList.remove('selected'); });
+        var btnId = (m === 'ARTICLE') ? 'ART' : (m === 'CIV') ? 'CIV' : m;
+        if(document.getElementById(btnId)) document.getElementById(btnId).classList.add('selected');
+    }
+
+    function updateFeed(e) {
+        var div = document.createElement('div');
+        div.style.marginBottom = "4px";
+        div.innerHTML = `<span style="color:#fff;">[${e.time}]</span> ${e.type}`;
+        document.getElementById('feedList').prepend(div);
+    }
+
+    function toggleNight() {
+        document.getElementById('map').classList.toggle('night-vision-filter');
+        document.getElementById('n-icon').classList.toggle('selected');
+    }
+
+    function genReport() {
+        var c = document.getElementById('caseNum').value || "PENDING";
+        var d = document.getElementById('dispoNotes').value || "None";
+        var r = "TACNET V90 TACTICAL REPORT\n==========================\n";
+        r += "INCIDENT #: " + c + "\nAGENCY: " + document.getElementById('unitTag').innerText + "\n";
+        r += "DATE: " + new Date().toLocaleDateString() + "\nDISPOSITION: " + d + "\n\nLOGGED ACTIVITY:\n";
+        feed.forEach(i => { r += `${i.time} | ${i.type} | GPS: ${i.lat || 'N/A'}, ${i.lng || 'N/A'}\n`; });
+        
+        var blob = new Blob([r], {type: 'text/plain'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "INCIDENT_" + c + ".txt";
+        a.click();
+    }
+</script>
+</body>
+</html>
