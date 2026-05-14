@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TACNET V90 TACTICAL</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- PDF GENERATION ENGINE -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --neon: #00ff41; --gold: #ffd700; --glass: rgba(0, 15, 30, 0.95); }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; color: var(--neon); font-family: 'Courier New', monospace; overflow: hidden; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 2px solid var(--gold); }
+        .patch { width: 85px; height: 85px; object-fit: contain; }
+        .title-block { text-align: center; flex: 1; }
+        .cracked { font-size: 34px; font-weight: 900; letter-spacing: 5px; margin: 0; text-shadow: 0 0 10px var(--neon); }
+
+        .main-layout { display: grid; grid-template-columns: 170px 1fr 170px; height: 60vh; padding: 10px; gap: 10px; }
+        .panel { background: var(--glass); border: 1px solid var(--neon); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; }
+        #map { width: 100%; height: 100%; border: 1px solid var(--gold); border-radius: 5px; }
+
+        .overlay { position: fixed; top: 10%; left: 5%; width: 90%; height: 75%; background: #000; border: 2px solid var(--gold); z-index: 9999; display: none; padding: 25px; overflow-y: auto; color: #fff; }
+        .tac-btn { background: #000; border: 1.5px solid var(--neon); color: var(--neon); padding: 12px 5px; margin: 6px 0; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
+        .tac-btn:active { background: var(--neon); color: #000; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; padding: 15px; border-top: 2px solid var(--gold); color: var(--gold); font-size: 14px; background: #000; font-weight: bold; }
+        textarea { width: 100%; background: #111; border: 1px solid var(--neon); color: #fff; padding: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="image (2).png" class="patch"> <!-- Federal -->
+    <div class="title-block">
+        <h1 class="cracked">TACNET</h1>
+        <div style="font-size:11px; color:var(--gold);">MULTI-AGENCY TACTICAL TASK FORCE</div>
+        <div style="font-size:9px;">FEDERAL • STATE • LOCAL</div>
+    </div>
+    <img src="image (1).jpg" class="patch"> <!-- State -->
+</div>
+
+<div class="main-layout">
+    <div class="panel">
+        <button class="tac-btn" onclick="openModule('K9 AID')">K9 FIRST AID</button>
+        <button class="tac-btn" onclick="openModule('CASE LAW')">VA CASE LAW</button>
+    </div>
+    <div id="map"></div>
+    <div class="panel">
+        <button class="tac-btn" onclick="toggleReport()">OFFICIAL REPORT</button>
+        <button class="tac-btn" style="border-color:red;" onclick="location.reload()">REBOOT</button>
+    </div>
+</div>
+
+<!-- AUTO-REPORTING TERMINAL -->
+<div id="report-screen" class="overlay">
+    <h2 style="color:var(--gold); border-bottom: 1px solid var(--neon);">TACTICAL INCIDENT LOG</h2>
+    <div id="log-display" style="font-size:12px; margin-bottom:20px; line-height:1.5;"></div>
+    
+    <h3 style="color:var(--gold);">FINAL DISPOSITION & NOTES</h3>
+    <textarea id="officer-notes" rows="6" placeholder="Enter search resolution, found items, or team names..."></textarea>
+    
+    <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="tac-btn" style="flex:1;" onclick="generatePDF()">PRINT PDF REPORT</button>
+        <button class="tac-btn" style="flex:1; border-color:cyan; color:cyan;" onclick="sendEmail()">EMAIL TO COMMAND</button>
+    </div>
+    <button class="tac-btn" style="width:100%; margin-top:10px; border-color:red;" onclick="toggleReport()">CLOSE</button>
+</div>
+
+<!-- DATA CONTENT OVERLAY -->
+<div id="data-screen" class="overlay">
+    <div id="data-content"></div>
+    <button class="tac-btn" style="width:100%; margin-top:20px; border-color:var(--gold);" onclick="closeData()">BACK TO HUD</button>
+</div>
+
+<div class="footer">APP CREATED BY DEPUTY SHERIFF EARL A. WOOD RETIRED</div>
+
+<script>
+    var map = L.map('map').setView([37.5, -79.1], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let incidentLogs = [];
+
+    // AUTO-TIMESTAMP FUNCTION
+    function logAction(msg) {
+        let ts = new Date().toLocaleString();
+        incidentLogs.push(`${ts}: ${msg}`);
+        document.getElementById('log-display').innerHTML += `<div><span style="color:var(--gold)">[${ts}]</span> ${msg}</div>`;
+    }
+
+    function openModule(name) {
+        logAction(`Accessed ${name} Module`);
+        document.getElementById('data-screen').style.display = 'block';
+        if(name === 'K9 AID') {
+            document.getElementById('data-content').innerHTML = "<h3>K9 HEAT STROKE PROTOCOL</h3><p>Move dog to shade. Use tepid water to soak coat. Focus on groin and paws. Stop cooling at 103F.</p>";
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance("K9 Heat Stroke Protocol Active. Move to shade."));
+        } else {
+            document.getElementById('data-content').innerHTML = "<h3>VIRGINIA V. MOORE (2008)</h3><p>Supreme Court ruled that arrest based on probable cause is constitutional even if it violates state procedural laws.</p>";
+        }
+    }
+
+    function closeData() { document.getElementById('data-screen').style.display = 'none'; }
+    function toggleReport() { 
+        let s = document.getElementById('report-screen');
+        s.style.display = (s.style.display == 'block') ? 'none' : 'block'; 
+    }
+
+    // PDF GENERATION SYSTEM
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const notes = document.getElementById('officer-notes').value;
+
+        doc.setFont("courier", "bold");
+        doc.text("TACNET MULTI-AGENCY TACTICAL REPORT", 10, 10);
+        doc.setFontSize(10);
+        doc.text("Lead Developer: Deputy Sheriff Earl A. Wood (Retired)", 10, 20);
+        doc.text("--------------------------------------------------", 10, 25);
+        
+        let y = 35;
+        incidentLogs.forEach(line => {
+            doc.text(line, 10, y);
+            y += 10;
+        });
+
+        doc.text("OFFICER DISPOSITION:", 10, y + 10);
+        doc.setFont("courier", "normal");
+        let splitNotes = doc.splitTextToSize(notes, 180);
+        doc.text(splitNotes, 10, y + 20);
+        
+        doc.save("TACNET_Incident_Log.pdf");
+        logAction("Report PDF Generated");
+    }
+
+    function sendEmail() {
+        let body = incidentLogs.join('%0D%0A') + "%0D%0A%0D%0ADISPOSITION:%0D%0A" + document.getElementById('officer-notes').value;
+        window.location.href = `mailto:?subject=TACNET Incident Log&body=${body}`;
+        logAction("Report Emailed to Command");
+    }
+</script>
+</body>
+</html>
