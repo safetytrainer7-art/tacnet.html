@@ -83,6 +83,39 @@
             alert("Article Located: " + type + " at current GPS coordinates.");
             // Logic to send GPS to other officers goes here
         }
-    </script>
+    </script>// TACNET VOICE COMMANDS & K9 MEDICAL LOGIC
+const synth = window.speechSynthesis;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+
+recognition.continuous = true;
+recognition.lang = 'en-US';
+
+// START LISTENING
+function startVoiceControl() {
+    recognition.start();
+    speak("Voice control active. I am standing by for medical commands.");
+}
+
+recognition.onresult = (event) => {
+    const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+    if (command.includes("cpr")) {
+        speak("Begin K9 CPR. Place the dog on its right side. Compress the widest part of the chest 100 to 120 times per minute. I will count for you. One, two, three, four...");
+    } 
+    else if (command.includes("heat")) {
+        speak("Heat exhaustion detected. Move the dog to shade. Apply cool water to the paws and stomach. Do not use ice water. Monitor rectal temperature.");
+    }
+    else if (command.includes("bleeding")) {
+        speak("Excessive bleeding. Apply direct pressure with a clean cloth. If on a limb, prepare a tourniquet above the wound site. Keep the dog calm.");
+    }
+};
+
+function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.pitch = 0.9; // Lowers the pitch for a more professional, rugged tone
+    utterance.rate = 0.9;  // Slows it down so it's clear in the field
+    synth.speak(utterance);
+}
 </body>
 </html>
