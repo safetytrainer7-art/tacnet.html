@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TACNET V90 - MULTI-AGENCY HUD</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --gold: #ffd700;
+            --glass: rgba(0, 20, 40, 0.85);
+            --border: 2px solid rgba(0, 255, 65, 0.4);
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            background: radial-gradient(circle, #0a1520 0%, #000 100%);
+            color: var(--neon-green); font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        /* TACTICAL HEADER */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; border-bottom: 2px solid var(--gold);
+            background: rgba(0,0,0,0.9);
+        }
+        .patch-fed { width: 90px; filter: drop-shadow(0 0 8px var(--neon-green)); }
+        .patch-va { width: 90px; filter: drop-shadow(0 0 8px var(--neon-green)); }
+        
+        .title-block { text-align: center; }
+        .cracked-text { 
+            font-size: 42px; font-weight: 900; margin: 0; color: var(--neon-green);
+            text-shadow: 0 0 15px var(--neon-green), 2px 2px #000;
+            letter-spacing: 6px;
+        }
+        .sub-text { font-size: 13px; color: var(--gold); font-weight: bold; margin: 4px 0; }
+        .agencies { font-size: 11px; color: #fff; letter-spacing: 2px; }
+
+        /* CENTER BADGE */
+        .badge-row { display: flex; justify-content: center; margin: 10px 0; }
+        .sheriff-star { width: 75px; filter: drop-shadow(0 0 12px var(--gold)); }
+
+        /* MAIN INTERFACE GRID */
+        .terminal-layout {
+            display: grid; grid-template-columns: 1fr 2.5fr 1fr;
+            gap: 15px; padding: 0 15px; height: 55vh;
+        }
+
+        .panel {
+            background: var(--glass); border: var(--border);
+            border-radius: 12px; padding: 12px; display: flex;
+            flex-direction: column; box-shadow: 0 0 20px rgba(0,255,65,0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        /* MAP TERMINAL */
+        #map-display { width: 100%; height: 100%; border-radius: 8px; border: 1px solid var(--gold); }
+
+        /* BUTTON DESIGN */
+        .tac-btn {
+            background: rgba(0,0,0,0.7); border: 1.5px solid var(--neon-green);
+            color: var(--neon-green); padding: 14px 8px; margin: 6px 0;
+            font-weight: bold; text-transform: uppercase; cursor: pointer;
+            border-radius: 6px; font-size: 11px; transition: all 0.2s;
+        }
+        .tac-btn:active { background: var(--neon-green); color: #000; box-shadow: 0 0 25px var(--neon-green); }
+        .gold-line { border-color: var(--gold); color: var(--gold); }
+
+        /* FOOTER CREDIT */
+        .footer {
+            position: fixed; bottom: 0; width: 100%;
+            text-align: center; padding: 12px;
+            background: rgba(0,0,0,0.95); border-top: 2px solid var(--gold);
+            color: var(--gold); font-weight: bold; font-size: 14px;
+        }
+
+        /* NIGHT VISION OVERLAY */
+        .nv-active { filter: invert(1) hue-rotate(180deg) brightness(0.6) contrast(1.4) !important; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="image (2).png" class="patch-fed" alt="FEDERAL">
+    <div class="title-block">
+        <h1 class="cracked-text">TACNET</h1>
+        <div class="sub-text">MULTI-AGENCY TACTICAL TASK FORCE SEARCH APP</div>
+        <div class="agencies">FEDERAL • STATE • LOCAL</div>
+    </div>
+    <img src="image (1).jpg" class="patch-va" alt="VIRGINIA">
+</div>
+
+<div class="badge-row">
+    <img src="image.jpg" class="sheriff-star" alt="SHERIFF">
+</div>
+
+<div class="terminal-layout">
+    <!-- LEFT WING: K9 & OPS -->
+    <div class="panel">
+        <h3 style="text-align:center; color:var(--gold); margin:0 0 10px 0; font-size:14px;">K9 TACTICAL</h3>
+        <button class="tac-btn" onclick="triggerMod('K9 First Aid')">K9 FIRST AID</button>
+        <button class="tac-btn" onclick="triggerMod('Training')">TRAINING LOG</button>
+        <button class="tac-btn gold-line" onclick="toggleNV()">NIGHT VISION</button>
+    </div>
+
+    <!-- MAIN CENTER: GPS HUB -->
+    <div class="panel" style="padding:5px;">
+        <div id="map-display"></div>
+    </div>
+
+    <!-- RIGHT WING: LEGAL & ADMIN -->
+    <div class="panel">
+        <h3 style="text-align:center; color:var(--gold); margin:0 0 10px 0; font-size:14px;">LEGAL REF</h3>
+        <button class="tac-btn" onclick="triggerMod('Case Law')">CASE LAW BANK</button>
+        <button class="tac-btn" onclick="triggerMod('Reports')">INCIDENT RPT</button>
+        <button class="tac-btn gold-line" onclick="location.reload()">REBOOT SYS</button>
+    </div>
+</div>
+
+<div class="footer">
+    APP CREATED BY DEPUTY SHERIFF EARL A. WOOD RETIRED
+</div>
+
+<script>
+    // Map Initialization
+    var map = L.map('map-display', { zoomControl: false }).setView([37.4138, -79.1422], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    function toggleNV() {
+        document.body.classList.toggle('nv-active');
+    }
+
+    function triggerMod(name) {
+        alert("ACCESSING " + name.toUpperCase() + " DATA...");
+    }
+</script>
+
+</body>
+</html>
