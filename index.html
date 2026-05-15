@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>TACNET CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; padding: 20px; }
-        .box { border: 1px solid #39FF14; background: #000; color: #39FF14; padding: 10px; width: 100%; margin: 10px 0; }
+        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; margin: 0; padding: 10px; }
+        .box { border: 1px solid #39FF14; background: #000; color: #39FF14; padding: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
         .gold { color: #D4AF37; }
-        .btn { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; }
+        .btn { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
+        #map-display { height: 350px; border: 2px solid #39FF14; margin: 10px 0; }
+        #home, #map-screen { max-width: 500px; margin: auto; }
     </style>
 </head>
 <body>
 
 <div id="home">
-    <h1 class="gold">TACNET</h1>
-    <p>AMHERST COUNTY S.O. - TACTICAL INTERFACE</p>
+    <h1 class="gold" style="text-align:center;">TACNET</h1>
+    <p style="text-align:center;">AMHERST COUNTY S.O. PROOF OF CONCEPT</p>
     
     <label class="gold">INCIDENT TYPE:</label>
     <input type="text" id="inc" class="box" placeholder="e.g. ARMED ROBBERY">
@@ -23,24 +29,46 @@
     <button class="btn" onclick="runDeploy()">[ DEPLOY THE NET ]</button>
 </div>
 
-<div id="map" style="display:none;">
+<div id="map-screen" style="display:none;">
     <h2 id="header" class="gold"></h2>
-    <div style="height:300px; border:2px dashed #39FF14; display:flex; align-items:center; justify-content:center;">
-        [ TRACKING LIVE GPS... ]
+    <div id="map-display"></div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+        <button class="btn" onclick="alert('CASE LAW: Florida v. Harris (K9 Reliability)\nRodriguez v. US (Traffic Stop Duration)')">CASE LAW</button>
+        <button class="btn" onclick="alert('K9 EMERGENCY:\n1. Check Gums\n2. Cool Water (Not Ice)\n3. Locate Nearest Vet')">K9 AID</button>
     </div>
-    <button class="btn" style="color:red; border-color:red;" onclick="location.reload()">TERMINATE MISSION</button>
+    
+    <button class="btn" style="color:red; border-color:red; margin-top:10px;" onclick="location.reload()">TERMINATE MISSION</button>
 </div>
 
 <script>
+    var map;
+
     function runDeploy() {
         var incident = document.getElementById('inc').value;
         if(incident == "") {
             alert("REQUIRED: ENTER INCIDENT TYPE");
-        } else {
-            document.getElementById('home').style.display = 'none';
-            document.getElementById('map').style.display = 'block';
-            document.getElementById('header').innerText = "LIVE: " + incident.toUpperCase();
+            return;
         }
+
+        // Switch Screens
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('map-screen').style.display = 'block';
+        document.getElementById('header').innerText = "LIVE: " + incident.toUpperCase();
+
+        // Start the Map Engine (Centered on Virginia for now)
+        map = L.map('map-display').setView([37.5, -79.0], 13); 
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© TACNET'
+        }).addTo(map);
+
+        // Try to find your real location
+        map.locate({setView: true, maxZoom: 16});
+
+        function onLocationFound(e) {
+            L.marker(e.latlng).addTo(map).bindPopup("YOU ARE HERE").openPopup();
+        }
+        map.on('locationfound', onLocationFound);
     }
 </script>
 
