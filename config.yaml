@@ -1,0 +1,23 @@
+system_name: "TACNET"
+callsign_source: "safetytrainer7"
+environment: "Tactical_BETA"
+
+navigation:
+  home: "Briefing_Form"
+  active: "Tactical_Map"
+
+features:
+  - id: "k9_first_aid"
+    type: "voice_walkthrough"
+    status: "enabled"
+  - id: "officer_sos"
+    type: "emergency_broadcast"
+    status: "enabled"
+  - id: "grid_clearing"
+    type: "visual_overlay"
+    status: "enabled"
+
+data_streaming:
+  host: "github.com/safetytrainer7"
+  protocol: "secure_json"
+  refresh: 5000ms
