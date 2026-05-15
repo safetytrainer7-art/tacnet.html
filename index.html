@@ -3,32 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET - MULTI-AGENCY SEARCH</title>
+    <title>TACNET - ONE NET. ALL AGENCIES.</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background-color: #0d160d; color: #ffffff; font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; }
-        .gold { color: #D4AF37; }
-        .header-section { text-align: center; padding: 20px; background: #0d160d; }
-        .logo-text { color: #D4AF37; font-size: 3.5em; font-weight: 900; margin: 0; text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
-        .status-bar { display: flex; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 10px 20px; border-top: 1px solid #1a331a; border-bottom: 1px solid #1a331a; color: #ebff00; font-family: monospace; font-size: 0.9em; }
+        body { background-color: #0d160d; color: #ffffff; font-family: 'Helvetica', Arial, sans-serif; margin: 0; padding: 0; }
         
-        /* SIGN-IN */
-        .main-content { max-width: 700px; margin: auto; padding: 20px; }
-        .login-frame { background: rgba(0,0,0,0.5); border-left: 4px solid #D4AF37; padding: 20px; }
-        .input-box { width: 100%; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0; font-family: monospace; }
-        .deploy-btn { width: 100%; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        /* HEADER SECTION - FROM YOUR IMAGE */
+        .header-section { text-align: center; padding: 20px; background: #0d160d; }
+        .logo-text { color: #D4AF37; font-size: 3.5em; font-weight: 900; margin: 0; letter-spacing: 4px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
+        .tagline { color: #ebff00; font-weight: bold; font-size: 1.1em; margin-top: 5px; text-transform: uppercase; }
+        
+        /* STATUS BAR */
+        .status-bar { display: flex; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 10px 20px; border-top: 1px solid #1a331a; border-bottom: 1px solid #1a331a; color: #ebff00; font-family: monospace; font-size: 0.8em; }
 
-        /* HUD & MAP */
+        /* THE MAIN LANDING CONTENT */
+        .main-content { max-width: 700px; margin: auto; padding: 20px; text-align: left; }
+        .restricted-tag { background: #000; border: 1px solid #D4AF37; color: #ebff00; display: inline-block; padding: 8px 15px; margin: 20px 0; font-weight: bold; font-size: 0.8em; }
+        .headline { color: #ebff00; font-size: 2.2em; font-weight: 900; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
+
+        /* SIGN-IN BOX */
+        .login-frame { background: rgba(0,0,0,0.5); border-left: 4px solid #D4AF37; padding: 20px; margin-top: 20px; }
+        .label { color: #D4AF37; font-weight: bold; font-size: 0.8em; text-transform: uppercase; }
+        .input-box { width: 100%; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0 20px 0; font-family: monospace; font-size: 1.1em; box-sizing: border-box; }
+        .deploy-btn { width: 100%; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: 900; font-size: 1.1em; cursor: pointer; text-transform: uppercase; }
+
+        /* FOOTER CREDITS */
+        .footer-credit { text-align: center; margin-top: 40px; border-top: 1px solid #1a331a; padding-top: 20px; }
+        .creator-name { color: #ffffff; font-size: 1.2em; font-weight: bold; margin: 5px 0; }
+
+        /* MAP HUD (Hidden initially) */
         #hud-container { display: none; height: 100vh; flex-direction: column; }
         #map-display { flex-grow: 1; border: 2px solid #39FF14; }
         .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px; gap: 5px; }
         .tool-btn { background: #111; color: #D4AF37; border: 1px solid #D4AF37; padding: 15px 2px; font-size: 0.6em; font-weight: bold; text-align: center; cursor: pointer; }
 
-        /* MEDIC/LEGAL OVERLAY */
+        /* OVERLAYS (Medic/Legal) */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; color: #39FF14; font-family: monospace; }
-        .med-item { border-bottom: 1px solid #1a331a; padding: 15px 0; }
-        .med-title { color: #D4AF37; font-weight: bold; font-size: 1.1em; }
+        .med-item { border-bottom: 1px solid #1a331a; padding: 12px 0; }
     </style>
 </head>
 <body>
@@ -36,18 +48,32 @@
 <div id="home-page">
     <div class="header-section">
         <h1 class="logo-text">TACNET</h1>
-        <div style="color:#ebff00; font-weight:bold;">MULTI-AGENCY TASK FORCE</div>
+        <div class="tagline">MULTI-AGENCY TASK FORCE SEARCH APP</div>
     </div>
-    <div class="status-bar"><span>((•)) NET ACTIVE</span><span>SECURE TOKEN: ACTIVE</span></div>
+
+    <div class="status-bar">
+        <span>((•)) NET ACTIVE</span>
+        <span>TOKEN SECURE: [ 12H REMAINING ]</span>
+    </div>
+
     <div class="main-content">
-        <h2 style="color:#ebff00;">ONE NET. ALL AGENCIES.</h2>
+        <div class="restricted-tag">⚠️ RESTRICTED — AUTHORIZED PERSONNEL ONLY</div>
+        
+        <div class="headline">ONE NET. ALL AGENCIES.<br>ZERO BLIND SPOTS.</div>
+        
         <div class="login-frame">
-            <input type="text" id="inc-name" class="input-box" placeholder="MISSION NAME">
+            <div class="label">MISSION NAME / INCIDENT TYPE</div>
+            <input type="text" id="inc-name" class="input-box" placeholder="e.g. BRACY TACTICAL SEARCH">
+            
+            <div class="label">OPERATOR CALLSIGN</div>
+            <input type="text" id="unit-id" class="input-box" placeholder="ENTER ID">
+
             <button class="deploy-btn" onclick="deployNet()">[ INITIALIZE DEPLOYMENT ]</button>
         </div>
-        <div style="text-align:center; margin-top:30px;">
-            <div class="gold">DEVELOPED BY:</div>
-            <div style="font-size:1.3em;">DEPUTY EARL WOOD (RET.)</div>
+
+        <div class="footer-credit">
+            <div class="label">DEVELOPED BY:</div>
+            <div class="creator-name">DEPUTY EARL WOOD (RET.)</div>
         </div>
     </div>
 </div>
@@ -63,34 +89,25 @@
 </div>
 
 <div id="med-overlay" class="overlay">
-    <h2 class="gold" style="text-align:center;">FIELD MEDIC: K9 FIRST AID</h2>
-    <div class="med-item">
-        <span class="med-title">HEAT STROKE:</span><br>
-        1. Move to shade. 2. Apply cool water to paws/belly. 3. DO NOT use ice water. 4. Tracking SUSPENDED until temp drops.
-    </div>
-    <div class="med-item">
-        <span class="med-title">NARCAN DEPLOYMENT:</span><br>
-        1. Signs: Lethargy, pinpoint pupils. 2. Administer 4mg Intranasal. 3. Repeat in 3 mins if no response. 4. IMMEDIATE VET TRANSPORT.
-    </div>
-    <div class="med-item">
-        <span class="med-title">TRAUMATIC BLEEDING:</span><br>
-        1. Direct pressure to wound. 2. Pack with gauze. 3. Apply pressure bandage. 4. Check for shock.
-    </div>
-    <button class="deploy-btn" onclick="toggleOverlay('med-overlay')">RETURN TO COMMAND</button>
+    <h2 style="color:#D4AF37; text-align:center;">FIELD MEDIC: K9 FIRST AID</h2>
+    <div class="med-item"><b>[1] CPR:</b> 30 compressions : 2 breaths. Rate: 100-120bpm.</div>
+    <div class="med-item"><b>[2] SNAKE BITE:</b> Keep K9 calm. Bite BELOW heart. No ice. No cutting.</div>
+    <div class="med-item"><b>[3] HEAT STROKE:</b> Shade. Cool water paws/belly. No ice water.</div>
+    <button class="deploy-btn" onclick="toggleOverlay('med-overlay')">RETURN TO MAP</button>
 </div>
 
 <div id="law-overlay" class="overlay">
-    <h2 class="gold" style="text-align:center;">TACTICAL LEGAL REFERENCE</h2>
-    <div class="med-item"><b>VA v. HURD:</b> K9 reliability standards.</div>
+    <h2 style="color:#D4AF37; text-align:center;">TACTICAL LEGAL REFERENCE</h2>
+    <div class="med-item"><b>VA v. HURD:</b> K9 alert reliability.</div>
     <div class="med-item"><b>RODRIGUEZ v. US:</b> Stop duration limits.</div>
-    <button class="deploy-btn" onclick="toggleOverlay('law-overlay')">RETURN TO COMMAND</button>
+    <button class="deploy-btn" onclick="toggleOverlay('law-overlay')">RETURN TO MAP</button>
 </div>
 
 <script>
     var map, markers = [], polyline, perimActive = false;
 
     function deployNet() {
-        if(!document.getElementById('inc-name').value) { alert("ENTER MISSION NAME"); return; }
+        if(!document.getElementById('inc-name').value) { alert("SIGN-IN REQUIRED"); return; }
         document.getElementById('home-page').style.display = 'none';
         document.getElementById('hud-container').style.display = 'flex';
         
@@ -100,6 +117,7 @@
         map.locate({setView: true, maxZoom: 15});
         map.on('locationfound', function(e) {
             L.circleMarker(e.latlng, {radius: 8, color: 'red'}).addTo(map).bindPopup("COMMANDER");
+            // Simulated K9 Unit for demo
             L.circleMarker([e.latlng.lat + 0.002, e.latlng.lng + 0.002], {radius: 6, color: '#39FF14'}).addTo(map).bindPopup("K9 UNIT");
         });
     }
@@ -123,3 +141,4 @@
 </script>
 </body>
 </html>
+
