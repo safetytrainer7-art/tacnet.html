@@ -1,132 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET - ONE NET. ALL AGENCIES.</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body { background-color: #0d160d; color: #ffffff; font-family: 'Helvetica', Arial, sans-serif; margin: 0; padding: 0; }
-        
-        /* THE TOP BANNER FROM YOUR IMAGE */
-        .header-section { text-align: center; padding: 20px; background: #0d160d; }
-        .logo-text { color: #D4AF37; font-size: 4em; font-weight: 900; margin: 0; letter-spacing: 4px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
-        .tagline { color: #ebff00; font-weight: bold; font-size: 1.1em; margin-top: 5px; text-transform: uppercase; }
-        .levels { color: #ffffff; font-size: 0.8em; letter-spacing: 3px; margin-top: 5px; }
-        
-        /* THE STATUS BAR */
-        .status-bar { display: flex; justify-content: space-between; background: rgba(0,0,0,0.4); padding: 10px 20px; border-top: 1px solid #1a331a; border-bottom: 1px solid #1a331a; color: #ebff00; font-family: monospace; font-size: 0.9em; }
-
-        /* THE RESTRICTED BOX */
-        .restricted-tag { background: #000; border: 1px solid #D4AF37; color: #ebff00; display: inline-block; padding: 8px 15px; margin: 20px 0; font-weight: bold; font-size: 0.9em; }
-
-        /* THE MAIN LOGIN FLOW */
-        .main-content { max-width: 700px; margin: auto; padding: 20px; text-align: left; }
-        .headline { color: #ebff00; font-size: 2.5em; font-weight: 900; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
-        .description { font-size: 1.2em; line-height: 1.4; color: #ffffff; margin-bottom: 30px; }
-
-        /* SIGN-IN INPUTS */
-        .login-frame { background: rgba(0,0,0,0.5); border-left: 4px solid #D4AF37; padding: 20px; margin-top: 20px; }
-        .label { color: #D4AF37; font-weight: bold; font-size: 0.8em; text-transform: uppercase; }
-        .input-box { width: 100%; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0 20px 0; font-family: monospace; font-size: 1.1em; box-sizing: border-box; }
-        .deploy-btn { width: 100%; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: 900; font-size: 1.2em; cursor: pointer; text-transform: uppercase; }
-
-        /* FOOTER CREDITS */
-        .footer-credit { text-align: center; margin-top: 50px; border-top: 1px solid #1a331a; padding-top: 20px; padding-bottom: 40px; }
-        .creator-name { color: #ffffff; font-size: 1.4em; letter-spacing: 2px; font-weight: bold; margin: 5px 0; }
-        .disclaimer { color: #666; font-size: 0.7em; text-transform: uppercase; }
-
-        /* HIDDEN MAP SCREEN */
-        #hud-container { display: none; height: 100vh; flex-direction: column; }
-        #map-display { flex-grow: 1; border: 2px solid #39FF14; }
-        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px; gap: 5px; }
-        .tool-btn { background: #111; color: #D4AF37; border: 1px solid #D4AF37; padding: 15px 2px; font-size: 0.7em; font-weight: bold; text-align: center; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-<div id="home-page">
-    <div class="header-section">
-        <h1 class="logo-text">TACNET</h1>
-        <div class="tagline">MULTI-AGENCY TASK FORCE SEARCH APP</div>
-        <div class="levels">FEDERAL • STATE • LOCAL</div>
+<div id="med-overlay" class="overlay">
+    <h2 class="gold" style="text-align:center; border-bottom: 2px solid #D4AF37; padding-bottom: 10px;">TACTICAL K9 FIELD MEDIC</h2>
+    
+    <div class="med-item">
+        <span class="med-title" style="color:#ff0000;">[1] K9 CPR - CARDIOPULMONARY RESUSCITATION</span><br>
+        1. <b>CHECK:</b> No pulse, no breathing. Lay dog on RIGHT side.<br>
+        2. <b>COMPRESSIONS:</b> Place hands over widest part of chest. Compress 1/3 to 1/2 depth.<br>
+        3. <b>RATE:</b> 100-120 beats per minute (Stayin' Alive tempo).<br>
+        4. <b>BREATHS:</b> 2 breaths for every 30 compressions (Close mouth, blow into nose).
     </div>
 
-    <div class="status-bar">
-        <span>((•)) NET ACTIVE</span>
-        <span>5/14/2026, 9:41 PM</span>
+    <div class="med-item">
+        <span class="med-title" style="color:#ff0000;">[2] SNAKE BITE (VENOMOUS)</span><br>
+        1. <b>IDENTIFY:</b> Do NOT attempt to catch snake. Note color/head shape.<br>
+        2. <b>RESTRICT:</b> Keep K9 calm and immobilized. Movement spreads venom.<br>
+        3. <b>POSITION:</b> Keep the bite area BELOW the heart.<br>
+        4. <b>NEVER:</b> Do not cut the wound or try to suck out venom. No ice.<br>
+        5. <b>ACTION:</b> Immediate transport to vet for anti-venom.
     </div>
 
-    <div class="main-content">
-        <div class="restricted-tag">⚠️ RESTRICTED — AUTHORIZED PERSONNEL ONLY</div>
-        
-        <div class="headline">ONE NET. ALL AGENCIES.<br>ZERO BLIND SPOTS.</div>
-        
-        <p class="description">
-            TACNET is the first multi-agency tactical search platform built by law enforcement, for law enforcement. 
-            Track every officer in real time, drop articles, clear grids, mark LKP, and respond to officer-down events — 
-            all on one shared map.
-        </p>
-
-        <div class="login-frame">
-            <div class="label">MISSION NAME / INCIDENT TYPE</div>
-            <input type="text" id="inc-name" class="input-box" placeholder="SYSTEM PENDING...">
-            
-            <div class="label">OPERATOR CALLSIGN</div>
-            <input type="text" id="unit-id" class="input-box" placeholder="ENTER ID">
-
-            <button class="deploy-btn" onclick="deployNet()">[ INITIALIZE DEPLOYMENT ]</button>
-        </div>
-
-        <div class="footer-credit">
-            <div class="label">DEVELOPED BY:</div>
-            <div class="creator-name">DEPUTY EARL WOOD (RET.)</div>
-            <div class="disclaimer">RESTRICTED ACCESS - AUTHORIZED PERSONNEL ONLY</div>
-        </div>
+    <div class="med-item">
+        <span class="med-title">[3] HEAT STROKE</span><br>
+        1. <b>SYMPTOMS:</b> Excessive panting, dark red gums, collapse.<br>
+        2. <b>COOL:</b> Move to shade. Use cool water on belly/paws. DO NOT use ice water.
     </div>
+
+    <div class="med-item">
+        <span class="med-title">[4] NARCAN DEPLOYMENT</span><br>
+        1. <b>SIGNS:</b> Respiratory depression, pinpoint pupils.<br>
+        2. <b>DOSE:</b> 4mg Intranasal. Repeat every 3 minutes until K9 is alert.
+    </div>
+
+    <button class="deploy-btn" onclick="toggleOverlay('med-overlay')" style="background:#39FF14;">RETURN TO COMMAND MAP</button>
 </div>
-
-<div id="hud-container">
-    <div id="map-display"></div>
-    <div class="tool-grid">
-        <div class="tool-btn" onclick="alert('CASE LAW LIBRARY ACTIVE')">CASE LAW</div>
-        <div class="tool-btn" onclick="startPerimeter()" id="perim-btn">PERIMETER</div>
-        <div class="tool-btn" onclick="location.reload()">CLEAR ALL</div>
-        <div class="tool-btn" onclick="location.reload()" style="color:red;">EXIT</div>
-    </div>
-</div>
-
-<script>
-    var map, markers = [], polyline, perimActive = false;
-
-    function deployNet() {
-        var inc = document.getElementById('inc-name').value;
-        if(!inc) { alert("SIGN-IN REQUIRED"); return; }
-        
-        document.getElementById('home-page').style.display = 'none';
-        document.getElementById('hud-container').style.display = 'flex';
-        
-        map = L.map('map-display', { zoomControl: false }).setView([37.5, -79.0], 13);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        map.locate({setView: true, maxZoom: 16});
-        
-        map.on('click', function(e) {
-            if(!perimActive) return;
-            L.circleMarker(e.latlng, { radius: 5, color: '#ff0000' }).addTo(map);
-            markers.push(e.latlng);
-            if(polyline) map.removeLayer(polyline);
-            polyline = L.polyline(markers, {color: '#ff0000', weight: 4}).addTo(map);
-        });
-    }
-
-    function startPerimeter() {
-        perimActive = !perimActive;
-        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#111";
-        document.getElementById('perim-btn').style.color = perimActive ? "#000" : "#D4AF37";
-    }
-</script>
-
-</body>
-</html>
 
