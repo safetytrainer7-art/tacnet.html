@@ -3,141 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET | COMMAND</title>
+    <title>TACNET COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* STAGE 1: LANDING PAGE */
-        #home-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; background: #0d160d; padding: 20px; box-sizing: border-box; display: block; text-align: center; }
-        .logo-text { color: #D4AF37; font-size: 3em; font-weight: 900; margin: 10px 0; letter-spacing: 3px; }
+        /* LANDING PAGE */
+        #home-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; background: #0d160d; padding: 20px; box-sizing: border-box; text-align: center; display: block; }
+        .logo { color: #D4AF37; font-size: 3.5em; font-weight: 900; margin-bottom: 0; }
         .input-box { width: 90%; max-width: 400px; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0; font-family: monospace; }
-        .deploy-btn { width: 90%; max-width: 400px; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: bold; font-size: 1.1em; cursor: pointer; }
+        .deploy-btn { width: 90%; max-width: 400px; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: bold; cursor: pointer; }
 
-        /* STAGE 2: THE SPLIT-SCREEN HUD */
-        #hud-container { display: none; flex-direction: column; height: 100vh; width: 100vw; }
+        /* HUD LAYOUT */
+        #hud-container { display: none; flex-direction: column; height: 100vh; }
+        #map-display { flex-grow: 1; width: 100%; }
         
-        /* MAP TAKES TOP 75% */
-        #map-display { height: 75vh; width: 100%; border-bottom: 2px solid #D4AF37; }
+        /* COMMAND TRAY */
+        .command-tray { height: 180px; background: #111; border-top: 2px solid #D4AF37; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; box-sizing: border-box; }
+        .tool-btn { background: #222; color: #D4AF37; border: 1px solid #444; font-weight: bold; font-size: 0.8em; display: flex; align-items: center; justify-content: center; text-transform: uppercase; cursor: pointer; }
+        .tool-btn:active { background: #39FF14; color: #000; }
         
-        /* COMMAND TRAY TAKES BOTTOM 25% */
-        #command-tray { height: 25vh; width: 100%; background: #111; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; padding: 5px; box-sizing: border-box; }
-        
-        .tool-btn { background: #222; color: #D4AF37; border: 1px solid #444; font-weight: bold; font-size: 0.8em; display: flex; align-items: center; justify-content: center; text-transform: uppercase; text-align: center; }
-        .tool-btn:active { background: #333; border-color: #39FF14; }
-
-        /* FULL SCREEN OVERLAYS */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto; color: #39FF14; font-family: monospace; }
+        /* PDF/STATUS OVERLAY */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; padding: 20px; box-sizing: border-box; color: #39FF14; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="home-page">
-    <h1 class="logo-text">TACNET</h1>
-    <p style="color:#ebff00; font-weight:bold;">ONE NET. ALL AGENCIES.</p>
-    <div style="border-left: 3px solid #D4AF37; padding: 10px; margin: 20px auto; max-width: 400px; background: rgba(255,255,255,0.05);">
-        <input type="text" id="inc-name" class="input-box" placeholder="MISSION NAME">
-        <input type="text" id="unit-id" class="input-box" placeholder="CALLSIGN (e.g. K9-1)">
+    <h1 class="logo">TACNET</h1>
+    <p style="color:#ebff00;">ONE NET. ALL AGENCIES.</p>
+    <div style="border-left: 3px solid #D4AF37; padding: 10px; margin: 20px auto; max-width: 400px;">
+        <input type="text" id="inc-name" class="input-box" placeholder="INCIDENT TYPE (e.g. RAPE)">
+        <input type="text" id="unit-id" class="input-box" placeholder="OPERATOR CALLSIGN">
         <button class="deploy-btn" onclick="deployNet()">[ INITIALIZE DEPLOYMENT ]</button>
     </div>
-    <p style="color: #666; font-size: 0.8em;">DEVELOPED BY: DEPUTY EARL WOOD (RET.)</p>
 </div>
 
 <div id="hud-container">
     <div id="map-display"></div>
-    <div id="command-tray">
-        <div class="tool-btn" onclick="toggleOverlay('med-overlay')">K9 MEDIC</div>
-        <div class="tool-btn" onclick="toggleOverlay('law-overlay')">CASE LAW</div>
-        <div class="tool-btn" onclick="dropMarker('ARTICLE FOUND')" style="color:#ebff00;">MARK ARTICLE</div>
-        <div class="tool-btn" onclick="location.reload()" style="color:#ff4444;">EXIT NET</div>
+    <div class="command-tray">
+        <div class="tool-btn" onclick="startPerimeter()" id="perim-btn">SET PERIMETER</div>
+        <div class="tool-btn" onclick="logEvidence()">MARK EVIDENCE</div>
+        <div class="tool-btn" onclick="toggleOverlay('dispo-overlay')">FINAL DISPOSITION</div>
+        <div class="tool-btn" onclick="location.reload()" style="color:#ff4444;">TERMINATE SEARCH</div>
     </div>
 </div>
 
-<div id="med-overlay" class="overlay">
-    <h2 style="color:#D4AF37; text-align:center;">K9 FIELD MEDIC</h2>
-    <p><b>[1] CPR:</b> 30 compressions : 2 breaths.</p>
-    <p><b>[2] SNAKE BITES:</b> Keep K9 calm. Bite BELOW heart.</p>
-    <p><b>[3] HEAT STROKE:</b> Shade. Cool water paws/belly.</p>
-    <button class="deploy-btn" onclick="toggleOverlay('med-overlay')" style="width:100%;">RETURN TO MAP</button>
-</div>
-
-<div id="law-overlay" class="overlay">
-    <h2 style="color:#D4AF37; text-align:center;">LEGAL REFERENCE</h2>
-    <p><b>VA v. HURD:</b> K9 reliability.</p>
-    <p><b>RODRIGUEZ v. US:</b> Stop limits.</p>
-    <button class="deploy-btn" onclick="toggleOverlay('law-overlay')" style="width:100%;">RETURN TO MAP</button>
+<div id="dispo-overlay" class="overlay">
+    <h2 style="color:#D4AF37;">FINAL SEARCH DISPOSITION</h2>
+    <textarea id="dispo-text" class="input-box" style="height:150px; width:100%;" placeholder="ENTER FINAL DETAILS (e.g. Suspect in custody, evidence secured)"></textarea>
+    <button class="deploy-btn" onclick="generatePDF()" style="width:100%;">GENERATE COURT PDF</button>
+    <button class="deploy-btn" onclick="toggleOverlay('dispo-overlay')" style="width:100%; margin-top:10px; background:#444; color:#fff;">CANCEL</button>
 </div>
 
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCvuvc6EAoh5S0O3kPcrGEhccTtjagSl_A",
-      authDomain: "safe-encounter-7a43a.firebaseapp.com",
-      databaseURL: "https://safe-encounter-7a43a-default-rtdb.firebaseio.com",
-      projectId: "safe-encounter-7a43a",
-      storageBucket: "safe-encounter-7a43a.firebasestorage.app",
-      messagingSenderId: "633429430474",
-      appId: "1:633429430474:web:9458093c40c218ca42e433",
-      measurementId: "G-GKE7J9EYQB"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    var map, netUnits = {}, currentMission = "", myID = "";
+    var map, perimActive = false, markers = [], polyline, evidenceLog = [];
 
     function deployNet() {
-        currentMission = document.getElementById('inc-name').value.toUpperCase();
-        myID = document.getElementById('unit-id').value.toUpperCase();
-        if(!currentMission || !myID) { alert("FIELDS REQUIRED"); return; }
-
+        if(!document.getElementById('inc-name').value) return alert("REQUIRED");
         document.getElementById('home-page').style.display = 'none';
         document.getElementById('hud-container').style.display = 'flex';
         
-        map = L.map('map-display', { zoomControl: false, attributionControl: false }).setView([37.5, -77.5], 13);
+        map = L.map('map-display', { zoomControl: false }).setView([37.5, -79.0], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-
         map.locate({setView: true, watch: true, enableHighAccuracy: true});
-        map.on('locationfound', function(e) {
-            database.ref('missions/' + currentMission + '/units/' + myID).set({
-                lat: e.latlng.lat, lng: e.latlng.lng,
-                type: (myID.includes('K9')) ? 'K9' : 'PATROL',
-                time: Date.now()
-            });
-            if(!netUnits['me']) {
-                netUnits['me'] = L.circle(e.latlng, {radius: 15, color: 'red'}).addTo(map);
-            } else {
-                netUnits['me'].setLatLng(e.latlng);
-            }
-        });
 
-        database.ref('missions/' + currentMission + '/units').on('value', function(snap) {
-            var data = snap.val();
-            for(var id in data) {
-                if(id === myID) continue;
-                var u = data[id];
-                var color = (u.type === 'K9') ? '#39FF14' : '#00aaff';
-                if(!netUnits[id]) {
-                    netUnits[id] = L.circleMarker([u.lat, u.lng], {radius: 8, color: color}).addTo(map);
-                } else {
-                    netUnits[id].setLatLng([u.lat, u.lng]);
-                }
-            }
+        map.on('locationfound', function(e) {
+            L.circle(e.latlng, {radius: 10, color: 'red'}).addTo(map);
         });
     }
 
-    function dropMarker(label) {
-        map.locate({setView: false}).on('locationfound', function(e) {
-            database.ref('missions/' + currentMission + '/articles').push({
-                lat: e.latlng.lat, lng: e.latlng.lng, label: label, by: myID
-            });
+    function startPerimeter() {
+        perimActive = !perimActive;
+        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#222";
+        document.getElementById('perim-btn').style.color = perimActive ? "#000" : "#D4AF37";
+        if(perimActive) alert("CLICK MAP TO DRAW PERIMETER");
+        
+        map.on('click', function(e) {
+            if(!perimActive) return;
+            L.circleMarker(e.latlng, {radius: 5, color: '#ebff00'}).addTo(map);
+            markers.push(e.latlng);
+            if(polyline) map.removeLayer(polyline);
+            polyline = L.polyline(markers, {color: '#ebff00', weight: 4}).addTo(map);
+        });
+    }
+
+    function logEvidence() {
+        map.locate().on('locationfound', function(e) {
+            var time = new Date().toLocaleTimeString();
+            L.circleMarker(e.latlng, {radius: 10, color: '#D4AF37'}).addTo(map).bindPopup("EVIDENCE LOGGED: " + time).openPopup();
+            evidenceLog.push({time: time, lat: e.latlng.lat, lng: e.latlng.lng});
         });
     }
 
     function toggleOverlay(id) {
         var el = document.getElementById(id);
         el.style.display = (el.style.display == 'block') ? 'none' : 'block';
+    }
+
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let inc = document.getElementById('inc-name').value;
+        let dispo = document.getElementById('dispo-text').value;
+
+        doc.setFontSize(20);
+        doc.text("TACNET OFFICIAL SEARCH RECORD", 10, 20);
+        doc.setFontSize(12);
+        doc.text("Incident Type: " + inc, 10, 30);
+        doc.text("Developed By: Deputy Earl Wood (Ret.)", 10, 40);
+        doc.text("--------------------------------------------------", 10, 50);
+        doc.text("EVIDENCE LOG:", 10, 60);
+        
+        let y = 70;
+        evidenceLog.forEach((item, i) => {
+            doc.text(`${i+1}. Time: ${item.time} | Lat: ${item.lat.toFixed(4)} Lng: ${item.lng.toFixed(4)}`, 10, y);
+            y += 10;
+        });
+
+        doc.text("FINAL DISPOSITION:", 10, y + 10);
+        doc.text(dispo, 10, y + 20);
+        
+        doc.save("TACNET_DISPOSITION.pdf");
+        alert("PDF GENERATED FOR COURT RECORD.");
     }
 </script>
 </body>
