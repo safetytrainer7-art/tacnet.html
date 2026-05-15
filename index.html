@@ -3,43 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET - Tactical Search Interface</title>
+    <title>TACNET - Law Enforcement Only</title>
     <style>
-        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; margin: 0; padding: 20px; overflow: hidden; }
-        .hud-border { border: 2px solid #D4AF37; padding: 15px; border-radius: 10px; box-shadow: 0 0 15px #39FF14; }
-        .ticker { background: rgba(57, 255, 20, 0.1); border-bottom: 1px solid #39FF14; padding: 5px; white-space: nowrap; overflow: hidden; margin-bottom: 15px; }
-        .ticker-text { display: inline-block; animation: scroll 15s linear infinite; font-weight: bold; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .tactical-btn { background: #000; color: #39FF14; border: 1px solid #39FF14; padding: 15px; text-transform: uppercase; font-weight: bold; cursor: pointer; text-align: center; }
-        .tactical-btn:active { background: #39FF14; color: #000; }
-        .sos-btn { background: #000; color: #ff0000; border: 2px solid #ff0000; grid-column: span 2; padding: 20px; margin-top: 10px; font-size: 1.2em; box-shadow: 0 0 10px #ff0000; }
-        h1 { color: #D4AF37; text-align: center; margin-top: 0; text-shadow: 0 0 5px #D4AF37; }
-        #map-placeholder { height: 200px; border: 1px dashed #39FF14; margin: 10px 0; display: flex; align-items: center; justify-content: center; background: #1a1a1a; }
+        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; margin: 0; padding: 15px; }
+        .neon-border { border: 1px solid #39FF14; background: rgba(57, 255, 20, 0.05); color: #39FF14; padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        .gold-text { color: #D4AF37; text-shadow: 0 0 5px #D4AF37; }
+        .btn-deploy { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 20px; width: 100%; font-weight: bold; font-size: 1.2em; cursor: pointer; box-shadow: 0 0 10px #D4AF37; margin-top: 10px; }
+        .btn-deploy:hover { background: #D4AF37; color: #000; }
+        #tactical-screen { display: none; } /* Hidden until Deploy is pressed */
+        .hud-border { border: 2px solid #39FF14; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div class="ticker"><div class="ticker-text">[ INCIDENT ACTIVE ] :: SEARCHING AREA BRACY, VA :: DEPLOYING TACNET CORE v1.0 :: UNIT: safetytrainer7</div></div>
+
+<div id="home-page">
+    <h1 class="gold-text" style="text-align:center;">TACNET</h1>
+    <p style="text-align:center; font-size: 0.8em;">TACTICAL SEARCH & IDENTIFICATION SYSTEM</p>
     
+    <label class="gold-text">INCIDENT NAME:</label>
+    <input type="text" id="incName" class="neon-border" placeholder="e.g. BRACY ARMED ROBBERY">
+    
+    <label class="gold-text">CALLSIGN:</label>
+    <input type="text" id="callsign" class="neon-border" placeholder="e.g. K9-1 / safetytrainer7">
+    
+    <label class="gold-text">AGENCY:</label>
+    <input type="text" class="neon-border" value="AMHERST COUNTY S.O." readonly>
+
+    <button class="btn-deploy" onclick="deployNet()">[ DEPLOY THE NET ]</button>
+    
+    <div style="margin-top:20px; text-align:center; font-size:0.7em;">
+        <p>ADMINISTRATIVE TRAY:</p>
+        <button style="background:none; border:1px solid #555; color:#555; padding:5px;">CASE LAW</button>
+        <button style="background:none; border:1px solid #555; color:#555; padding:5px;">FORMS</button>
+    </div>
+</div>
+
+<div id="tactical-screen">
     <div class="hud-border">
-        <h1>TACNET</h1>
-        <div style="text-align: center; font-size: 0.8em; color: #D4AF37;">AMHERST COUNTY S.O. PROOF OF CONCEPT</div>
+        <h2 id="display-incident" class="gold-text"></h2>
+        <div style="height:250px; background:#1a1a1a; border:1px dashed #39FF14; display:flex; align-items:center; justify-content:center;">
+            [ GPS ACTIVE - TRACKING safetytrainer7 ]
+        </div>
+        <button onclick="location.reload()" style="background:none; color:#555; border:none; width:100%;">× END INCIDENT</button>
+    </div>
+</div>
+
+<script>
+    function deployNet() {
+        var name = document.getElementById('incName').value;
+        if(name == "") { alert("ENTER INCIDENT NAME BEFORE DEPLOYMENT"); return; }
         
-        <div id="map-placeholder">
-            [ GPS SIGNAL: INITIALIZING... ]
-        </div>
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('tactical-screen').style.display = 'block';
+        document.getElementById('display-incident').innerText = "LIVE: " + name.toUpperCase();
+    }
+</script>
 
-        <div class="btn-grid">
-            <div class="tactical-btn">Case Law</div>
-            <div class="tactical-btn">K9 First Aid</div>
-            <div class="tactical-btn">Clear Grid</div>
-            <div class="tactical-btn">Report</div>
-            <button class="tactical-btn sos-btn" onclick="alert('SOS BROADCAST SENT TO ALL UNITS')">OFFICER DOWN SOS</button>
-        </div>
-    </div>
-
-    <div style="margin-top: 20px; font-size: 0.7em; text-align: center; color: #555;">
-        DEVELOPED BY: DEPUTY EARL WOOD (RET) | LAW ENFORCEMENT ONLY
-    </div>
 </body>
 </html>
