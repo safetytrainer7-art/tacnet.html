@@ -1,163 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET COMMAND</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* LANDING PAGE */
-        #home-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; background: #0d160d; padding: 20px; box-sizing: border-box; text-align: center; display: block; }
-        .logo { color: #D4AF37; font-size: 3.5em; font-weight: 900; margin-bottom: 0; }
-        .input-box { width: 90%; max-width: 400px; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0; font-family: monospace; }
-        .deploy-btn { width: 90%; max-width: 400px; background: #D4AF37; color: #000; border: none; padding: 20px; font-weight: bold; cursor: pointer; }
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        /* HUD LAYOUT */
-        #hud-container { display: none; flex-direction: column; height: 100vh; }
-        #map-display { flex-grow: 1; width: 100%; }
-        
-        /* COMMAND TRAY */
-        .command-tray { height: 180px; background: #111; border-top: 2px solid #D4AF37; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; box-sizing: border-box; }
-        .tool-btn { background: #222; color: #D4AF37; border: 1px solid #444; font-weight: bold; font-size: 0.8em; display: flex; align-items: center; justify-content: center; text-transform: uppercase; cursor: pointer; }
-        .tool-btn:active { background: #39FF14; color: #000; }
-        
-        /* PDF/STATUS OVERLAY */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; padding: 20px; box-sizing: border-box; color: #39FF14; font-family: monospace; }
-    </style>
+<title>TACNET COMMAND</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+body{
+background:#000;
+color:#fff;
+font-family:sans-serif;
+margin:0;
+padding:0;
+height:100vh;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+/* HOME PAGE */
+
+#home-page{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:9999;
+background:#0d160d;
+padding:20px;
+box-sizing:border-box;
+text-align:center;
+display:block;
+}
+
+.logo{
+color:#D4AF37;
+font-size:3.5em;
+font-weight:900;
+margin-bottom:0;
+text-shadow:0 0 15px #000;
+}
+
+.subtext{
+color:#ebff00;
+font-weight:bold;
+margin-top:5px;
+}
+
+.input-box{
+width:90%;
+max-width:400px;
+background:#000;
+border:1px solid #39FF14;
+color:#39FF14;
+padding:15px;
+margin:10px 0;
+font-family:monospace;
+font-size:1em;
+}
+
+.deploy-btn{
+width:90%;
+max-width:400px;
+background:#D4AF37;
+color:#000;
+border:none;
+padding:20px;
+font-weight:bold;
+cursor:pointer;
+font-size:1em;
+}
+
+.deploy-btn:active{
+background:#39FF14;
+}
+
+/* HUD */
+
+#hud-container{
+display:none;
+flex-direction:column;
+height:100vh;
+}
+
+#map-display{
+flex-grow:1;
+width:100%;
+}
+
+/* COMMAND TRAY */
+
+.command-tray{
+height:180px;
+background:#111;
+border-top:2px solid #D4AF37;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:5px;
+padding:10px;
+box-sizing:border-box;
+}
+
+.tool-btn{
+background:#222;
+color:#D4AF37;
+border:1px solid #444;
+font-weight:bold;
+font-size:0.8em;
+display:flex;
+align-items:center;
+justify-content:center;
+text-transform:uppercase;
+cursor:pointer;
+}
+
+.tool-btn:active{
+background:#39FF14;
+color:#000;
+}
+
+</style>
 </head>
+
 <body>
 
+<!-- HOME PAGE -->
+
 <div id="home-page">
-    <div id="home-page">
+
+<h1 class="logo">TACNET</h1>
+
+<p class="subtext">
+ONE NET. ALL AGENCIES.
+</p>
 
 <div style="
-background:#111;
-border:2px solid #D4AF37;
-padding:15px;
-margin:15px auto;
+border-left:3px solid #D4AF37;
+padding:10px;
+margin:20px auto;
 max-width:400px;
-box-shadow:0 0 20px #39FF14;
 ">
 
-<h3 style="
-color:#39FF14;
-margin-top:0;
-font-family:monospace;
-">
-SECURE TACNET ACCESS
-</h3>
+<input
+type="text"
+id="inc-name"
+class="input-box"
+placeholder="INCIDENT TYPE">
+
+<input
+type="text"
+id="unit-id"
+class="input-box"
+placeholder="OPERATOR CALLSIGN">
 
 <input
 type="password"
 id="demo-code"
 class="input-box"
-placeholder="ENTER DEMO ACCESS CODE"
->
+placeholder="SECURE ACCESS CODE">
+
+<button
+class="deploy-btn"
+onclick="deployNet()">
+
+[ INITIALIZE DEPLOYMENT ]
+
+</button>
 
 </div>
 
-<h1 class="logo">TACNET</h1>
-    <h1 class="logo">TACNET</h1>
-    <p style="color:#ebff00;">ONE NET. ALL AGENCIES.</p>
-    <div style="border-left: 3px solid #D4AF37; padding: 10px; margin: 20px auto; max-width: 400px;">
-        <input type="text" id="inc-name" class="input-box" placeholder="INCIDENT TYPE (e.g. RAPE)">
-        <input type="text" id="unit-id" class="input-box" placeholder="OPERATOR CALLSIGN">
-        <button class="deploy-btn" onclick="deployNet()">[ INITIALIZE DEPLOYMENT ]</button>
-    </div>
+<div style="
+position:absolute;
+bottom:15px;
+width:100%;
+left:0;
+color:#39FF14;
+font-size:0.8em;
+font-family:monospace;
+">
+
+APP CREATOR EARL A. WOOD
+DEPUTY SHERIFF RETIRED
+
 </div>
+
+</div>
+
+<!-- HUD -->
 
 <div id="hud-container">
-    <div id="map-display"></div>
-    <div class="command-tray">
-        <div class="tool-btn" onclick="startPerimeter()" id="perim-btn">SET PERIMETER</div>
-        <div class="tool-btn" onclick="logEvidence()">MARK EVIDENCE</div>
-        <div class="tool-btn" onclick="toggleOverlay('dispo-overlay')">FINAL DISPOSITION</div>
-        <div class="tool-btn" onclick="location.reload()" style="color:#ff4444;">TERMINATE SEARCH</div>
-    </div>
+
+<div id="map-display"></div>
+
+<div class="command-tray">
+
+<div class="tool-btn"
+onclick="startPerimeter()">
+
+SET PERIMETER
+
 </div>
 
-<div id="dispo-overlay" class="overlay">
-    <h2 style="color:#D4AF37;">FINAL SEARCH DISPOSITION</h2>
-    <textarea id="dispo-text" class="input-box" style="height:150px; width:100%;" placeholder="ENTER FINAL DETAILS (e.g. Suspect in custody, evidence secured)"></textarea>
-    <button class="deploy-btn" onclick="generatePDF()" style="width:100%;">GENERATE COURT PDF</button>
-    <button class="deploy-btn" onclick="toggleOverlay('dispo-overlay')" style="width:100%; margin-top:10px; background:#444; color:#fff;">CANCEL</button>
+<div class="tool-btn"
+onclick="logEvidence()">
+
+MARK EVIDENCE
+
+</div>
+
+<div class="tool-btn"
+onclick="alert('FINAL DISPOSITION COMING SOON')">
+
+FINAL DISPOSITION
+
+</div>
+
+<div class="tool-btn"
+onclick="location.reload()"
+style="color:#ff4444;">
+
+TERMINATE SEARCH
+
+</div>
+
+</div>
+
 </div>
 
 <script>
-    var map, perimActive = false, markers = [], polyline, evidenceLog = [];
 
-    function deployNet() {
-        if(!document.getElementById('inc-name').value) return alert("REQUIRED");
-        document.getElementById('home-page').style.display = 'none';
-        document.getElementById('hud-container').style.display = 'flex';
-        
-        map = L.map('map-display', { zoomControl: false }).setView([37.5, -79.0], 13);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        map.locate({setView: true, watch: true, enableHighAccuracy: true});
+var map;
+var perimActive = false;
+var markers = [];
+var polyline;
 
-        map.on('locationfound', function(e) {
-            L.circle(e.latlng, {radius: 10, color: 'red'}).addTo(map);
-        });
-    }
+/* DEPLOY */
 
-    function startPerimeter() {
-        perimActive = !perimActive;
-        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#222";
-        document.getElementById('perim-btn').style.color = perimActive ? "#000" : "#D4AF37";
-        if(perimActive) alert("CLICK MAP TO DRAW PERIMETER");
-        
-        map.on('click', function(e) {
-            if(!perimActive) return;
-            L.circleMarker(e.latlng, {radius: 5, color: '#ebff00'}).addTo(map);
-            markers.push(e.latlng);
-            if(polyline) map.removeLayer(polyline);
-            polyline = L.polyline(markers, {color: '#ebff00', weight: 4}).addTo(map);
-        });
-    }
+function deployNet(){
 
-    function logEvidence() {
-        map.locate().on('locationfound', function(e) {
-            var time = new Date().toLocaleTimeString();
-            L.circleMarker(e.latlng, {radius: 10, color: '#D4AF37'}).addTo(map).bindPopup("EVIDENCE LOGGED: " + time).openPopup();
-            evidenceLog.push({time: time, lat: e.latlng.lat, lng: e.latlng.lng});
-        });
-    }
+const validCode = "TACNET-DEMO-0515";
 
-    function toggleOverlay(id) {
-        var el = document.getElementById(id);
-        el.style.display = (el.style.display == 'block') ? 'none' : 'block';
-    }
+const enteredCode =
+document.getElementById('demo-code').value;
 
-    function generatePDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        let inc = document.getElementById('inc-name').value;
-        let dispo = document.getElementById('dispo-text').value;
+if(enteredCode !== validCode){
 
-        doc.setFontSize(20);
-        doc.text("TACNET OFFICIAL SEARCH RECORD", 10, 20);
-        doc.setFontSize(12);
-        doc.text("Incident Type: " + inc, 10, 30);
-        doc.text("Developed By: Deputy Earl Wood (Ret.)", 10, 40);
-        doc.text("--------------------------------------------------", 10, 50);
-        doc.text("EVIDENCE LOG:", 10, 60);
-        
-        let y = 70;
-        evidenceLog.forEach((item, i) => {
-            doc.text(`${i+1}. Time: ${item.time} | Lat: ${item.lat.toFixed(4)} Lng: ${item.lng.toFixed(4)}`, 10, y);
-            y += 10;
-        });
+alert("INVALID ACCESS CODE");
 
-        doc.text("FINAL DISPOSITION:", 10, y + 10);
-        doc.text(dispo, 10, y + 20);
-        
-        doc.save("TACNET_DISPOSITION.pdf");
-        alert("PDF GENERATED FOR COURT RECORD.");
-    }
+return;
+}
+
+if(!document.getElementById('inc-name').value){
+
+alert("INCIDENT TYPE REQUIRED");
+
+return;
+}
+
+document.getElementById('home-page').style.display='none';
+
+document.getElementById('hud-container').style.display='flex';
+
+/* MAP */
+
+map = L.map('map-display',{
+zoomControl:false
+}).setView([37.5,-79.0],13);
+
+L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+).addTo(map);
+
+/* GPS */
+
+map.locate({
+setView:true,
+watch:true,
+enableHighAccuracy:true
+});
+
+map.on('locationfound', function(e){
+
+L.circle(e.latlng,{
+radius:10,
+color:'#00aaff'
+}).addTo(map)
+.bindPopup('ACTIVE TACNET UNIT')
+.openPopup();
+
+});
+
+}
+
+/* PERIMETER */
+
+function startPerimeter(){
+
+perimActive = !perimActive;
+
+if(perimActive){
+
+alert("CLICK MAP TO DRAW PERIMETER");
+
+}
+
+map.on('click', function(e){
+
+if(!perimActive) return;
+
+L.circleMarker(e.latlng,{
+radius:5,
+color:'#39FF14'
+}).addTo(map);
+
+markers.push(e.latlng);
+
+if(polyline){
+
+map.removeLayer(polyline);
+
+}
+
+polyline = L.polyline(markers,{
+color:'#39FF14',
+weight:4
+}).addTo(map);
+
+});
+
+}
+
+/* EVIDENCE */
+
+function logEvidence(){
+
+map.locate().on('locationfound', function(e){
+
+L.circleMarker(e.latlng,{
+radius:10,
+color:'#D4AF37'
+})
+.addTo(map)
+.bindPopup("EVIDENCE LOGGED")
+.openPopup();
+
+});
+
+}
+
 </script>
+
 </body>
 </html>
