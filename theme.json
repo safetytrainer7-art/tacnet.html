@@ -1,0 +1,9 @@
+{
+  "theme_name": "Tactical_Night_Vision",
+  "primary_color": "#39FF14",
+  "accent_color": "#D4AF37",
+  "background_color": "#0D0D0D",
+  "font_style": "Monospace_Bold",
+  "icon_glow": "enabled",
+  "map_style": "Dark_Topographic"
+}
