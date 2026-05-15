@@ -1,37 +1,148 @@
-<div id="law-overlay" class="overlay">
-    <h2 class="gold" style="text-align:center;">VIRGINIA TACTICAL LEGAL REFERENCE</h2>
-    <p style="color:#D4AF37; font-size:0.7em; text-align:center;">LEO USE ONLY - AMHERST COUNTY S.O.</p>
-    <hr border="1" color="#39FF14">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TACNET CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { background-color: #050505; color: #39FF14; font-family: 'Courier New', monospace; margin: 0; padding: 0; overflow: hidden; }
+        .gold { color: #D4AF37; text-shadow: 0 0 5px #D4AF37; }
+        
+        /* HOME PAGE STYLING */
+        #home-page { padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; justify-content: center; }
+        .input-box { background: #111; border: 1px solid #39FF14; color: #39FF14; padding: 15px; margin: 10px 0; font-size: 1.1em; width: 100%; box-sizing: border-box; }
+        .deploy-btn { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 20px; width: 100%; font-weight: bold; font-size: 1.3em; cursor: pointer; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); margin-top: 20px; }
+        
+        /* HUD / MAP STYLING */
+        #hud-container { display: none; flex-direction: column; height: 100vh; }
+        #map-display { flex-grow: 1; border-top: 1px solid #D4AF37; border-bottom: 1px solid #D4AF37; position: relative; }
+        .search-bar { display: flex; gap: 5px; padding: 10px; background: #000; }
+        .layer-ctrl { position: absolute; top: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+        .ctrl-btn { background: rgba(0,0,0,0.9); color: #39FF14; border: 1px solid #39FF14; padding: 8px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
+        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px; gap: 5px; }
+        .tool-btn { background: #111; color: #D4AF37; border: 1px solid #D4AF37; padding: 15px 2px; font-size: 0.65em; font-weight: bold; text-align: center; cursor: pointer; }
 
-    <div class="law-item">
-        <b style="color:#39FF14;">VA CODE § 18.2-250.1 (POSSESSION):</b> 
-        Guidance on marijuana detection and how recent legislative changes affect "Probable Cause" for vehicle searches.
+        /* LEGAL OVERLAY */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 20px; overflow-y: auto; box-sizing: border-box; }
+        .law-item { border-bottom: 1px solid #1a1a1a; padding: 15px 0; }
+        .close-btn { background: #39FF14; color: #000; width: 100%; padding: 20px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="home-page">
+    <h1 class="gold" style="text-align:center; font-size: 2.5em; margin: 0;">TACNET</h1>
+    <p style="text-align:center; color:#39FF14; margin-top: 5px;">[ MULTI-AGENCY TACTICAL SEARCH ]</p>
+    
+    <div style="margin-top: 30px;">
+        <label class="gold">INCIDENT TYPE:</label>
+        <input type="text" id="inc-name" class="input-box" placeholder="e.g. ARMED ROBBERY">
+        
+        <label class="gold">OPERATOR CALLSIGN:</label>
+        <input type="text" id="operator-id" class="input-box" placeholder="e.g. K9-UNIT-1">
+        
+        <button class="deploy-btn" onclick="deployNet()">[ DEPLOY THE NET ]</button>
     </div>
-
-    <div class="law-item">
-        <b style="color:#39FF14;">VA v. HURD (2010):</b> 
-        Virginia-specific ruling on the reliability of a K9's "alert" and the documentation required for a valid search.
-    </div>
-
-    <div class="law-item">
-        <b style="color:#39FF14;">US v. PLACE (FEDERAL):</b> 
-        The core ruling that a dog sniff is not a search under the 4th Amendment.
-    </div>
-
-    <div class="law-item">
-        <b style="color:#39FF14;">RODRIGUEZ v. US (FEDERAL):</b> 
-        The "Stop Clock" ruling. Warning: Do not extend the duration of the stop just for the K9 arrival.
-    </div>
-
-    <div class="law-item">
-        <b style="color:#39FF14;">VA CODE § 3.2-6500 (ANIMAL CARE):</b> 
-        Legal requirements for K9 welfare and protection while in service.
-    </div>
-
-    <div class="law-item">
-        <b style="color:#39FF14;">ILLINOIS v. CABALLES:</b> 
-        Confirms sniff is lawful if the stop is otherwise valid.
-    </div>
-
-    <button class="close-btn" onclick="toggleOverlay('law-overlay')">RETURN TO TACTICAL MAP</button>
+    
+    <p style="text-align:center; color:#555; font-size: 0.7em; margin-top: 40px;">AUTHORIZED LAW ENFORCEMENT USE ONLY</p>
 </div>
+
+<div id="hud-container">
+    <div class="search-bar">
+        <input type="text" id="addr-input" class="input-box" style="margin:0; padding:10px;" placeholder="TARGET ADDRESS...">
+        <button class="ctrl-btn" style="background:#39FF14; color:#000; padding:0 20px;" onclick="searchAddress()">GO</button>
+    </div>
+
+    <div id="map-display">
+        <div class="layer-ctrl">
+            <button class="ctrl-btn" onclick="setLayer('street')">STREET</button>
+            <button class="ctrl-btn" onclick="setLayer('sat')">SATELLITE</button>
+            <button class="ctrl-btn" onclick="setLayer('night')">NIGHT VISION</button>
+        </div>
+    </div>
+
+    <div class="tool-grid">
+        <div class="tool-btn" onclick="toggleOverlay('law-overlay')">CASE LAW</div>
+        <div class="tool-btn" onclick="startPerimeter()" id="perim-btn">PERIMETER</div>
+        <div class="tool-btn" onclick="clearMap()">CLEAR ALL</div>
+        <div class="tool-btn" onclick="location.reload()" style="color:red;">EXIT</div>
+    </div>
+</div>
+
+<div id="law-overlay" class="overlay">
+    <h2 class="gold" style="text-align:center;">TACTICAL LEGAL REFERENCE</h2>
+    <hr border="1" color="#D4AF37">
+    <div id="law-content" style="color:#39FF14;">
+        <div class="law-item"><b>VA CODE § 18.2-250.1:</b> Standard for Probable Cause.</div>
+        <div class="law-item"><b>VA v. HURD:</b> K9 reliability standards.</div>
+        <div class="law-item"><b>RODRIGUEZ v. US:</b> Traffic stop duration.</div>
+        <div class="law-item"><b>FLORIDA v. HARRIS:</b> Training record importance.</div>
+        <div class="law-item"><b>US v. PLACE:</b> Sniff is not a search.</div>
+    </div>
+    <button class="close-btn" onclick="toggleOverlay('law-overlay')">RETURN TO MAP</button>
+</div>
+
+<script>
+    var map;
+    var markers = [];
+    var polyline;
+    var perimActive = false;
+    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+
+    function deployNet() {
+        var inc = document.getElementById('inc-name').value;
+        if(!inc) { alert("INCIDENT TYPE REQUIRED"); return; }
+        
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('hud-container').style.display = 'flex';
+        
+        // Initialize Map
+        map = L.map('map-display', { zoomControl: false }).setView([37.5, -79.0], 13);
+        streetLayer.addTo(map);
+        map.locate({setView: true, maxZoom: 16});
+        
+        map.on('click', function(e) {
+            if(!perimActive) return;
+            L.circleMarker(e.latlng, { radius: 5, color: '#ff0000' }).addTo(map);
+            markers.push(e.latlng);
+            if(polyline) map.removeLayer(polyline);
+            polyline = L.polyline(markers, {color: '#ff0000', weight: 4}).addTo(map);
+        });
+    }
+
+    function setLayer(type) {
+        map.eachLayer(function (layer) { map.removeLayer(layer); });
+        document.getElementById('map-display').style.filter = "none";
+        if(type == 'street') streetLayer.addTo(map);
+        if(type == 'sat') satLayer.addTo(map);
+        if(type == 'night') {
+            streetLayer.addTo(map);
+            document.getElementById('map-display').style.filter = "invert(100%) hue-rotate(180deg) brightness(95%)";
+        }
+    }
+
+    async function searchAddress() {
+        var addr = document.getElementById('addr-input').value;
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}`);
+        const data = await resp.json();
+        if(data.length > 0) map.setView([data[0].lat, data[0].lon], 17);
+    }
+
+    function startPerimeter() {
+        perimActive = !perimActive;
+        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#111";
+        document.getElementById('perim-btn').style.color = perimActive ? "#000" : "#D4AF37";
+    }
+
+    function toggleOverlay(id) {
+        var el = document.getElementById(id);
+        el.style.display = (el.style.display == 'block') ? 'none' : 'block';
+    }
+
+    function clearMap() { location.reload(); }
+</script>
+
+</body>
+</html>
