@@ -1,75 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TACNET CORE</title>
+    <title>TACNET COMMAND</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; margin: 0; padding: 10px; }
-        .box { border: 1px solid #39FF14; background: #000; color: #39FF14; padding: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
-        .gold { color: #D4AF37; }
-        .btn { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 5px; }
-        #map-display { height: 350px; border: 2px solid #39FF14; margin: 10px 0; }
-        #home, #map-screen { max-width: 500px; margin: auto; }
+        body { background-color: #050505; color: #39FF14; font-family: 'Courier New', monospace; margin: 0; padding: 0; }
+        .gold { color: #D4AF37; text-shadow: 0 0 5px #D4AF37; }
+        .hud-container { padding: 10px; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
+        
+        /* SEARCH BOX */
+        .search-bar { display: flex; gap: 5px; margin-bottom: 10px; }
+        .input-box { flex-grow: 1; background: #000; border: 1px solid #39FF14; color: #39FF14; padding: 10px; }
+        .go-btn { background: #39FF14; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+
+        /* MAP AREA */
+        #map-display { flex-grow: 1; border: 2px solid #D4AF37; background: #111; position: relative; }
+        
+        /* LAYER SWITCHER */
+        .layer-ctrl { position: absolute; top: 10px; right: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 5px; }
+        .ctrl-btn { background: rgba(0,0,0,0.8); color: #39FF14; border: 1px solid #39FF14; padding: 5px 10px; font-size: 0.7em; cursor: pointer; }
+
+        /* BOTTOM TOOLS */
+        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+        .tool-btn { background: #000; color: #D4AF37; border: 1px solid #D4AF37; padding: 12px 5px; font-size: 0.7em; cursor: pointer; text-align: center; }
+        
+        /* LEGAL OVERLAY */
+        #legal-overlay { display: none; position: fixed; top: 20%; left: 10%; right: 10%; bottom: 20%; background: #000; border: 2px solid #D4AF37; z-index: 2000; padding: 20px; overflow-y: auto; box-shadow: 0 0 50px #000; }
     </style>
 </head>
 <body>
 
-<div id="home">
-    <h1 class="gold" style="text-align:center;">TACNET</h1>
-    <p style="text-align:center;">AMHERST COUNTY S.O. PROOF OF CONCEPT</p>
-    
-    <label class="gold">INCIDENT TYPE:</label>
-    <input type="text" id="inc" class="box" placeholder="e.g. ARMED ROBBERY">
-    
-    <label class="gold">CALLSIGN:</label>
-    <input type="text" id="cs" class="box" placeholder="e.g. K9-1">
+<div class="hud-container">
+    <div class="search-bar">
+        <input type="text" id="addr-input" class="input-box" placeholder="ENTER ADDRESS OR COORDINATES...">
+        <button class="go-btn" onclick="searchAddress()">GO</button>
+    </div>
 
-    <button class="btn" onclick="runDeploy()">[ DEPLOY THE NET ]</button>
+    <div id="map-display">
+        <div class="layer-ctrl">
+            <button class="ctrl-btn" onclick="setLayer('street')">STREET</button>
+            <button class="ctrl-btn" onclick="setLayer('sat')">SATELLITE</button>
+            <button class="ctrl-btn" onclick="setLayer('night')">NIGHT VISION</button>
+        </div>
+    </div>
+
+    <div class="tool-grid">
+        <div class="tool-btn" onclick="toggleLegal()">CASE LAW</div>
+        <div class="tool-btn" onclick="alert('PERIMETER TOOL: Tap map to drop points (Phase 2)')">PERIMETER</div>
+        <div class="tool-btn" onclick="location.reload()" style="color:red; border-color:red;">EXIT</div>
+    </div>
 </div>
 
-<div id="map-screen" style="display:none;">
-    <h2 id="header" class="gold"></h2>
-    <div id="map-display"></div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-        <button class="btn" onclick="alert('CASE LAW: Florida v. Harris (K9 Reliability)\nRodriguez v. US (Traffic Stop Duration)')">CASE LAW</button>
-        <button class="btn" onclick="alert('K9 EMERGENCY:\n1. Check Gums\n2. Cool Water (Not Ice)\n3. Locate Nearest Vet')">K9 AID</button>
-    </div>
-    
-    <button class="btn" style="color:red; border-color:red; margin-top:10px;" onclick="location.reload()">TERMINATE MISSION</button>
+<div id="legal-overlay">
+    <h3 class="gold">TACTICAL LEGAL REFERENCE</h3>
+    <hr border="1" color="#D4AF37">
+    <p><b>FLORIDA v. HARRIS:</b> K9 reliability is based on training records, not just "hits." Keep your logs ready.</p>
+    <p><b>RODRIGUEZ v. US:</b> Dog sniff cannot prolong a traffic stop beyond the time needed for the initial mission.</p>
+    <p><b>ILLINOIS v. CABALLES:</b> A dog sniff of a vehicle's exterior during a lawful stop isn't a "Search."</p>
+    <button class="go-btn" style="width:100%" onclick="toggleLegal()">CLOSE</button>
 </div>
 
 <script>
     var map;
+    var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    var satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    
+    // Initialize Map
+    map = L.map('map-display', { zoomControl: false }).setView([37.52, -79.05], 13);
+    streetLayer.addTo(map);
 
-    function runDeploy() {
-        var incident = document.getElementById('inc').value;
-        if(incident == "") {
-            alert("REQUIRED: ENTER INCIDENT TYPE");
+    function setLayer(type) {
+        map.eachLayer(function (layer) { map.removeLayer(layer); });
+        if(type == 'street') streetLayer.addTo(map);
+        if(type == 'sat') satLayer.addTo(map);
+        if(type == 'night') {
+            streetLayer.addTo(map);
+            document.getElementById('map-display').style.filter = "invert(100%) hue-rotate(180deg) brightness(95%)";
             return;
         }
-
-        // Switch Screens
-        document.getElementById('home').style.display = 'none';
-        document.getElementById('map-screen').style.display = 'block';
-        document.getElementById('header').innerText = "LIVE: " + incident.toUpperCase();
-
-        // Start the Map Engine (Centered on Virginia for now)
-        map = L.map('map-display').setView([37.5, -79.0], 13); 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© TACNET'
-        }).addTo(map);
-
-        // Try to find your real location
-        map.locate({setView: true, maxZoom: 16});
-
-        function onLocationFound(e) {
-            L.marker(e.latlng).addTo(map).bindPopup("YOU ARE HERE").openPopup();
-        }
-        map.on('locationfound', onLocationFound);
+        document.getElementById('map-display').style.filter = "none";
     }
+
+    async function searchAddress() {
+        var addr = document.getElementById('addr-input').value;
+        if(!addr) return;
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}`);
+        const data = await response.json();
+        if(data.length > 0) {
+            map.setView([data[0].lat, data[0].lon], 16);
+            L.marker([data[0].lat, data[0].lon]).addTo(map).bindPopup("TARGET AREA").openPopup();
+        } else {
+            alert("LOCATION NOT FOUND");
+        }
+    }
+
+    function toggleLegal() {
+        var el = document.getElementById('legal-overlay');
+        el.style.display = (el.style.display == 'block') ? 'none' : 'block';
+    }
+
+    map.locate({setView: true, maxZoom: 16});
 </script>
 
 </body>
