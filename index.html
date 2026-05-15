@@ -1,61 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET - Law Enforcement Only</title>
     <style>
-        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; margin: 0; padding: 15px; }
-        .neon-border { border: 1px solid #39FF14; background: rgba(57, 255, 20, 0.05); color: #39FF14; padding: 10px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-        .gold-text { color: #D4AF37; text-shadow: 0 0 5px #D4AF37; }
-        .btn-deploy { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 20px; width: 100%; font-weight: bold; font-size: 1.2em; cursor: pointer; box-shadow: 0 0 10px #D4AF37; margin-top: 10px; }
-        .btn-deploy:hover { background: #D4AF37; color: #000; }
-        #tactical-screen { display: none; } /* Hidden until Deploy is pressed */
-        .hud-border { border: 2px solid #39FF14; padding: 10px; border-radius: 5px; }
+        body { background-color: #0D0D0D; color: #39FF14; font-family: monospace; padding: 20px; }
+        .box { border: 1px solid #39FF14; background: #000; color: #39FF14; padding: 10px; width: 100%; margin: 10px 0; }
+        .gold { color: #D4AF37; }
+        .btn { background: #000; color: #D4AF37; border: 2px solid #D4AF37; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="home-page">
-    <h1 class="gold-text" style="text-align:center;">TACNET</h1>
-    <p style="text-align:center; font-size: 0.8em;">TACTICAL SEARCH & IDENTIFICATION SYSTEM</p>
+<div id="home">
+    <h1 class="gold">TACNET</h1>
+    <p>AMHERST COUNTY S.O. - TACTICAL INTERFACE</p>
     
-    <label class="gold-text">INCIDENT NAME:</label>
-    <input type="text" id="incName" class="neon-border" placeholder="e.g. BRACY ARMED ROBBERY">
+    <label class="gold">INCIDENT TYPE:</label>
+    <input type="text" id="inc" class="box" placeholder="e.g. ARMED ROBBERY">
     
-    <label class="gold-text">CALLSIGN:</label>
-    <input type="text" id="callsign" class="neon-border" placeholder="e.g. K9-1 / safetytrainer7">
-    
-    <label class="gold-text">AGENCY:</label>
-    <input type="text" class="neon-border" value="AMHERST COUNTY S.O." readonly>
+    <label class="gold">CALLSIGN:</label>
+    <input type="text" id="cs" class="box" placeholder="e.g. K9-1">
 
-    <button class="btn-deploy" onclick="deployNet()">[ DEPLOY THE NET ]</button>
-    
-    <div style="margin-top:20px; text-align:center; font-size:0.7em;">
-        <p>ADMINISTRATIVE TRAY:</p>
-        <button style="background:none; border:1px solid #555; color:#555; padding:5px;">CASE LAW</button>
-        <button style="background:none; border:1px solid #555; color:#555; padding:5px;">FORMS</button>
-    </div>
+    <button class="btn" onclick="runDeploy()">[ DEPLOY THE NET ]</button>
 </div>
 
-<div id="tactical-screen">
-    <div class="hud-border">
-        <h2 id="display-incident" class="gold-text"></h2>
-        <div style="height:250px; background:#1a1a1a; border:1px dashed #39FF14; display:flex; align-items:center; justify-content:center;">
-            [ GPS ACTIVE - TRACKING safetytrainer7 ]
-        </div>
-        <button onclick="location.reload()" style="background:none; color:#555; border:none; width:100%;">× END INCIDENT</button>
+<div id="map" style="display:none;">
+    <h2 id="header" class="gold"></h2>
+    <div style="height:300px; border:2px dashed #39FF14; display:flex; align-items:center; justify-content:center;">
+        [ TRACKING LIVE GPS... ]
     </div>
+    <button class="btn" style="color:red; border-color:red;" onclick="location.reload()">TERMINATE MISSION</button>
 </div>
 
 <script>
-    function deployNet() {
-        var name = document.getElementById('incName').value;
-        if(name == "") { alert("ENTER INCIDENT NAME BEFORE DEPLOYMENT"); return; }
-        
-        document.getElementById('home-page').style.display = 'none';
-        document.getElementById('tactical-screen').style.display = 'block';
-        document.getElementById('display-incident').innerText = "LIVE: " + name.toUpperCase();
+    function runDeploy() {
+        var incident = document.getElementById('inc').value;
+        if(incident == "") {
+            alert("REQUIRED: ENTER INCIDENT TYPE");
+        } else {
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('map').style.display = 'block';
+            document.getElementById('header').innerText = "LIVE: " + incident.toUpperCase();
+        }
     }
 </script>
 
