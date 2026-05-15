@@ -1,93 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TACNET COMMAND</title>
+    <title>TACNET | MULTI-AGENCY SEARCH</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        /* THE OFFICIAL TACNET PALETTE */
-        body { background-color: #011101; color: #39FF14; font-family: 'Courier New', monospace; margin: 0; padding: 0; }
+        body { background-color: #0d1a0d; color: #ffffff; font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .gold-glow { color: #D4AF37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); font-weight: bold; }
         
-        /* CRACKED GOLD HEADER */
-        .gold-header { 
-            color: #D4AF37; 
-            text-align: center; 
-            font-size: 3.5em; 
-            margin: 20px 0 0 0;
-            text-shadow: 2px 2px #000, -1px -1px 0 #555;
-            font-weight: 900;
-            letter-spacing: 5px;
-        }
-
-        .sub-header { text-align: center; color: #D4AF37; font-size: 0.8em; margin-bottom: 30px; letter-spacing: 2px; }
-
-        /* THE BRIEFING FORM */
-        #home-page { padding: 30px; max-width: 600px; margin: auto; }
-        .form-label { color: #D4AF37; font-weight: bold; display: block; margin-top: 15px; }
-        .input-field { 
-            background: #000; 
-            border: 1px solid #39FF14; 
-            color: #39FF14; 
-            padding: 15px; 
-            width: 100%; 
-            box-sizing: border-box; 
-            margin-top: 5px; 
-            font-size: 1.1em;
-            box-shadow: inset 0 0 5px #39FF14;
-        }
-
-        .deploy-btn { 
-            background: #000; 
-            color: #D4AF37; 
-            border: 3px solid #D4AF37; 
-            padding: 20px; 
-            width: 100%; 
-            font-weight: bold; 
-            font-size: 1.5em; 
-            margin-top: 30px; 
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-        }
-        .deploy-btn:active { background: #D4AF37; color: #000; }
-
-        /* HUD & MAP */
-        #hud-container { display: none; flex-direction: column; height: 100vh; }
-        #map-display { flex-grow: 1; border: 2px solid #D4AF37; margin: 10px; position: relative; }
+        /* HEADER SECTION */
+        .landing-container { padding: 20px; max-width: 800px; margin: auto; text-align: left; }
+        .logo-img { width: 100%; max-width: 600px; display: block; margin: 20px auto; border: 1px solid #333; }
         
-        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px; gap: 5px; border-top: 1px solid #39FF14; }
-        .tool-btn { background: #011101; color: #D4AF37; border: 1px solid #D4AF37; padding: 12px 2px; font-size: 0.6em; font-weight: bold; text-align: center; }
+        /* SIGN-IN BOX */
+        .auth-box { background: rgba(0,0,0,0.8); border: 2px solid #D4AF37; padding: 25px; margin-top: 20px; border-radius: 5px; }
+        .input-field { background: #111; border: 1px solid #39FF14; color: #39FF14; padding: 15px; width: 100%; box-sizing: border-box; margin-top: 10px; font-family: monospace; }
+        .deploy-btn { background: #D4AF37; color: #000; border: none; padding: 20px; width: 100%; font-weight: bold; font-size: 1.2em; margin-top: 20px; cursor: pointer; text-transform: uppercase; }
+        
+        /* HUD / MAP */
+        #hud-container { display: none; flex-direction: column; height: 100vh; background: #000; }
+        #map-display { flex-grow: 1; border: 2px solid #39FF14; position: relative; }
+        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #000; padding: 10px; gap: 5px; }
+        .tool-btn { background: #111; color: #D4AF37; border: 1px solid #D4AF37; padding: 15px 2px; font-size: 0.65em; font-weight: bold; text-align: center; cursor: pointer; }
 
-        /* NEON LEGAL OVERLAY */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .law-item { border-bottom: 1px solid #1a1a1a; padding: 15px 0; color: #39FF14; }
+        /* LEGAL OVERLAY */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 20px; box-sizing: border-box; overflow-y: auto; color: #39FF14; font-family: monospace; }
     </style>
 </head>
 <body>
 
 <div id="home-page">
-    <div class="gold-header">TACNET</div>
-    <div class="sub-header">MULTI-AGENCY TACTICAL TASK FORCE</div>
-    
-    <label class="form-label">INCIDENT TYPE / MISSION NAME:</label>
-    <input type="text" id="inc-name" class="input-field" placeholder="E.G. TACTICAL SEARCH - BRACY">
-    
-    <label class="form-label">UNIT CALLSIGN:</label>
-    <input type="text" id="unit-id" class="input-field" placeholder="OPERATOR ID">
-    
-    <label class="form-label">AGENCY JURISDICTION:</label>
-    <input type="text" class="input-field" value="LAW ENFORCEMENT ONLY" readonly>
+    <div class="landing-container">
+        <img src="https://raw.githubusercontent.com/safetytrainer7/TACNET-CORE/main/FINAL%20FOR%20HPAGE.png" class="logo-img" alt="TACNET - ONE NET. ALL AGENCIES.">
+        
+        <div class="auth-box">
+            <h3 class="gold-glow" style="margin-top:0;">SYSTEM SIGN-IN</h3>
+            <label style="font-size: 0.8em; color: #aaa;">MISSION NAME / INCIDENT TYPE</label>
+            <input type="text" id="inc-name" class="input-field" placeholder="e.g. BRACY TACTICAL SEARCH">
+            
+            <label style="font-size: 0.8em; color: #aaa; display: block; margin-top: 15px;">OPERATOR CALLSIGN</label>
+            <input type="text" id="unit-id" class="input-field" placeholder="e.g. K9-105">
 
-    <button class="deploy-btn" onclick="deployNet()">[ DEPLOY THE NET ]</button>
-    
-    <div style="text-align: center; color: #444; font-size: 0.7em; margin-top: 50px;">
-        DEVELOPED BY: DEPUTY EARL WOOD (RET.)
+            <button class="deploy-btn" onclick="deployNet()">[ INITIALIZE DEPLOYMENT ]</button>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center; border-top: 1px solid #333; padding-top: 20px;">
+            <p style="color: #D4AF37; font-weight: bold; margin-bottom: 5px;">DEVELOPED BY:</p>
+            <p style="font-size: 1.2em; letter-spacing: 2px;">DEPUTY EARL WOOD (RET.)</p>
+            <p style="color: #666; font-size: 0.7em;">RESTRICTED ACCESS - AUTHORIZED PERSONNEL ONLY</p>
+        </div>
     </div>
 </div>
 
 <div id="hud-container">
     <div id="map-display"></div>
-    
     <div class="tool-grid">
         <div class="tool-btn" onclick="toggleOverlay('law-overlay')">CASE LAW</div>
         <div class="tool-btn" onclick="startPerimeter()" id="perim-btn">PERIMETER</div>
@@ -97,10 +64,12 @@
 </div>
 
 <div id="law-overlay" class="overlay">
-    <h2 class="gold-header" style="font-size: 1.5em;">LEGAL REFERENCE</h2>
-    <div class="law-item"><b>VA v. HURD:</b> K9 Reliability standards.</div>
-    <div class="law-item"><b>RODRIGUEZ v. US:</b> Mission duration limits.</div>
-    <div class="law-item"><b>FLORIDA v. HARRIS:</b> Certification/Training records.</div>
+    <h2 class="gold-glow" style="text-align:center;">TACTICAL LEGAL REFERENCE</h2>
+    <hr border="1" color="#D4AF37">
+    <p><b>VA CODE § 18.2-250.1:</b> Standard for Probable Cause.</p>
+    <p><b>VA v. HURD:</b> K9 Reliability standards.</p>
+    <p><b>RODRIGUEZ v. US:</b> Mission duration limits.</p>
+    <p><b>FLORIDA v. HARRIS:</b> Training records as evidence of reliability.</p>
     <button class="deploy-btn" onclick="toggleOverlay('law-overlay')">RETURN TO MAP</button>
 </div>
 
@@ -109,7 +78,7 @@
 
     function deployNet() {
         var inc = document.getElementById('inc-name').value;
-        if(!inc) { alert("ENTER MISSION NAME TO INITIALIZE"); return; }
+        if(!inc) { alert("SIGN-IN REQUIRED: ENTER MISSION NAME"); return; }
         
         document.getElementById('home-page').style.display = 'none';
         document.getElementById('hud-container').style.display = 'flex';
@@ -134,7 +103,7 @@
 
     function startPerimeter() {
         perimActive = !perimActive;
-        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#011101";
+        document.getElementById('perim-btn').style.background = perimActive ? "#39FF14" : "#111";
         document.getElementById('perim-btn').style.color = perimActive ? "#000" : "#D4AF37";
     }
 
