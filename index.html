@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACNET CORE</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+font-family:Arial,Helvetica,sans-serif;
+background:#000;
+color:#fff;
+}
+
+/* TRUE NIGHT VISION ENGINE */
+
+body{
+background:
+radial-gradient(circle at center,
+rgba(0,255,70,.15) 0%,
+rgba(0,45,0,.88) 40%,
+#000 100%);
+}
+
+body::before{
+content:"";
+position:fixed;
+inset:0;
+
+background:
+repeating-linear-gradient(
+to bottom,
+rgba(57,255,20,.03) 0px,
+rgba(57,255,20,.03) 1px,
+transparent 2px,
+transparent 4px
+);
+
+pointer-events:none;
+z-index:9999;
+}
+
+body::after{
+content:"";
+position:fixed;
+inset:0;
+
+background:
+radial-gradient(circle at center,
+rgba(57,255,20,.14),
+transparent 70%);
+
+mix-blend-mode:screen;
+
+animation:pulse 4s infinite;
+
+pointer-events:none;
+z-index:9998;
+}
+
+@keyframes pulse{
+0%{opacity:.45;}
+50%{opacity:1;}
+100%{opacity:.45;}
+}
+
+/* HEADER */
+
+header{
+height:110px;
+
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+
+background:rgba(0,0,0,.72);
+
+border-bottom:2px solid #39ff14;
+
+box-shadow:
+0 0 12px #39ff14,
+0 0 30px rgba(57,255,20,.3);
+}
+
+.logo{
+font-size:4rem;
+font-weight:900;
+letter-spacing:4px;
+
+color:#d4af37;
+
+text-shadow:
+0 0 10px #fff,
+0 0 20px #d4af37,
+0 0 45px #39ff14;
+}
+
+.subtitle{
+margin-top:4px;
+font-size:1rem;
+font-weight:bold;
+color:#ffe95c;
+}
+
+.tagline{
+margin-top:4px;
+font-size:.85rem;
+letter-spacing:2px;
+color:#8db8ff;
+}
+
+/* LAYOUT */
+
+.main{
+display:grid;
+grid-template-columns:1.5fr .8fr;
+height:calc(100vh - 110px);
+}
+
+.map-panel{
+position:relative;
+padding:10px;
+}
+
+#map{
+width:100%;
+height:100%;
+border-radius:20px;
+border:2px solid #39ff14;
+
+box-shadow:
+0 0 15px rgba(57,255,20,.5),
+0 0 40px rgba(57,255,20,.25),
+inset 0 0 30px rgba(57,255,20,.12);
+
+filter:
+brightness(.88)
+contrast(1.15)
+saturate(1.2);
+}
+
+/* STATUS */
+
+.top-status{
+position:absolute;
+top:22px;
+left:22px;
+display:flex;
+gap:10px;
+z-index:999;
+}
+
+.pill{
+padding:10px 16px;
+border-radius:12px;
+
+background:rgba(0,0,0,.72);
+
+border:1px solid #39ff14;
+
+color:#39ff14;
+
+font-weight:bold;
+
+box-shadow:
+0 0 10px rgba(57,255,20,.45);
+
+backdrop-filter:blur(8px);
+}
+
+/* SIDE PANEL */
+
+.side-panel{
+overflow-y:auto;
+padding:12px;
+
+background:rgba(0,0,0,.55);
+
+border-left:1px solid #d4af37;
+
+backdrop-filter:blur(10px);
+}
+
+.card{
+margin-bottom:12px;
+padding:15px;
+
+border-radius:18px;
+
+background:rgba(20,70,20,.16);
+
+border:1px solid rgba(57,255,20,.7);
+
+box-shadow:
+0 0 12px rgba(57,255,20,.35),
+0 0 25px rgba(57,255,20,.12);
+
+backdrop-filter:blur(10px);
+}
+
+.card h2{
+margin-bottom:12px;
+font-size:1rem;
+letter-spacing:1px;
+color:#ffe95c;
+}
+
+input,
+select{
+width:100%;
+
+padding:13px;
+
+margin-bottom:10px;
+
+border-radius:12px;
+
+border:1px solid #39ff14;
+
+background:rgba(0,0,0,.82);
+
+color:#fff;
+
+font-size:1rem;
+}
+
+button{
+width:100%;
+
+padding:14px;
+
+border:none;
+
+border-radius:12px;
+
+font-weight:800;
+
+font-size:1rem;
+
+cursor:pointer;
+
+margin-bottom:10px;
+
+transition:.2s;
+}
+
+button:hover{
+transform:scale(1.02);
+}
+
+.green{
+background:#39ff14;
+color:#000;
+
+box-shadow:
+0 0 18px #39ff14;
+}
+
+.red{
+background:#9d0000;
+color:#fff;
+
+box-shadow:
+0 0 18px rgba(255,0,0,.45);
+}
+
+.tool-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.tool{
+background:#101810;
+color:#39ff14;
+border:1px solid #39ff14;
+}
+
+.feed{
+height:180px;
+overflow-y:auto;
+font-family:monospace;
+font-size:.88rem;
+}
+
+.feed div{
+padding:7px 0;
+border-bottom:1px solid rgba(57,255,20,.16);
+}
+
+.footer{
+text-align:center;
+padding-top:10px;
+font-size:.88rem;
+color:#d4af37;
+letter-spacing:1px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.main{
+grid-template-columns:1fr;
+grid-template-rows:55vh auto;
+}
+
+.logo{
+font-size:2.8rem;
+}
+
+header{
+height:100px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">TACNET</div>
+
+<div class="subtitle">
+MULTI-AGENCY TASK FORCE SEARCH APP
+</div>
+
+<div class="tagline">
+FEDERAL • STATE • LOCAL
+</div>
+
+</header>
+
+<div class="main">
+
+<div class="map-panel">
+
+<div class="top-status">
+
+<div class="pill">
+NET ACTIVE
+</div>
+
+<div class="pill" id="gps-status">
+GPS READY
+</div>
+
+</div>
+
+<div id="map"></div>
+
+</div>
+
+<div class="side-panel">
+
+<div class="card">
+
+<h2>ADDRESS SEARCH</h2>
+
+<input type="text"
+id="address"
+placeholder="ENTER ADDRESS">
+
+<button class="green"
+onclick="searchAddress()">
+GO
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>MAP MODES</h2>
+
+<select id="mapMode"
+onchange="changeMapMode()">
+
+<option value="street">
+STREET VIEW
+</option>
+
+<option value="satellite">
+SATELLITE VIEW
+</option>
+
+<option value="terrain">
+TERRAIN VIEW
+</option>
+
+</select>
+
+</div>
+
+<div class="card">
+
+<h2>TACTICAL TOOLS</h2>
+
+<div class="tool-grid">
+
+<button class="tool"
+onclick="enablePerimeter()">
+PERIMETER
+</button>
+
+<button class="tool"
+onclick="resetPerimeter()">
+RESET
+</button>
+
+<button class="tool"
+onclick="markUnit()">
+UNIT
+</button>
+
+<button class="tool"
+onclick="dropLKP()">
+LKP
+</button>
+
+<button class="tool"
+onclick="markEvidence()">
+EVIDENCE
+</button>
+
+<button class="red"
+onclick="sendSOS()">
+SOS
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>TACTICAL FEED</h2>
+
+<div class="feed"
+id="feed">
+</div>
+
+</div>
+
+<div class="footer">
+
+APP CREATOR EARL A. WOOD<br>
+DEPUTY SHERIFF RETIRED
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+/* MAP */
+
+const map = L.map('map',{
+doubleClickZoom:false
+}).setView([37.3349,-79.5236],13);
+
+setTimeout(()=>{
+map.invalidateSize();
+},500);
+
+/* MAP LAYERS */
+
+const streetLayer = L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+);
+
+const satelliteLayer = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+);
+
+const terrainLayer = L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+);
+
+streetLayer.addTo(map);
+
+let activeLayer = streetLayer;
+
+/* FEED */
+
+function addFeed(text){
+
+const feed =
+document.getElementById('feed');
+
+const div =
+document.createElement('div');
+
+div.innerHTML =
+new Date().toLocaleTimeString()
++ ' — ' + text;
+
+feed.prepend(div);
+
+}
+
+/* GPS */
+
+let officerMarker;
+
+navigator.geolocation.watchPosition((pos)=>{
+
+const lat =
+pos.coords.latitude;
+
+const lng =
+pos.coords.longitude;
+
+if(officerMarker){
+map.removeLayer(officerMarker);
+}
+
+officerMarker =
+L.circleMarker([lat,lng],{
+
+radius:9,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('ACTIVE UNIT');
+
+map.setView([lat,lng],15);
+
+document.getElementById('gps-status').innerText =
+'LIVE GPS ACTIVE';
+
+},()=>{
+
+document.getElementById('gps-status').innerText =
+'GPS ERROR';
+
+});
+
+/* ADDRESS SEARCH */
+
+async function searchAddress(){
+
+const query =
+document.getElementById('address').value;
+
+if(!query){
+
+alert('ENTER ADDRESS');
+
+return;
+
+}
+
+try{
+
+const response =
+await fetch(
+'https://nominatim.openstreetmap.org/search?format=json&q='
++ encodeURIComponent(query)
+);
+
+const data =
+await response.json();
+
+if(data.length > 0){
+
+const lat =
+parseFloat(data[0].lat);
+
+const lng =
+parseFloat(data[0].lon);
+
+map.setView([lat,lng],16);
+
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('SEARCH TARGET')
+.openPopup();
+
+addFeed('ADDRESS SEARCH COMPLETE');
+
+}else{
+
+alert('ADDRESS NOT FOUND');
+
+}
+
+}catch{
+
+alert('SEARCH ERROR');
+
+}
+
+}
+
+/* MAP MODE */
+
+function changeMapMode(){
+
+const mode =
+document.getElementById('mapMode').value;
+
+map.removeLayer(activeLayer);
+
+if(mode === 'street'){
+activeLayer = streetLayer;
+}
+
+if(mode === 'satellite'){
+activeLayer = satelliteLayer;
+}
+
+if(mode === 'terrain'){
+activeLayer = terrainLayer;
+}
+
+activeLayer.addTo(map);
+
+addFeed(mode.toUpperCase() + ' ENABLED');
+
+}
+
+/* PERIMETER */
+
+let perimeterMode = false;
+
+let perimeterPoints = [];
+
+let perimeterPolygon = null;
+
+function enablePerimeter(){
+
+perimeterMode = true;
+
+addFeed('PERIMETER MODE ACTIVE');
+
+}
+
+function resetPerimeter(){
+
+perimeterMode = false;
+
+perimeterPoints = [];
+
+if(perimeterPolygon){
+map.removeLayer(perimeterPolygon);
+}
+
+addFeed('PERIMETER RESET');
+
+}
+
+map.on('click',(e)=>{
+
+if(!perimeterMode) return;
+
+perimeterPoints.push([
+e.latlng.lat,
+e.latlng.lng
+]);
+
+L.circleMarker(e.latlng,{
+radius:5,
+color:'#39ff14'
+}).addTo(map);
+
+if(perimeterPoints.length >= 3){
+
+if(perimeterPolygon){
+map.removeLayer(perimeterPolygon);
+}
+
+perimeterPolygon =
+L.polygon(perimeterPoints,{
+
+color:'#39ff14',
+fillColor:'#39ff14',
+fillOpacity:.18,
+weight:2
+
+}).addTo(map);
+
+}
+
+});
+
+/* SOS */
+
+function sendSOS(){
+
+navigator.geolocation.getCurrentPosition((pos)=>{
+
+const lat =
+pos.coords.latitude;
+
+const lng =
+pos.coords.longitude;
+
+L.circle([lat,lng],{
+
+radius:100,
+color:'#ff0000',
+fillColor:'#ff0000',
+fillOpacity:.3,
+weight:3
+
+}).addTo(map);
+
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup('🚨 OFFICER DOWN')
+.openPopup();
+
+map.setView([lat,lng],17);
+
+addFeed('🚨 OFFICER DOWN SOS');
+
+alert('SOS TRANSMITTED');
+
+},()=>{
+
+alert('GPS UNAVAILABLE');
+
+});
+
+}
+
+/* TOOLS */
+
+function markUnit(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('FIELD UNIT');
+
+addFeed('FIELD UNIT DEPLOYED');
+
+});
+
+}
+
+function dropLKP(){
+
+map.once('click',(e)=>{
+
+L.marker(e.latlng)
+.addTo(map)
+.bindPopup('LAST KNOWN POSITION');
+
+addFeed('LKP DROPPED');
+
+});
+
+}
+
+function markEvidence(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#ffd700',
+fillColor:'#ffd700',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('EVIDENCE');
+
+addFeed('EVIDENCE MARKED');
+
+});
+
+}
+
+/* START */
+
+addFeed('TACNET CORE INITIALIZED');
+
+</script>
+
+</body>
+</html>
