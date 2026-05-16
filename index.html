@@ -235,6 +235,25 @@
             box-shadow: var(--hud-glow);
         }
 
+        /* HARDWARE NIGHT LIGHT SWITCH */
+        .night-light-toggle-btn {
+            background: rgba(223, 183, 32, 0.1);
+            border: 2px solid var(--gold-primary);
+            color: var(--gold-primary);
+            font-family: 'Black Ops One', sans-serif;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .night-light-toggle-btn.active-on {
+            background: var(--hud-neon-green);
+            color: #000;
+            border-color: var(--hud-neon-green);
+            box-shadow: var(--hud-glow);
+        }
+
         /* Real Live Map Frame */
         #map-canvas {
             width: 100%;
@@ -252,11 +271,12 @@
             left: 0; 
             width: 100%; 
             height: 480px;
-            background: rgba(0, 255, 51, 0.18); /* Intensified green illumination */
-            pointer-events: none;
+            background: rgba(0, 255, 51, 0.22); /* High intensity green visibility matrix */
+            pointer-events: none; /* CRITICAL FIX: Direct finger gestures pass through instantly to map layer */
             z-index: 1000;
             border-radius: 4px;
-            box-shadow: inset 0 0 50px rgba(0, 255, 51, 0.4);
+            box-shadow: inset 0 0 60px rgba(0, 255, 51, 0.5);
+            display: none; /* Controlled dynamically by toggle switch button */
         }
 
         .map-legend {
@@ -466,11 +486,12 @@
                 <button class="map-mode-btn active" id="btn-sat" onclick="switchMapLayer('satellite')">🛰️ Satellite Stream</button>
                 <button class="map-mode-btn" id="btn-str" onclick="switchMapLayer('street')">🗺️ Street Grid</button>
                 <button class="map-mode-btn" id="btn-ter" onclick="switchMapLayer('terrain')">⛰️ Topo Terrain</button>
+                <button class="night-light-toggle-btn" id="btn-night-light" onclick="toggleNightVisionLight()">🔦 NIGHT LIGHT OFF</button>
             </div>
 
             <div id="map-canvas"></div>
             
-            <div class="map-night-light-tint"></div>
+            <div class="map-night-light-tint" id="night-light-lens"></div>
 
             <div class="map-legend">
                 <div class="legend-node"><span class="color-sphere" style="background:var(--blue-agency);"></span>LE (Blue)</div>
@@ -531,6 +552,24 @@
             courtLogs.push({ time: stamp, details: msg });
             logBox.innerHTML += `<div class="log-entry"><span class="log-timestamp">[${stamp}]</span> ${msg}</div>`;
             logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Night Vision Light Toggle State Control Function
+        function toggleNightVisionLight() {
+            const lens = document.getElementById('night-light-lens');
+            const btn = document.getElementById('btn-night-light');
+            
+            if (lens.style.display === "block") {
+                lens.style.display = "none";
+                btn.innerText = "💡 NIGHT LIGHT OFF";
+                btn.classList.remove('active-on');
+                logSystemEvent("NIGHT VISION OPTICS: Dynamic screen light matrix deactivated.");
+            } else {
+                lens.style.display = "block";
+                btn.innerText = "🚨 NIGHT LIGHT ON";
+                btn.classList.add('active-on');
+                logSystemEvent("NIGHT VISION OPTICS: High-contrast green field night light fully burning.");
+            }
         }
 
         /* MASTER LIVE SATELLITE ENGINE LAYOUT (Leaflet Engine Integration)
@@ -779,4 +818,3 @@
     </script>
 </body>
 </html>
-
