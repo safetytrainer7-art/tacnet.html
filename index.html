@@ -269,16 +269,18 @@
             border-radius: 4px !important;
         }
         .leaflet-popup-tip { background: var(--hud-neon-green) !important; }
+        
         .popup-remove-btn {
             background: var(--alert-red);
             color: #fff;
             border: none;
-            padding: 4px 8px;
+            padding: 5px 8px;
             font-family: 'Share Tech Mono', monospace;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 8px;
             font-weight: bold;
             width: 100%;
+            border-radius: 2px;
         }
 
         .map-night-light-tint {
@@ -625,7 +627,7 @@
             logSystemEvent(`Map canvas layer toggled to display active ${type.toUpperCase()} streams.`);
         }
 
-        // Live Operational Hardware GPS Geolocation Signal Hook
+        // Live Geolocation Hook
         let userMarkerNode = null;
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition((position) => {
@@ -646,7 +648,7 @@
                 map.invalidateSize();
                 logSystemEvent(`GPS TELEMETRY FIXED: Unit Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`);
             }, () => {
-                logSystemEvent("GPS COMPONENT: Standby mode. Manual address tracking override active.");
+                logSystemEvent("GPS COMPONENT: Standby mode. Manual tracking layout enabled.");
             }, { enableHighAccuracy: true });
         }
 
@@ -659,11 +661,10 @@
                 iconSize: [14, 14] 
             });
 
-            // Build dynamic interactive popup panel matching tactical styles
             let popupContent = `
-                <div style="padding: 5px; text-align: center;">
-                    <b style="color: #fff; font-size: 0.95rem;">${name}</b><br>
-                    <span style="color: var(--gold-primary); font-size: 0.75rem;">ACTIVE UNIT AGENT</span><br>
+                <div style="padding: 5px; text-align: center; width: 140px;">
+                    <b style="color: #fff; font-size: 0.95rem; display:block; margin-bottom:2px;">${name}</b>
+                    <span style="color: var(--gold-primary); font-size: 0.75rem;">ACTIVE TEAM ASSET</span><br>
                     <button class="popup-remove-btn" onclick="removeSearcherFromMapField('${id}')">REMOVE UNIT</button>
                 </div>
             `;
@@ -672,13 +673,11 @@
             activeMapMarkersRegistry[id] = newMarker;
         }
 
-        // Action Trigger to completely terminate a frozen or unneeded searcher from map grid instantly
         window.removeSearcherFromMapField = function(id) {
             if (activeMapMarkersRegistry[id]) {
                 map.removeLayer(activeMapMarkersRegistry[id]);
                 delete activeMapMarkersRegistry[id];
                 
-                // Keep the sidebar roster records locked automatically in tandem
                 rosterData = rosterData.filter(u => String(u.id) !== String(id));
                 renderRoster();
                 
@@ -686,7 +685,7 @@
             }
         };
 
-        // Initialize core track units directly to dynamic engine
+        // Initialize Task Force live tracking registry points natively
         function setupTaskForceLiveRegistry() {
             addActiveSearcherToMap('1', 37.588, -79.053, "VSP Trooper Davis", "var(--blue-agency)");
             addActiveSearcherToMap('2', 37.584, -79.049, "Amherst Deputy K9 Wood", "var(--lt-blue-k9)");
@@ -694,7 +693,7 @@
         }
         setupTaskForceLiveRegistry();
 
-        // Tap, Hold, and Drag Perimeter Polygon Builder Mechanics
+        // TAP & PLOT HARDENED BOUNDARY BUILDER
         let perimeterDrawState = false;
         let activePerimeterPolygon = null;
         let drawnPointsArray = [];
@@ -702,28 +701,36 @@
         function togglePerimeterDrawMode() {
             perimeterDrawState = !perimeterDrawState;
             const btn = document.getElementById('perimeter-toggle-btn');
+            
             if (perimeterDrawState) {
-                btn.innerText = "❌ CLK MAP TO PLOT";
+                btn.innerText = "🔒 LOCK & SAVE PERIMETER";
                 btn.style.borderColor = "var(--alert-red)";
                 btn.style.color = "var(--alert-red)";
                 drawnPointsArray = [];
                 if (activePerimeterPolygon) { map.removeLayer(activePerimeterPolygon); }
+                
+                // Freeze dragging so clicking to draw doesn't slip and break the boundary line
                 map.dragging.disable(); 
+                logSystemEvent("PERIMETER RECORDER: Map grid locked. Click or tap positions directly to weave lines.");
             } else {
                 finalizePerimeterBoundary();
             }
         }
 
+        // Custom clean event hook to prevent perimeter collapses
         map.on('click', (e) => {
             if (!perimeterDrawState) return;
+            
+            // Push coordinate strictly to the points array stack
             drawnPointsArray.push(e.latlng);
             
             if (activePerimeterPolygon) { map.removeLayer(activePerimeterPolygon); }
+            
             activePerimeterPolygon = L.polygon(drawnPointsArray, {
                 color: '#00ff33',
                 weight: 3,
                 fillColor: '#00ff33',
-                fillOpacity: 0.15
+                fillOpacity: 0.18
             }).addTo(map);
         });
 
@@ -733,11 +740,19 @@
             btn.innerText = "✏️ DRAW PERIMETER";
             btn.style.borderColor = "var(--hud-neon-green)";
             btn.style.color = "var(--hud-neon-green)";
+            
+            // Reactivate standard map navigation layers smoothly
             map.dragging.enable();
-            logSystemEvent(`TACTICAL CONTAINMENT: Custom neon grid perimeter boundary locked on map coordinates.`);
+            
+            if (drawnPointsArray.length > 2) {
+                logSystemEvent(`TACTICAL CONTAINMENT: Custom perimeter locked firmly down with [${drawnPointsArray.length}] structural nodes.`);
+            } else {
+                if (activePerimeterPolygon) { map.removeLayer(activePerimeterPolygon); }
+                drawnPointsArray = [];
+                logSystemEvent("PERIMETER CLEAR: Plot points insufficient. Line collapsed safely to clear workspace.");
+            }
         }
 
-        // HARDWARE CLEAR SLATE TRIGGER: Wipes all tracking line geometries instantly
         function resetMapPerimeterField() {
             if (activePerimeterPolygon) {
                 map.removeLayer(activePerimeterPolygon);
@@ -752,11 +767,11 @@
             btn.style.color = "var(--hud-neon-green)";
             map.dragging.enable();
             
-            logSystemEvent("PERIMETER RESET: All active operational area boundaries completely purged from console grid.");
+            logSystemEvent("PERIMETER RESET: All containment coordinate boundaries purged from operational dashboard.");
             alert("PERIMETER RESET: Containment grid cleared.");
         }
 
-        // Roster Management Database Layer
+        // Roster Database Array
         let rosterData = [
             { id: '1', name: "VSP Trooper Davis", type: "LE (BLUE)", color: "var(--blue-agency)" },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9 (LT BLUE)", color: "var(--lt-blue-k9)" },
@@ -784,12 +799,13 @@
             removeSearcherFromMapField(id);
         }
 
+        // HARDENED FALLBACK: Safely anchors coordinate generation even if live GPS blocks the system center
         function addNewRosterPrompt() {
             const name = prompt("Enter Field Officer Name or Identification Call Sign:");
             if (!name) return;
             const type = prompt("Enter Group Classification Type (LE, K9, SAR, CIVILIAN, WANTED):", "LE").toUpperCase();
             
-            let color = "#00ff33"; // Default CIV Green
+            let color = "#00ff33"; 
             if(type.includes("LE")) color = "var(--blue-agency)";
             if(type.includes("K9")) color = "var(--lt-blue-k9)";
             if(type.includes("SAR")) color = "#ff0033";
@@ -798,15 +814,33 @@
             let newId = String(Date.now());
             rosterData.push({ id: newId, name: name, type: type, color: color });
             
-            // Instantly sync onto live interactive mapping canvas structure
-            let center = map.getCenter();
-            addActiveSearcherToMap(newId, center.lat + (Math.random() * 0.002), center.lng + (Math.random() * 0.002), name, color);
+            // Fail-safe tracking point check to prevent code crash
+            let placementLat = 37.5857;
+            let placementLng = -79.0517;
             
-            logSystemEvent(`Dynamic Asset Linked: ${name} deployed into tracking file.`);
+            try {
+                let centerPoint = map.getCenter();
+                if (centerPoint && centerPoint.lat && centerPoint.lng) {
+                    placementLat = centerPoint.lat;
+                    placementLng = centerPoint.lng;
+                }
+            } catch(e) {
+                console.log("GPS Standby - defaulting node location safely.");
+            }
+            
+            // Injects the searcher seamlessly with a minor offset so they don't stack directly on top of each other
+            addActiveSearcherToMap(
+                newId, 
+                placementLat + ((Math.random() - 0.5) * 0.003), 
+                placementLng + ((Math.random() - 0.5) * 0.003), 
+                name, 
+                color
+            );
+            
+            logSystemEvent(`Dynamic Asset Linked: ${name} deployed into mapping canvas files.`);
             renderRoster();
         }
 
-        // Authentication Keypad Inputs
         function pressKey(num) { document.getElementById('interop-token').value += num; }
         function clearKeys() { document.getElementById('interop-token').value = ""; }
         function submitCode() {
@@ -818,7 +852,6 @@
             }
         }
 
-        // ACTIVE OVERRIDE: Shift map focus dynamically via OpenStreetMap Nominatim Free API
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
@@ -850,7 +883,6 @@
                 });
         }
 
-        // Hands-Free Verbal Audio Guidance Systems Engine
         function deployVoiceGuide(issue) {
             window.speechSynthesis.cancel();
             if (issue === 'stop') {
@@ -877,7 +909,6 @@
             window.speechSynthesis.speak(phrase);
         }
 
-        // Certified Court Evidence Automation Report Builder
         let savedReportCacheHTML = "";
         
         function generateCourtReport() {
@@ -929,3 +960,4 @@
     </script>
 </body>
 </html>
+
