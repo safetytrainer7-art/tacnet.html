@@ -268,6 +268,10 @@
         .legend-node { display: flex; align-items: center; }
         .color-sphere { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; display: inline-block; border: 1px solid #fff; }
 
+        .perimeter-controls-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+
         .node-deployer-hud {
             background: rgba(0, 10, 0, 0.9);
             border: 1px solid var(--gold-primary);
@@ -305,7 +309,7 @@
             border: 1px solid var(--hud-neon-green);
             color: var(--hud-neon-green);
             cursor: pointer;
-            padding: 2px 6px;
+            padding: 4px 8px;
             font-size: 0.75rem;
             font-family: 'Share Tech Mono', monospace;
         }
@@ -375,7 +379,7 @@
 
     <div class="status-bar">
         <span>((●)) TACNET CENTRAL INTELLIGENCE VECTOR ONLINE</span>
-        <span id="live-clock">05/16/2026 09:31:00 AM</span>
+        <span id="live-clock">05/16/2026 09:36:00 AM</span>
     </div>
 
     <div class="app-header">
@@ -404,7 +408,7 @@
 
         <div class="panel">
             <div class="panel-title">👥 INTER-AGENCY TEAM ROSTER</div>
-            <div style="font-size: 0.75rem; margin-bottom: 8px; color: var(--gold-worn);">Click "DEPLOY ON MAP" then click any location on the map canvas to drop that unit's asset tracker pin.</div>
+            <div style="font-size: 0.75rem; margin-bottom: 8px; color: var(--gold-worn);">Click "PLACE ON MAP" then select a position on the map layout canvas to deploy a moveable node.</div>
             <div class="roster-list" id="roster-container"></div>
             <button class="action-btn" onclick="addNewRosterPrompt()">+ Defer New Unit</button>
             
@@ -441,12 +445,17 @@
                 STATUS: <span id="hud-mode-text" style="color:#fff;">Operational Sector Tracking Grid Ready.</span>
             </div>
 
+            <div class="perimeter-controls-row">
+                <button class="action-btn" style="margin-bottom:0; border-color:var(--hud-neon-green);" onclick="togglePerimeterDrawMode()" id="perimeter-toggle-btn">✏️ DRAG PERIMETER</button>
+                <button class="action-btn" style="margin-bottom:0; border-color:var(--alert-red); color:var(--alert-red); background:rgba(255,0,51,0.08);" onclick="resetMapPerimeterField()">⚠️ RESET PERIMETER</button>
+            </div>
+
             <div class="map-legend">
                 <div class="legend-node"><span class="color-sphere" style="background:#0066ff;"></span>LE (Blue)</div>
                 <div class="legend-node"><span class="color-sphere" style="background:#33ccff;"></span>K9 (Lt Blue)</div>
                 <div class="legend-node"><span class="color-sphere" style="background:#ff0033;"></span>SAR (Red)</div>
                 <div class="legend-node"><span class="color-sphere" style="background:#00ff33;"></span>CIV (Green)</div>
-                <div class="legend-node"><span class="color-sphere" style="background:#cc00ff;"></span>TARGET INTERCEPT</div>
+                <div class="legend-node"><span class="color-sphere" style="background:#cc00ff;"></span>TARGET RECT</div>
                 <div class="legend-node"><span class="color-sphere" style="background:#ff9900;"></span>GENERIC UNIT</div>
             </div>
         </div>
@@ -459,7 +468,7 @@
             <div style="margin-top:10px;"></div>
             <div class="panel-title">📡 REAL-TIME FIELD TELEMETRY FEED</div>
             <div class="live-feed-log" id="system-log-terminal">
-                <div class="log-entry"><span class="log-timestamp">[09:31:00]</span> TACNET Live Mapping Core Components Engaged.</div>
+                <div class="log-entry"><span class="log-timestamp">[09:36:00]</span> TACNET Live Mapping Core Components Engaged.</div>
             </div>
 
             <div class="k9-audio-panel">
@@ -575,43 +584,45 @@
             currentlyDeployingUnitId = unitId;
             const unit = rosterData.find(u => String(u.id) === String(unitId));
             
-            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">AWAITING PIN DROP: Click on map to position tracking node for ${unit.name}</span>`;
+            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">AWAITING PIN DROP: Click anywhere on the map grid to position tracking node for ${unit.name}</span>`;
             
-            // Highlight row visually
             renderRoster();
             logSystemEvent(`PLACEMENT TRIGGERED: Deploy parameters initialized for tracking device [${unit.name}].`);
         }
 
         // MAP CANVAS CAPTURE CLICK TO DROP ASSET LOGIC
         map.on('click', function(e) {
-            if (currentlyDeployingUnitId === null) return;
+            if (currentlyDeployingUnitId === null || perimeterDrawState) return;
 
             const unitIndex = rosterData.findIndex(u => String(u.id) === String(currentlyDeployingUnitId));
             if (unitIndex === -1) return;
 
             let unit = rosterData[unitIndex];
 
-            // If a tracking node pin already exists for this searcher, wipe it out before placing the new one
             if (unit.markerRef) {
                 map.removeLayer(unit.markerRef);
             }
 
-            // Design specialized glowing tracking unit indicator
             let unitDotIcon = L.divIcon({
                 html: `<div style="background:${unit.color}; width:16px; height:16px; border:2px solid #fff; border-radius:50%; box-shadow:0 0 12px ${unit.color};"></div>`,
                 iconSize: [16, 16],
                 iconAnchor: [8, 8]
             });
 
-            // Create tracking point marker asset
-            let markerNode = L.marker([e.latlng.lat, e.latlng.lng], { icon: unitDotIcon }).addTo(map);
-            markerNode.bindPopup(`<b>ASSET TRACKER NODE Active</b><br>Unit: ${unit.name}<br>Type: ${unit.type}<br>Coordinates: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
+            // Create a DRAGGABLE tracking point marker asset
+            let markerNode = L.marker([e.latlng.lat, e.latlng.lng], { icon: unitDotIcon, draggable: true }).addTo(map);
+            markerNode.bindPopup(`<b>ASSET TRACKER NODE Active</b><br>Unit: ${unit.name}<br>Type: ${unit.type}`);
+
+            // Log event when the user drags the searcher to a new spot
+            markerNode.on('dragend', function(event) {
+                let position = event.target.getLatLng();
+                logSystemEvent(`UNIT MANEUVERED: ${unit.name} dragged to new position [Lat: ${position.lat.toFixed(4)}, Lon: ${position.lng.toFixed(4)}]`);
+            });
 
             rosterData[unitIndex].markerRef = markerNode;
 
             logSystemEvent(`ASSET PLACEMENT SECURED: Dropped tracking node coordinates for [${unit.name}] at [${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}]`);
             
-            // Clean deployment status mode indicators out
             currentlyDeployingUnitId = null;
             document.getElementById('hud-mode-text').innerText = "Operational Sector Tracking Grid Ready.";
             renderRoster();
@@ -627,10 +638,61 @@
                 map.removeLayer(unit.markerRef);
                 rosterData[unitIndex].markerRef = null;
                 logSystemEvent(`ASSET TRACKER REMOVAL: Wiped map tracker node for [${unit.name}] off tactical field grid.`);
-            } else {
-                alert("No active satellite grid node coordinates associated with this tracking identifier yet.");
             }
             renderRoster();
+        }
+
+        // PERIMETER DRAG RING SYSTEM INTEGRATION
+        let perimeterDrawState = false;
+        let activePerimeterCircle = null;
+        let circleStartLatLng = null;
+
+        function togglePerimeterDrawMode() {
+            perimeterDrawState = !perimeterDrawState;
+            const btn = document.getElementById('perimeter-toggle-btn');
+            
+            if (perimeterDrawState) {
+                btn.innerText = "🖱️ HOLD & DRAG OUTWARD";
+                btn.style.borderColor = "var(--alert-red)"; btn.style.color = "var(--alert-red)";
+                if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); }
+                map.dragging.disable();
+                map.on('mousedown', startPerimeterDragCircle);
+                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER MODE: Press down and drag outward on map to size containment area.</span>`;
+            } else {
+                map.dragging.enable();
+                map.off('mousedown', startPerimeterDragCircle);
+                btn.innerText = "✏️ DRAG PERIMETER";
+                btn.style.borderColor = "var(--hud-neon-green)"; btn.style.color = "var(--hud-neon-green)";
+                document.getElementById('hud-mode-text').innerText = "Operational Sector Tracking Grid Ready.";
+            }
+        }
+
+        function startPerimeterDragCircle(e) {
+            circleStartLatLng = e.latlng;
+            activePerimeterCircle = L.circle(circleStartLatLng, {
+                radius: 10, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.15
+            }).addTo(map);
+            map.on('mousemove', dragPerimeterCircleResize);
+            map.on('mouseup', endPerimeterDragCircle);
+        }
+
+        function dragPerimeterCircleResize(e) {
+            if (!circleStartLatLng || !activePerimeterCircle) return;
+            let currentRadius = map.distance(circleStartLatLng, e.latlng);
+            activePerimeterCircle.setRadius(currentRadius);
+        }
+
+        function endPerimeterDragCircle(e) {
+            map.off('mousemove', dragPerimeterCircleResize);
+            map.off('mouseup', endPerimeterDragCircle);
+            let finalRadiusMiles = (activePerimeterCircle.getRadius() / 1609.34).toFixed(2);
+            logSystemEvent(`CONTAINMENT BOUNDARY LOCKED: Radar cordon established at ${finalRadiusMiles} miles wide.`);
+            togglePerimeterDrawMode(); 
+        }
+
+        function resetMapPerimeterField() {
+            if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
+            logSystemEvent("PERIMETER FIELD DETACHED: Containment tracking loops clear.");
         }
 
         // Team Roster Management Framework Arrays
@@ -641,9 +703,8 @@
                 const row = document.createElement('div');
                 row.className = `roster-row ${currentlyDeployingUnitId === user.id ? 'active-deploy' : ''}`;
                 
-                let deploymentControlBtn = `<button class="roster-btn" onclick="initiateUnitPlacement('${user.id}')">📍 DEPLOY ON MAP</button>`;
+                let deploymentControlBtn = `<button class="roster-btn" onclick="initiateUnitPlacement('${user.id}')">📍 PLACE ON MAP</button>`;
                 
-                // If marker is already on the layout field, change controls to allow instantaneous elimination wipeout
                 if (user.markerRef) {
                     deploymentControlBtn = `<button class="roster-btn clear-node-btn" onclick="clearUnitMarkerNode('${user.id}')">❌ REMOVE NODE</button>`;
                 }
@@ -677,7 +738,7 @@
             if (!name) return;
             const type = prompt("Enter Group Classification Type (LE, K9, SAR, CIVILIAN):", "LE").toUpperCase();
             
-            let assignedColor = "#ff9900"; // Default orange marker color nodes
+            let assignedColor = "#ff9900"; 
             if (type === "LE") assignedColor = "#0066ff";
             if (type === "K9") assignedColor = "#33ccff";
             if (type === "SAR") assignedColor = "#ff0033";
@@ -713,20 +774,4 @@
             let savedReportCacheHTML = `
                 <div style="font-family:Arial, sans-serif; padding:20px; color:#000;">
                     <h2 style="text-align:center;">TACNET TRACKING EVIDENCE SUMMARY MATRIX LOG</h2>
-                    <p><strong>CHIEF APPLICATION DESIGN ARCHITECT:</strong> DEPUTY SHERIFF RETIRED EARL A. WOOD</p>
-                    <p><strong>ACTIVE TRACK FOCUS DIRECTORY AREA:</strong> ${activeTargetAddressLabel}</p>
-                    <h3>I. MISSION ASSIGNMENT ROSTER CHRONOLOGY</h3><ul>${rosterItemsHTML}</ul>
-                    <h3>II. EVIDENCE RECORDS CHRONOLOGY SUMMARY</h3><table border="1" cellpadding="5" style="width:100%; border-collapse:collapse;">${logEntriesHTML}</table>
-                </div>
-            `;
-            document.getElementById('judicial-print-frame').innerHTML = savedReportCacheHTML;
-            alert("SECURE OPERATIONAL MISSION REPORT GENERATED.");
-        }
-
-        function triggerSystemPrintPDF() { generateCourtReport(); window.print(); }
-
-        // Boot system roster display parameters
-        renderRoster();
-    </script>
-</body>
-</html>
+                    <p><strong>CHIEF
