@@ -1,235 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TACNET CORE</title>
 
-<title>TACNET COMMAND</title>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-
-body{
-background:#000;
-color:#fff;
-font-family:sans-serif;
+*{
 margin:0;
 padding:0;
-height:100vh;
-display:flex;
-flex-direction:column;
+box-sizing:border-box;
+}
+
+body{
+background:#030b03;
+font-family:Arial, Helvetica, sans-serif;
+color:#fff;
 overflow:hidden;
 }
 
-/* HOME PAGE */
-
-#home-page{
+body::before{
+content:"";
 position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-z-index:9999;
-background:#0d160d;
-padding:20px;
-box-sizing:border-box;
-text-align:center;
-display:block;
+inset:0;
+background:radial-gradient(circle at center,#0d3b0d 0%, #000 70%);
+opacity:.9;
+z-index:-2;
+}
+
+body::after{
+content:"";
+position:fixed;
+inset:0;
+background:linear-gradient(rgba(57,255,20,.03) 1px, transparent 1px);
+background-size:100% 3px;
+pointer-events:none;
+z-index:-1;
+}
+
+header{
+height:120px;
+border-bottom:1px solid #b68c1d;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+background:rgba(0,0,0,.75);
+box-shadow:0 0 20px #39ff14;
 }
 
 .logo{
-color:#D4AF37;
-font-size:3.5em;
+font-size:4rem;
 font-weight:900;
-margin-bottom:0;
-text-shadow:0 0 15px #000;
+letter-spacing:4px;
+color:#e7c14f;
+text-shadow:
+0 0 5px #fff,
+0 0 10px #e7c14f,
+0 0 25px #39ff14;
 }
 
-.subtext{
-color:#ebff00;
-font-weight:bold;
-margin-top:5px;
+.subtitle{
+color:#ffe95c;
+font-size:1.2rem;
+font-weight:700;
+margin-top:6px;
 }
 
-.input-box{
-width:90%;
-max-width:400px;
-background:#000;
-border:1px solid #39FF14;
-color:#39FF14;
-padding:15px;
-margin:10px 0;
-font-family:monospace;
-font-size:1em;
+.tagline{
+color:#9cc4ff;
+font-size:.9rem;
+margin-top:4px;
+letter-spacing:2px;
 }
 
-.deploy-btn{
-width:90%;
-max-width:400px;
-background:#D4AF37;
-color:#000;
-border:none;
-padding:20px;
-font-weight:bold;
-cursor:pointer;
-font-size:1em;
+.main{
+display:grid;
+grid-template-columns:1.4fr .8fr;
+height:calc(100vh - 120px);
 }
 
-.deploy-btn:active{
-background:#39FF14;
+.map-panel{
+position:relative;
+padding:12px;
 }
 
-/* HUD */
-
-#hud-container{
-display:none;
-flex-direction:column;
-height:100vh;
-}
-
-#map-display{
-flex-grow:1;
+#map{
 width:100%;
+height:100%;
+border:2px solid #39ff14;
+border-radius:18px;
+box-shadow:0 0 20px rgba(57,255,20,.6);
 }
 
-/* COMMAND TRAY */
+.status-bar{
+position:absolute;
+top:25px;
+left:25px;
+z-index:999;
+display:flex;
+gap:10px;
+}
 
-.command-tray{
-height:180px;
-background:#111;
-border-top:2px solid #D4AF37;
+.status-pill{
+background:rgba(0,0,0,.75);
+padding:10px 16px;
+border:1px solid #39ff14;
+border-radius:12px;
+color:#39ff14;
+font-weight:700;
+box-shadow:0 0 10px rgba(57,255,20,.6);
+}
+
+.control-panel{
+padding:14px;
+display:flex;
+flex-direction:column;
+gap:12px;
+overflow-y:auto;
+background:rgba(0,0,0,.7);
+border-left:1px solid #b68c1d;
+}
+
+.card{
+background:rgba(4,18,4,.92);
+border:1px solid #39ff14;
+border-radius:18px;
+padding:16px;
+box-shadow:0 0 15px rgba(57,255,20,.35);
+}
+
+.card h2{
+color:#ffe95c;
+margin-bottom:12px;
+font-size:1rem;
+letter-spacing:1px;
+}
+
+input, select{
+width:100%;
+padding:14px;
+margin-bottom:10px;
+background:#000;
+border:1px solid #39ff14;
+color:#fff;
+border-radius:10px;
+font-size:1rem;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+font-weight:800;
+font-size:1rem;
+cursor:pointer;
+transition:.2s;
+margin-bottom:10px;
+}
+
+button:hover{
+transform:scale(1.02);
+}
+
+.deploy{
+background:#39ff14;
+color:#000;
+box-shadow:0 0 20px #39ff14;
+}
+
+.join{
+background:#0f4fff;
+color:#fff;
+}
+
+.warn{
+background:#8d0000;
+color:#fff;
+}
+
+.action-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:5px;
-padding:10px;
-box-sizing:border-box;
+gap:10px;
 }
 
-.tool-btn{
-background:#222;
-color:#D4AF37;
-border:1px solid #444;
-font-weight:bold;
-font-size:0.8em;
-display:flex;
-align-items:center;
-justify-content:center;
-text-transform:uppercase;
-cursor:pointer;
+.action-btn{
+background:#101810;
+color:#39ff14;
+border:1px solid #39ff14;
 }
 
-.tool-btn:active{
-background:#39FF14;
-color:#000;
+.feed{
+height:160px;
+overflow-y:auto;
+font-family:monospace;
+font-size:.9rem;
 }
 
+.feed div{
+padding:8px 0;
+border-bottom:1px solid rgba(57,255,20,.2);
+}
+
+.footer{
+text-align:center;
+font-size:.9rem;
+color:#e7c14f;
+padding-top:10px;
+letter-spacing:1px;
+}
+
+@media(max-width:900px){
+.main{
+grid-template-columns:1fr;
+grid-template-rows:55vh auto;
+}
+
+.logo{
+font-size:2.8rem;
+}
+
+header{
+height:100px;
+}
+}
 </style>
 </head>
-
 <body>
 
-<!-- HOME PAGE -->
+<header>
+<div class="logo">TACNET</div>
+<div class="subtitle">MULTI-AGENCY TASK FORCE SEARCH APP</div>
+<div class="tagline">FEDERAL • STATE • LOCAL</div>
+</header>
 
-<div id="home-page">
+<div class="main">
 
-<h1 class="logo">TACNET</h1>
+<div class="map-panel">
 
-<p class="subtext">
-ONE NET. ALL AGENCIES.
-</p>
+<div style="position:absolute;bottom:24px;left:24px;z-index:999;background:rgba(0,0,0,.75);padding:12px 18px;border:1px solid #39ff14;border-radius:14px;color:#39ff14;font-weight:700;box-shadow:0 0 12px rgba(57,255,20,.5);">
+WIND: NW 6 MPH<br>
+HEADING: 287°
+</div>
 
-<div style="
-border-left:3px solid #D4AF37;
-padding:10px;
-margin:20px auto;
-max-width:400px;
-">
+<div class="status-bar">
+<div class="status-pill">NET ACTIVE</div>
+<div class="status-pill" id="gps-status">GPS READY</div>
+</div>
 
-<input
-type="text"
-id="inc-name"
-class="input-box"
-placeholder="INCIDENT TYPE">
-
-<input
-type="text"
-id="unit-id"
-class="input-box"
-placeholder="OPERATOR CALLSIGN">
-
-<input
-type="password"
-id="demo-code"
-class="input-box"
-placeholder="SECURE ACCESS CODE">
-
-<button
-class="deploy-btn"
-onclick="deployNet()">
-
-[ INITIALIZE DEPLOYMENT ]
-
-</button>
+<div id="map"></div>
 
 </div>
 
-<div style="
-position:absolute;
-bottom:15px;
-width:100%;
-left:0;
-color:#39FF14;
-font-size:0.8em;
-font-family:monospace;
-">
+<div class="control-panel">
 
-APP CREATOR EARL A. WOOD
+<div class="card">
+<h2>TACTICAL OPERATION ROOM</h2>
+
+<div class="status-pill" style="margin-bottom:12px;">LIVE MULTI-AGENCY NETWORK ACTIVE</div>
+
+<input type="text" id="join-code" placeholder="ENTER TAC OPERATION CODE" />
+<button class="join" onclick="joinOperation()">JOIN LIVE OPERATION</button>
+
+</div>
+
+<div class="card">
+<h2>CREATE INCIDENT</h2>
+
+<input type="text" id="incident" placeholder="INCIDENT NAME" />
+<input type="text" id="agency" placeholder="AGENCY" />
+<input type="text" id="callsign" placeholder="CALLSIGN" />
+<input type="text" id="location" placeholder="LAST KNOWN LOCATION" />
+<input type="password" id="access" placeholder="SECURE ACCESS CODE" />
+
+<button class="deploy" onclick="deployNet()">DEPLOY THE NET</button>
+<button class="join">JOIN BY CODE</button>
+</div>
+
+<div class="card">
+<h2>QUICK ACTION BAR</h2>
+
+<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;">
+<button class="action-btn" onclick="sendSOS()">SOS</button>
+<button class="action-btn" onclick="dropLKP()">LKP</button>
+<button class="action-btn" onclick="markEvidence()">EVIDENCE</button>
+<button class="action-btn" onclick="markK9()">K9</button>
+<button class="action-btn" onclick="togglePerimeter()">PERIMETER</button>
+<button class="action-btn" onclick="markGridClear()">CLEAR GRID</button>
+</div>
+
+</div>
+
+<div class="card">
+<h2>TACTICAL TOOLS</h2>
+
+<div class="action-grid">
+<button class="action-btn" onclick="togglePerimeter()">SET PERIMETER</button>
+<button class="action-btn" onclick="toggleGridMode()">GRID MODE</button>
+<button class="action-btn" onclick="markEvidence()">MARK EVIDENCE</button>
+<button class="action-btn" onclick="markOfficer()">UNIT MARKER</button>
+<button class="action-btn" onclick="markK9()">K9 MARKER</button>
+<button class="action-btn" onclick="toggleNightVision()">NIGHT VISION</button>
+<button class="action-btn" onclick="sendSOS()">SOS ALERT</button>
+</div>
+
+<button class="warn" onclick="terminateSearch()">TERMINATE SEARCH</button>
+<button class="join" onclick="archiveOperation()">ARCHIVE OPERATION</button>
+</div>
+
+<div class="card">
+<h2>UNIT STATUS</h2>
+
+<select id="unit-status" onchange="updateUnitStatus()">
+<option>ACTIVE SEARCH</option>
+<option>TRACKING</option>
+<option>HOLDING POSITION</option>
+<option>NEED BACKUP</option>
+<option>OFF DUTY</option>
+</select>
+
+<div class="status-pill" id="status-display">CURRENT STATUS: ACTIVE SEARCH</div>
+
+</div>
+
+<div class="card">
+<h2>MISSION STATUS</h2>
+
+<div class="action-grid">
+<div class="status-pill">UNITS ONLINE: <span id="unit-count">12</span></div>
+<div class="status-pill">K9 ACTIVE: <span id="k9-count">3</span></div>
+<div class="status-pill">AREA CLEAR: <span id="clear-percent">68%</span></div>
+<div class="status-pill">SEARCH TIME: <span id="timer">00:00:00</span></div>
+</div>
+
+</div>
+
+<div class="card">
+<h2>GRID CONTROL</h2>
+
+<div class="action-grid">
+<button class="action-btn" onclick="markGridClear()">GRID CLEARED</button>
+<button class="action-btn" onclick="dropLKP()">DROP LKP</button>
+<button class="action-btn" onclick="toggleTracking()">LIVE TRACKING</button>
+<button class="action-btn" onclick="openComms()">COMMUNICATIONS</button>
+</div>
+
+</div>
+
+<div class="card">
+<h2>COMMAND OVERWATCH</h2>
+
+<div class="action-grid">
+<div class="status-pill">COMMAND: ONLINE</div>
+<div class="status-pill">CHANNEL: SECURE</div>
+<div class="status-pill">SEARCH MODE: TACTICAL</div>
+<div class="status-pill">OPS LEVEL: ACTIVE</div>
+</div>
+
+<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<button class="action-btn" onclick="assignSector()">ASSIGN GRID</button>
+<button class="action-btn" onclick="broadcastAlert()">BROADCAST</button>
+<button class="action-btn" onclick="deployTarget()">DROP TARGET</button>
+<button class="action-btn" onclick="toggleCompass()">COMPASS</button>
+</div>
+
+</div>
+
+<div class="card">
+<h2>LIVE OPERATION STATUS</h2>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+<div class="status-pill">OPS CODE: TAC-5297</div>
+<div class="status-pill">STATUS: ACTIVE</div>
+<div class="status-pill">PERIMETER: LOCKED</div>
+<div class="status-pill">SEARCH MODE: LIVE</div>
+</div>
+
+<div style="height:12px;background:#111;border:1px solid #39ff14;border-radius:12px;overflow:hidden;margin-top:10px;">
+<div id="progress-bar" style="height:100%;width:35%;background:#39ff14;box-shadow:0 0 12px #39ff14;"></div>
+</div>
+
+<p style="margin-top:8px;color:#9eff9e;font-size:.9rem;">GRID CLEARANCE PROGRESS</p>
+
+</div>
+
+<div class="card">
+<h2>NET ACTIVITY FEED</h2>
+<div class="feed" id="feed"></div>
+</div>
+
+<div class="footer">
+APP CREATOR EARL A. WOOD<br>
 DEPUTY SHERIFF RETIRED
-
-</div>
-
-</div>
-
-<!-- HUD -->
-
-<div id="hud-container">
-
-<div id="map-display"></div>
-
-<div class="command-tray">
-
-<div class="tool-btn"
-onclick="startPerimeter()">
-
-SET PERIMETER
-
-</div>
-
-<div class="tool-btn"
-onclick="logEvidence()">
-
-MARK EVIDENCE
-
-</div>
-
-<div class="tool-btn"
-onclick="alert('FINAL DISPOSITION COMING SOON')">
-
-FINAL DISPOSITION
-
-</div>
-
-<div class="tool-btn"
-onclick="location.reload()"
-style="color:#ff4444;">
-
-TERMINATE SEARCH
-
 </div>
 
 </div>
@@ -238,126 +407,519 @@ TERMINATE SEARCH
 
 <script>
 
-var map;
-var perimActive = false;
-var markers = [];
-var polyline;
+const firebaseConfig = {
+apiKey: "AIzaSyCvuvc6EAoh5S0O3kPcrGEhccTtjagSl_A",
+authDomain: "safe-encounter-7a43a.firebaseapp.com",
+databaseURL: "https://safe-encounter-7a43a-default-rtdb.firebaseio.com",
+projectId: "safe-encounter-7a43a",
+storageBucket: "safe-encounter-7a43a.firebasestorage.app",
+messagingSenderId: "633429430474",
+appId: "1:633429430474:web:9458093c40c218ca42e433",
+measurementId: "G-GKE7J9EYQB"
+};
 
-/* DEPLOY */
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let map;
+let officerMarker;
+let perimeterMode = false;
+let gridMode = false;
+let gridPercent = 35;
+let perimeterPoints = [];
+let perimeterLine;
+
+map = L.map('map').setView([37.3349,-79.5236],13);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+).addTo(map);
+
+addFeed('TACNET CORE INITIALIZED');
+
+navigator.geolocation.watchPosition((pos)=>{
+
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
+
+if(officerMarker){
+map.removeLayer(officerMarker);
+}
+
+officerMarker = L.circleMarker([lat,lng],{
+radius:10,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+}).addTo(map);
+
+officerMarker.bindPopup('ACTIVE LAW ENFORCEMENT UNIT');
+
+map.setView([lat,lng]);
+
+document.getElementById('gps-status').innerText='LIVE GPS ACTIVE';
+
+syncUnitPosition(lat,lng,'LAW');
+
+},()=>{
+document.getElementById('gps-status').innerText='GPS ERROR';
+});
+
+function syncOperation(data){
+
+const opCode = 'TAC-' + Math.floor(Math.random()*9999);
+
+localStorage.setItem('tacnet_op', opCode);
+
+const operationRef = db.ref('operations/' + opCode);
+
+operationRef.set({
+incident:data.incident,
+agency:data.agency,
+callsign:data.callsign,
+location:data.location,
+status:'ACTIVE',
+created:Date.now()
+});
+
+addFeed('MULTI-AGENCY SYNC ACTIVE');
+addFeed('OPS CODE GENERATED: ' + opCode);
+
+watchOperation(opCode);
+renderUnits(opCode);
+
+}
+
+function joinOperation(){
+
+const code = document.getElementById('join-code').value;
+
+if(!code){
+alert('ENTER OPERATION CODE');
+return;
+}
+
+localStorage.setItem('tacnet_op', code);
+
+addFeed('JOINED LIVE OPERATION: ' + code);
+
+watchOperation(code);
+
+const roomRef = db.ref('operations/' + code);
+
+roomRef.once('value').then((snapshot)=>{
+
+if(snapshot.exists()){
+alert('CONNECTED TO LIVE TACNET ROOM');
+} else {
+alert('OPERATION NOT FOUND');
+}
+
+});
+
+}
+
+function syncUnitPosition(lat,lng,type='LAW'){
+
+const opCode = localStorage.getItem('tacnet_op');
+if(!opCode) return;
+
+const callsign = document.getElementById('callsign').value || 'UNIT';
+
+const unitRef = db.ref('operations/' + opCode + '/units/' + callsign);
+
+unitRef.set({
+lat,
+lng,
+type,
+updated:Date.now()
+});
+
+}
+
+function renderUnits(opCode){
+
+const unitsRef = db.ref('operations/' + opCode + '/units');
+
+unitsRef.on('value',(snapshot)=>{
+
+const units = snapshot.val();
+
+if(!units) return;
+
+Object.keys(units).forEach((key)=>{
+
+const unit = units[key];
+
+let color = '#00aaff';
+
+if(unit.type === 'K9') color = '#7fdcff';
+if(unit.type === 'SAR') color = '#ff4444';
+if(unit.type === 'CIV') color = '#00ff66';
+if(unit.type === 'TARGET') color = '#c44dff';
+
+L.circleMarker([unit.lat, unit.lng],{
+radius:7,
+color:color,
+fillColor:color,
+fillOpacity:1
+}).addTo(map)
+.bindPopup(key + ' — ' + unit.type);
+
+});
+
+});
+
+}
+
+function watchOperation(opCode){
+
+const feedRef = db.ref('operations/' + opCode + '/feed');
+
+feedRef.on('child_added',(snapshot)=>{
+
+const item = snapshot.val();
+
+if(item && item.message){
+addFeed(item.message);
+}
+
+});
+
+}
+
+function pushSharedFeed(message){
+
+const opCode = localStorage.getItem('tacnet_op');
+
+if(!opCode) return;
+
+const feedRef = db.ref('operations/' + opCode + '/feed');
+
+feedRef.push({
+message:message,
+time:Date.now()
+});
+
+}
 
 function deployNet(){
 
-const validCode = "TACNET-DEMO-0515";
+const access = document.getElementById('access').value;
 
-const enteredCode =
-document.getElementById('demo-code').value;
-
-if(enteredCode !== validCode){
-
-alert("INVALID ACCESS CODE");
-
+if(access !== 'TACNET-DEMO-0515'){
+alert('INVALID ACCESS CODE');
 return;
 }
 
-if(!document.getElementById('inc-name').value){
+const incident = document.getElementById('incident').value;
+const agency = document.getElementById('agency').value;
+const callsign = document.getElementById('callsign').value;
+const location = document.getElementById('location').value;
 
-alert("INCIDENT TYPE REQUIRED");
-
+if(!incident){
+alert('ENTER INCIDENT NAME');
 return;
 }
 
-document.getElementById('home-page').style.display='none';
-
-document.getElementById('hud-container').style.display='flex';
-
-/* MAP */
-
-map = L.map('map-display',{
-zoomControl:false
-}).setView([37.5,-79.0],13);
-
-L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-).addTo(map);
-
-/* GPS */
-
-map.locate({
-setView:true,
-watch:true,
-enableHighAccuracy:true
+syncOperation({
+incident,
+agency,
+callsign,
+location
 });
 
-map.on('locationfound', function(e){
+addFeed('INCIDENT DEPLOYED: ' + incident);
+pushSharedFeed('COMMAND POST DEPLOYED');
+alert('TACNET DEPLOYED SUCCESSFULLY');
+}
 
-L.circle(e.latlng,{
-radius:10,
-color:'#00aaff'
+function toggleGridMode(){
+
+gridMode = !gridMode;
+
+addFeed(gridMode ? 'GRID MODE ENABLED' : 'GRID MODE DISABLED');
+
+}
+
+function togglePerimeter(){
+perimeterMode = !perimeterMode;
+addFeed('PERIMETER MODE ACTIVE');
+}
+
+map.on('click',(e)=>{
+
+if(gridMode){
+
+L.rectangle([
+[e.latlng.lat - 0.0015,e.latlng.lng - 0.0015],
+[e.latlng.lat + 0.0015,e.latlng.lng + 0.0015]
+],{
+color:'#00ff66',
+fillColor:'#00ff66',
+fillOpacity:.22,
+weight:1
 }).addTo(map)
-.bindPopup('ACTIVE TACNET UNIT')
-.openPopup();
+.bindPopup('GRID CLEARED');
 
-});
+gridPercent += 5;
 
+if(gridPercent > 100) gridPercent = 100;
+
+const bar = document.getElementById('progress-bar');
+if(bar){
+bar.style.width = gridPercent + '%';
 }
 
-/* PERIMETER */
-
-function startPerimeter(){
-
-perimActive = !perimActive;
-
-if(perimActive){
-
-alert("CLICK MAP TO DRAW PERIMETER");
-
+const clearPercent = document.getElementById('clear-percent');
+if(clearPercent){
+clearPercent.innerText = gridPercent + '%';
 }
 
-map.on('click', function(e){
+addFeed('SEARCH GRID CLEARED');
+pushSharedFeed('GRID CLEARED BY FIELD UNIT');
 
-if(!perimActive) return;
+return;
+}
+
+
+if(!perimeterMode) return;
+
+perimeterPoints.push([e.latlng.lat,e.latlng.lng]);
 
 L.circleMarker(e.latlng,{
 radius:5,
-color:'#39FF14'
+color:'#39ff14'
 }).addTo(map);
 
-markers.push(e.latlng);
+if(perimeterLine){
+map.removeLayer(perimeterLine);
+}
 
-if(polyline){
+perimeterLine = L.polygon(perimeterPoints,{
+color:'#39ff14',
+fillColor:'#39ff14',
+fillOpacity:.15
+}).addTo(map);
 
-map.removeLayer(polyline);
+});
+
+function markEvidence(){
+
+map.once('click',(e)=>{
+L.circleMarker(e.latlng,{
+radius:8,
+color:'#ffd700',
+fillColor:'#ffd700',
+fillOpacity:1
+}).addTo(map)
+.bindPopup('EVIDENCE MARKED');
+
+addFeed('EVIDENCE LOGGED');
+pushSharedFeed('EVIDENCE MARKER ADDED');
+});
 
 }
 
-polyline = L.polyline(markers,{
-color:'#39FF14',
-weight:4
-}).addTo(map);
+function markOfficer(){
+
+map.once('click',(e)=>{
+L.circleMarker(e.latlng,{
+radius:8,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+}).addTo(map)
+.bindPopup('LAW ENFORCEMENT');
+
+addFeed('UNIT MARKER DEPLOYED');
+});
+
+}
+
+function markK9(){
+
+map.once('click',(e)=>{
+L.circleMarker(e.latlng,{
+radius:8,
+color:'#7d4dff',
+fillColor:'#7d4dff',
+fillOpacity:1
+}).addTo(map)
+.bindPopup('K9 UNIT');
+
+addFeed('K9 UNIT DEPLOYED');
+});
+
+}
+
+function sendSOS(){
+alert('SOS ALERT SENT');
+addFeed('OFFICER DOWN SOS ALERT');
+pushSharedFeed('SOS ALERT ACTIVATED');
+}
+
+function terminateSearch(){
+if(confirm('TERMINATE ACTIVE SEARCH?')){
+location.reload();
+}
+}
+
+function toggleNightVision(){
+document.body.style.filter =
+document.body.style.filter === 'hue-rotate(45deg)'
+? 'none'
+: 'hue-rotate(45deg)';
+
+addFeed('NIGHT VISION MODE TOGGLED');
+}
+
+let trackingEnabled = true;
+let searchSeconds = 0;
+
+setInterval(()=>{
+searchSeconds++;
+
+const hrs = String(Math.floor(searchSeconds/3600)).padStart(2,'0');
+const mins = String(Math.floor((searchSeconds%3600)/60)).padStart(2,'0');
+const secs = String(searchSeconds%60).padStart(2,'0');
+
+const timer = document.getElementById('timer');
+if(timer){
+timer.innerText = `${hrs}:${mins}:${secs}`;
+}
+
+},1000);
+
+function markGridClear(){
+
+map.once('click',(e)=>{
+
+L.circle(e.latlng,{
+radius:120,
+color:'#00ff66',
+fillColor:'#00ff66',
+fillOpacity:.25
+}).addTo(map)
+.bindPopup('GRID CLEARED');
+
+addFeed('GRID MARKED CLEAR');
 
 });
 
 }
 
-/* EVIDENCE */
+function dropLKP(){
 
-function logEvidence(){
+map.once('click',(e)=>{
 
-map.locate().on('locationfound', function(e){
+L.marker(e.latlng).addTo(map)
+.bindPopup('LAST KNOWN POSITION');
+
+addFeed('LKP DROPPED');
+pushSharedFeed('LAST KNOWN POSITION UPDATED');
+
+});
+
+}
+
+function toggleTracking(){
+trackingEnabled = !trackingEnabled;
+addFeed(trackingEnabled ? 'LIVE TRACKING ENABLED' : 'LIVE TRACKING DISABLED');
+}
+
+function updateUnitStatus(){
+
+const value = document.getElementById('unit-status').value;
+
+document.getElementById('status-display').innerText = 'CURRENT STATUS: ' + value;
+
+addFeed('UNIT STATUS UPDATED: ' + value);
+pushSharedFeed('UNIT STATUS: ' + value);
+
+}
+
+function openComms(){
+alert('TACTICAL COMMS CHANNEL READY');
+addFeed('COMMUNICATIONS CHANNEL OPENED');
+}
+
+function assignSector(){
+
+const sector = prompt('ENTER GRID SECTOR');
+if(!sector) return;
+
+addFeed('GRID ASSIGNED: ' + sector);
+pushSharedFeed('COMMAND ASSIGNED GRID ' + sector);
+
+}
+
+function broadcastAlert(){
+
+const msg = prompt('ENTER COMMAND ALERT');
+if(!msg) return;
+
+addFeed('COMMAND ALERT: ' + msg);
+pushSharedFeed('COMMAND: ' + msg);
+
+}
+
+function deployTarget(){
+
+map.once('click',(e)=>{
 
 L.circleMarker(e.latlng,{
 radius:10,
-color:'#D4AF37'
-})
-.addTo(map)
-.bindPopup("EVIDENCE LOGGED")
-.openPopup();
+color:'#c44dff',
+fillColor:'#c44dff',
+fillOpacity:1
+}).addTo(map)
+.bindPopup('TARGET LOCATION');
+
+addFeed('TARGET MARKER DEPLOYED');
+pushSharedFeed('TARGET LOCATION UPDATED');
 
 });
 
 }
 
+function toggleCompass(){
+alert('TACTICAL COMPASS ACTIVE');
+addFeed('COMPASS ACTIVATED');
+}
+
+function archiveOperation(){
+
+const opCode = localStorage.getItem('tacnet_op');
+
+if(!opCode){
+alert('NO ACTIVE OPERATION');
+return;
+}
+
+const archiveRef = db.ref('archives/' + opCode);
+
+archiveRef.set({
+operation:opCode,
+ended:Date.now(),
+status:'ARCHIVED'
+});
+
+addFeed('OPERATION ARCHIVED');
+alert('TACTICAL OPERATION ARCHIVED');
+
+}
+
+function addFeed(text){
+const feed = document.getElementById('feed');
+const item = document.createElement('div');
+item.innerHTML = new Date().toLocaleTimeString() + ' — ' + text;
+feed.prepend(item);
+}
 </script>
 
 </body>
 </html>
+
