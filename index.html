@@ -182,7 +182,7 @@
         </div>
 
         <div class="search-bar-container">
-            <input type="text" class="search-input" id="target-address" placeholder="ENTER MAP SEARCH TARGET DIRECTION LINK (e.g., Amherst, VA)">
+            <input type="text" class="search-input" id="target-address" placeholder="ENTER MAP SEARCH TARGET DIRECTION LINK (e.g., Amherst, VA)" onkeydown="if(event.key === 'Enter') executeAddressSearch()">
             <button class="go-btn" onclick="executeAddressSearch()">GO</button>
         </div>
 
@@ -293,7 +293,7 @@
         let perimeterLat = null, perimeterLng = null, perimeterRadius = null;
         let circleStartLatLng = null;
 
-        // GIS Engine Assembly (Clean initialization layer)
+        // GIS Engine Assembly
         let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
@@ -339,7 +339,6 @@
             }
         }
 
-        // SMOOTH INTERLOCK SYSTEM FOR PERIMETER OPERATIONS
         function togglePerimeterDrawMode() {
             perimeterDrawState = !perimeterDrawState;
             const btn = document.getElementById('perimeter-toggle-btn');
@@ -350,18 +349,13 @@
                 if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
                 perimeterLat = null; perimeterLng = null; perimeterRadius = null;
                 
-                // Lock map dragging layers cleanly
                 map.dragging.disable();
-                
-                // Desktop listeners
                 map.on('mousedown', startPerimeterDragCircle);
-                // Native Leaflet Touch interface compatibility adjustments
                 map.on('movestart', preventTouchShift); 
 
                 document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER LOCK: Tap map once to place center, then drag to grow.</span>`;
             } else {
                 map.dragging.enable();
-                
                 map.off('mousedown', startPerimeterDragCircle);
                 map.off('mousemove', dragPerimeterCircleResize);
                 map.off('mouseup', endPerimeterDragCircle);
@@ -390,10 +384,7 @@
             }).addTo(map);
 
             map.on('mousemove', dragPerimeterCircleResize);
-            
-            // Handle native mobile finger tracking vectors
             map.on('drag', dragPerimeterCircleResize); 
-            
             map.on('mouseup', endPerimeterDragCircle);
             map.on('click', endPerimeterDragCircle);
         }
@@ -554,6 +545,7 @@
             renderRoster();
         }
 
+        // AUTOMATIC PERIMETER SEARCH COMPILATION
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
@@ -576,8 +568,18 @@
                         targetAddressMarkerInstance = L.marker([latVal, lonVal], { icon: customTargetIcon }).addTo(map);
                         targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET LOCATION ACQUIRED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
 
-                        map.setView([latVal, lonVal], 18); 
-                        logSystemEvent(`GRID TARGET LOCK: Address tracker node placed at [${addr}]`);
+                        // Wipe any stale perimeters out of the system first
+                        if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); }
+
+                        // 1/2 Mile calculation: 0.5 miles = 804.67 meters
+                        perimeterLat = latVal;
+                        perimeterLng = lonVal;
+                        perimeterRadius = 804.67; 
+
+                        map.setView([latVal, lonVal], 14); // Optimized zoom layer to see the full 1/2 mile cordon layout immediately
+                        
+                        logSystemEvent(`GRID TARGET LOCK: Target centered at [${addr}]`);
+                        logSystemEvent(`AUTO-CORDON: Established automatic 0.50 mi search perimeter.`);
                         
                         if (window.innerWidth < 850) {
                             document.getElementById('map-canvas').scrollIntoView({ behavior: 'smooth' });
