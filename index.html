@@ -271,12 +271,12 @@
             left: 0; 
             width: 100%; 
             height: 480px;
-            background: rgba(0, 255, 51, 0.22); /* High intensity green visibility matrix */
-            pointer-events: none; /* CRITICAL FIX: Direct finger gestures pass through instantly to map layer */
+            background: rgba(0, 255, 51, 0.22);
+            pointer-events: none; /* Direct finger gestures pass through instantly to map layer */
             z-index: 1000;
             border-radius: 4px;
             box-shadow: inset 0 0 60px rgba(0, 255, 51, 0.5);
-            display: none; /* Controlled dynamically by toggle switch button */
+            display: none;
         }
 
         .map-legend {
@@ -453,7 +453,7 @@
     <div class="interface-grid">
         
         <div class="search-bar-container">
-            <input type="text" class="search-input" id="target-address" placeholder="TARGET SEARCH AREA ADDRESS [ Type city, street, or county here ]">
+            <input type="text" class="search-input" id="target-address" placeholder="TARGET SEARCH AREA ADDRESS [ Type city, street, coordinate, or state here ]">
             <button class="go-btn" onclick="executeAddressSearch()">GO</button>
         </div>
 
@@ -570,14 +570,16 @@
                 btn.classList.add('active-on');
                 logSystemEvent("NIGHT VISION OPTICS: High-contrast green field night light fully burning.");
             }
+            // Forces map layers to redraw instantly beneath the overlay tint
+            if(map) { map.invalidateSize(); }
         }
 
-        /* MASTER LIVE SATELLITE ENGINE LAYOUT (Leaflet Engine Integration)
+        /* MASTER LIVE ENGINE LAYOUT (Leaflet Engine Integration)
            Defaults position tracking over Amherst County Courthouse, Virginia out of professional respect.
         */
         let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
 
-        // Layer Streams (Pulling active live tiles from global Esri servers directly into your file)
+        // Active Tile Layers Configuration
         let satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
         let streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', { maxZoom: 19 });
         let terrainLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
@@ -596,6 +598,9 @@
             if (type === 'satellite') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
             if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-str').classList.add('active'); }
             if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-ter').classList.add('active'); }
+            
+            // CRITICAL RECALIBRATION FIX: Snaps the tile maps perfectly into standard grid lines
+            setTimeout(() => { map.invalidateSize(); }, 50);
             logSystemEvent(`Map canvas layer toggled to display active ${type.toUpperCase()} streams.`);
         }
 
@@ -607,20 +612,20 @@
                 const lon = position.coords.longitude;
                 
                 if (!userMarkerNode) {
-                    // Custom flashing White Dot Icon indicating your current smartphone location
                     let whiteDotIcon = L.divIcon({
                         className: 'custom-div-icon',
                         html: `<div style="background:#fff; width:14px; height:14px; border-radius:50%; box-shadow:0 0 10px #fff; border:2px solid #000;"></div>`,
                         iconSize: [14, 14]
                     });
                     userMarkerNode = L.marker([lat, lon], { icon: whiteDotIcon }).addTo(map).bindPopup("Your Current Unit Position Location").openPopup();
-                    map.setView([lat, lon], 15); // Re-centers directly onto your phone location immediately upon lock
+                    map.setView([lat, lon], 15);
                 } else {
                     userMarkerNode.setLatLng([lat, lon]);
                 }
+                map.invalidateSize();
                 logSystemEvent(`GPS TELEMETRY FIXED: Unit Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`);
             }, () => {
-                logSystemEvent("GPS COMPONENT: Searching for satellite array handshake...");
+                logSystemEvent("GPS COMPONENT: Standby mode. Manual address tracking override active.");
             }, { enableHighAccuracy: true });
         }
 
@@ -650,7 +655,7 @@
                 btn.style.color = "var(--alert-red)";
                 drawnPointsArray = [];
                 if (activePerimeterPolygon) { map.removeLayer(activePerimeterPolygon); }
-                map.dragging.disable(); // Disables standard map dragging so you can draw boundaries cleanly
+                map.dragging.disable(); 
             } else {
                 finalizePerimeterBoundary();
             }
@@ -660,7 +665,6 @@
             if (!perimeterDrawState) return;
             drawnPointsArray.push(e.latlng);
             
-            // Build visual lines as you click locations on the map
             if (activePerimeterPolygon) { map.removeLayer(activePerimeterPolygon); }
             activePerimeterPolygon = L.polygon(drawnPointsArray, {
                 color: '#00ff33',
@@ -731,12 +735,38 @@
             }
         }
 
+        // ACTIVE OVERRIDE: Shift map focus dynamically via OpenStreetMap Nominatim Free API
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
-            if (addr) {
-                logSystemEvent(`RADAR COMMAND: Shifting search operation focus grid onto: ${addr}`);
-                alert(`TACNET NAVIGATION: Plotting tactical grid intercept course over area: ${addr}`);
-            }
+            if (!addr) return;
+
+            logSystemEvent(`RADAR INTERCEPT: Searching geographic databases for: ${addr}`);
+            
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        // Shift map view instantly to the searched target area
+                        map.setView([lat, lon], 14);
+                        
+                        // Drop a tactical crosshair pinpoint marker on the spot
+                        L.marker([lat, lon]).addTo(map)
+                            .bindPopup(`<b>Search Vector Target:</b><br>${addr}`)
+                            .openPopup();
+                        
+                        setTimeout(() => { map.invalidateSize(); }, 100);
+                        logSystemEvent(`RADAR COMMAND: Focus shifted over target coordinates [Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}].`);
+                    } else {
+                        alert("SEARCH FAILURE: Target address could not be verified by satellite relay.");
+                        logSystemEvent(`RADAR ERROR: Location match failed for entry: "${addr}"`);
+                    }
+                })
+                .catch(err => {
+                    logSystemEvent("NETWORK ERROR: Communications link timed out during map lookup.");
+                });
         }
 
         // Hands-Free Verbal Audio Guidance Systems Engine
@@ -786,7 +816,7 @@
                     <p><strong>LOG INCEPTION TIME:</strong> ${sessionStartTime}</p>
                     <p><strong>LOG CLOSURE REPORT MARKER:</strong> ${new Date().toLocaleString()}</p>
                     <p><strong>CHIEF APP DESIGN ARCHITECT:</strong> DEPUTY SHERIFF RETIRED EARL A. WOOD</p>
-                    <p><strong>ASSIGNED REGISTRATION CACHE:</strong> AMHERST COUNTY SHERIFF'S DEPARTMENT COOPERATIVE INCIDENT DATA</p>
+                    <p><strong>ASSIGNED REGISTRATION CACHE:</strong> MULTI-AGENCY CONSOLIDATED OPERATIONAL INCIDENT DATA</p>
                     <hr style="border:1px solid #000; margin-top:15px;">
                     <h3>I. FIELD LOG REGISTRATION - RECORDED UNIT MATRIX</h3>
                     <ul>${rosterItemsHTML}</ul>
@@ -810,11 +840,14 @@
 
         function triggerSystemPrintPDF() {
             if (!savedReportCacheHTML) { generateCourtReport(); }
-            window.print(); // Direct hardware printing trigger line
+            window.print(); 
         }
 
         // Initialize display components upon ready trigger
         renderRoster();
+        
+        // Initial delayed calibration safety net to make sure maps load perfect on launch
+        setTimeout(() => { map.invalidateSize(); }, 300);
     </script>
 </body>
 </html>
