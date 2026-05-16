@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +116,7 @@
         .perimeter-controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
         /* Roster Matrix Panel */
-        .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 110px; }
+        .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 115px; }
         .roster-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 4px 6px; border: 1px solid var(--hud-translucent); font-size: 0.75rem; }
         .roster-row.active-deploy { border: 2px solid var(--gold-primary) !important; background: rgba(223, 183, 32, 0.15); box-shadow: 0 0 10px var(--gold-primary); }
         .roster-btn { background: #000; border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); cursor: pointer; padding: 2px 4px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; }
@@ -142,12 +141,25 @@
         .audio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 2px; }
         .audio-btn { background: #000; border: 1px solid var(--gold-worn); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 4px; font-size: 0.7rem; cursor: pointer; text-align: center; font-weight: bold; }
 
-        /* HARDENED INTERACTIVE ACTIVE-DEPLOY QUICK DECK UNDER THE MAP */
+        /* INTERACTIVE ACTIVE-DEPLOY QUICK DECK UNDER THE MAP */
         .map-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(0,0,0,0.95); padding: 4px; border: 2px solid var(--hud-neon-green); font-size: 0.75rem; font-weight: bold; }
         .legend-node { display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 255, 51, 0.2); padding: 4px; cursor: pointer; border-radius: 3px; }
         .legend-node:hover { border-color: var(--gold-primary); background: rgba(0, 255, 51, 0.1); }
         .legend-node:active { background: rgba(223, 183, 32, 0.2); }
         .color-sphere { width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; display: inline-block; border: 1px solid #fff; }
+
+        /* Custom Flashing Animation Rule for Target Tracker Pin */
+        @keyframes locatorPulse {
+            0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.7); }
+            70% { transform: scale(1.1); opacity: 0.9; box-shadow: 0 0 0 14px rgba(255, 0, 51, 0); }
+            100% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0); }
+        }
+        .target-locator-css {
+            background: rgba(255, 0, 51, 0.3);
+            border: 3px double #ff0033;
+            border-radius: 50%;
+            animation: locatorPulse 1.5s infinite;
+        }
 
         .app-footer { text-align: center; border-top: 1px solid var(--hud-neon-green); padding-top: 2px; color: var(--gold-worn); font-size: 0.7rem; line-height: 1.1; margin-top: 2px; }
     </style>
@@ -264,17 +276,18 @@
     <script>
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
-        // Standard Operational Asset Array Configurations
+        // Flexible Asset Configuration Matrix Array
         let rosterData = [
-            { id: '1', name: "VSP Trooper Davis", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
+            { id: '1', name: "Amherst Sheriff Operator", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9", color: "#33ccff", lat: null, lng: null, markerInstance: null },
-            { id: '3', name: "Target Subject (POI)", type: "POI", color: "#ff9900", lat: null, lng: null, markerInstance: null },
-            { id: '4', name: "Search & Rescue Team", type: "SAR", color: "#ff0033", lat: null, lng: null, markerInstance: null }
+            { id: '4', name: "Search & Rescue Unit", type: "SAR", color: "#ff0033", lat: null, lng: null, markerInstance: null },
+            { id: '3', name: "Target Subject (POI)", type: "POI", color: "#ff9900", lat: null, lng: null, markerInstance: null }
         ];
         
         let currentlyDeployingUnitId = null;
         let perimeterDrawState = false;
         let activePerimeterCircle = null;
+        let targetAddressMarkerInstance = null; // Global reference layer for address location indicator
         let perimeterLat = null, perimeterLng = null, perimeterRadius = null;
         let circleStartLatLng = null;
 
@@ -433,25 +446,82 @@
             });
         }
 
+        // UPGRADED: Dynamic Prompt Selection Menu for Variable Agencies
         function addNewRosterPrompt() {
-            const name = prompt("Enter Field Unit Callsign / Target Name:");
-            if (!name) return;
+            const selectionMenu = prompt(
+                "CHOOSE AGENCY CLASSIFICATION FOR ASSET:\n" +
+                "1 = SHERIFF\n" +
+                "2 = LOCAL POLICE\n" +
+                "3 = STATE POLICE\n" +
+                "4 = FBI\n" +
+                "5 = DEA\n" +
+                "6 = OTHER / SPECIAL SAR\n\n" +
+                "Enter code number (1-6):"
+            );
+            
+            let chosenAgency = "FIELD UNIT";
+            if (selectionMenu === "1") chosenAgency = "Sheriff";
+            else if (selectionMenu === "2") chosenAgency = "Local PD";
+            else if (selectionMenu === "3") chosenAgency = "State Police";
+            else if (selectionMenu === "4") chosenAgency = "FBI";
+            else if (selectionMenu === "5") chosenAgency = "DEA";
+            else if (selectionMenu === "6") chosenAgency = "SAR Asset";
+            else if (!selectionMenu) return; // User pressed Cancel
+
+            const callsign = prompt(`Enter Callsign or Officer's Name for [${chosenAgency.toUpperCase()}]:`);
+            if (!callsign) return;
+
+            let finalLabel = `[${chosenAgency}] ${callsign}`;
             let newId = String(Date.now());
-            rosterData.push({ id: newId, name: name, type: "FIELD ASSET", color: "#ff9900", lat: null, lng: null, markerInstance: null });
+            
+            // Map tracking colors automatically based on choices
+            let assignedColor = "#ff9900"; 
+            let assignedType = "LE";
+            if (selectionMenu === "6") { assignedColor = "#ff0033"; assignedType = "SAR"; }
+
+            rosterData.push({ id: newId, name: finalLabel, type: assignedType, color: assignedColor, lat: null, lng: null, markerInstance: null });
+            logSystemEvent(`ROSTER UPDATED: Registered ${finalLabel}`);
             renderRoster();
         }
 
+        // UPGRADED: Automated Address Search Engine with Flashing Red Target Locator Node
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
+            
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 15);
-                        logSystemEvent(`GRID CENTERING: Moving camera workspace to [${addr}]`);
+                        const latVal = parseFloat(data[0].lat);
+                        const lonVal = parseFloat(data[0].lon);
+                        
+                        // Clear pre-existing address locator node layer if it exists
+                        if (targetAddressMarkerInstance) {
+                            map.removeLayer(targetAddressMarkerInstance);
+                        }
+
+                        // Build a custom flashing tactical element wrapper style
+                        let customTargetIcon = L.divIcon({
+                            className: 'target-locator-css',
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        });
+
+                        // Drop the persistent target locator marker onto coordinates
+                        targetAddressMarkerInstance = L.marker([latVal, lonVal], { icon: customTargetIcon }).addTo(map);
+                        targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET OBJECTIVE INTERSECTION LOCATED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
+
+                        // Zoom view directly into specific target coordinates
+                        map.setView([latVal, lonVal], 18); // Level 18 brings search right onto individual roof/house lines
+                        logSystemEvent(`GRID TARGET LOCK: Address tracker node placed at [${addr}]`);
                         recompileTacticalLayers();
+                    } else {
+                        alert("SEARCH COMPILATION FAILURE: Address location link unknown.");
                     }
+                })
+                .catch(err => {
+                    logSystemEvent("SEARCH ENGINE ERROR: Communication link failed.");
                 });
         }
 
