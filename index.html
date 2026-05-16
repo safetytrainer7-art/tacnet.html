@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TACNET - Master Tactical Station</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -21,22 +21,20 @@
             --alert-red: #ff0033;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         html, body { 
             background-color: var(--bg-dark-green); 
             color: var(--hud-neon-green); 
             font-family: 'Share Tech Mono', monospace; 
-            height: 100vh; 
-            overflow: hidden; 
+            min-height: 100vh;
             padding: 6px; 
         }
 
-        /* Fixed Viewport Container - Prevents vertical scrolling */
+        /* Fixed Viewport Container - Adapts seamlessly to iOS content bounds */
         .workspace-master-wrapper {
             display: flex;
             flex-direction: column;
-            height: 100%;
             width: 100%;
             gap: 4px; 
         }
@@ -61,7 +59,7 @@
             width: 100%;
         }
         
-        .search-input { flex-grow: 1; background: #000; border: 1px solid var(--hud-neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 4px 8px; font-size: 0.85rem; }
+        .search-input { flex-grow: 1; background: #000; border: 1px solid var(--hud-neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 6px 8px; font-size: 0.85rem; }
         .go-btn { background: var(--hud-neon-green); color: #000; border: none; padding: 0 15px; font-family: 'Black Ops One', sans-serif; font-size: 0.9rem; cursor: pointer; font-weight: bold; box-shadow: var(--hud-glow); }
 
         /* Master Desktop Grid System Matrix */
@@ -69,9 +67,7 @@
             display: grid; 
             grid-template-columns: 260px 1fr 280px; 
             gap: 6px; 
-            flex-grow: 1;
             min-height: 0; 
-            height: 100%;
         }
 
         .panel { 
@@ -81,8 +77,7 @@
             border-radius: 4px; 
             display: flex; 
             flex-direction: column;
-            min-height: 0;
-            height: 100%;
+            min-height: 280px;
         }
 
         .panel-title { color: var(--gold-primary); font-family: 'Black Ops One', sans-serif; font-size: 0.75rem; margin-bottom: 4px; border-bottom: 1px dashed var(--hud-neon-green); padding-bottom: 2px; }
@@ -92,8 +87,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 4px; 
-            height: 100%;
-            min-height: 0;
+            height: 600px; /* Fixed robust map height for stable view on both desktop/mobile */
         }
 
         #map-canvas { 
@@ -103,10 +97,8 @@
             border-radius: 4px; 
             box-shadow: var(--hud-glow); 
             background: #000; 
-            min-height: 0;
         }
         
-        /* Forced Click Target Layer Prioritization */
         .leaflet-container {
             z-index: 10 !important;
             pointer-events: auto !important;
@@ -131,7 +123,6 @@
         .log-entry { border-bottom: 1px dashed rgba(0,255,51,0.1); padding: 2px 0; }
         .log-timestamp { color: var(--gold-primary); margin-right: 4px; }
         
-        /* Functional Telemetry Input Infrastructure */
         .hud-textarea { width: 100%; height: 50px; background: #000; border: 1px solid var(--hud-neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; padding: 4px; resize: none; margin-bottom: 4px; }
         .hud-select { width: 100%; background: #000; border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; padding: 3px; margin-bottom: 4px; }
         .hud-select option { background: var(--bg-dark-green); color: var(--hud-neon-green); }
@@ -143,14 +134,12 @@
         .audio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 2px; }
         .audio-btn { background: #000; border: 1px solid var(--gold-worn); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 4px; font-size: 0.7rem; cursor: pointer; text-align: center; font-weight: bold; }
 
-        /* INTERACTIVE ACTIVE-DEPLOY QUICK DECK UNDER THE MAP */
         .map-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(0,0,0,0.95); padding: 4px; border: 2px solid var(--hud-neon-green); font-size: 0.75rem; font-weight: bold; }
         .legend-node { display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 255, 51, 0.2); padding: 4px; cursor: pointer; border-radius: 3px; }
         .legend-node:hover { border-color: var(--gold-primary); background: rgba(0, 255, 51, 0.1); }
         .legend-node:active { background: rgba(223, 183, 32, 0.2); }
         .color-sphere { width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; display: inline-block; border: 1px solid #fff; }
 
-        /* Custom Flashing Animation Rule for Target Tracker Pin */
         @keyframes locatorPulse {
             0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.7); }
             70% { transform: scale(1.1); opacity: 0.9; box-shadow: 0 0 0 14px rgba(255, 0, 51, 0); }
@@ -163,7 +152,25 @@
             animation: locatorPulse 1.5s infinite;
         }
 
-        .app-footer { text-align: center; border-top: 1px solid var(--hud-neon-green); padding-top: 2px; color: var(--gold-worn); font-size: 0.7rem; line-height: 1.1; margin-top: 2px; }
+        .app-footer { text-align: center; border-top: 1px solid var(--hud-neon-green); padding-top: 2px; color: var(--gold-worn); font-size: 0.7rem; line-height: 1.1; margin-top: 4px; }
+
+        /* CRITICAL UPGRADE: MOBILE RECONSTITUTION LAYER MATRIX */
+        @media (max-width: 850px) {
+            html, body { overflow-y: auto; overflow-x: hidden; } /* Let mobile screens scroll downward naturally */
+            .interface-grid {
+                grid-template-columns: 1fr; /* Snap columns into a robust vertical layout stack */
+                gap: 8px;
+            }
+            .center-operational-workspace {
+                order: -1; /* Instantly force the map canvas to the very top of the phone screen */
+                height: 420px; /* Perfectly sized mobile tactical map dimensions */
+            }
+            .panel {
+                height: auto; /* Allow side control blocks to scale out naturally */
+                min-height: 0;
+            }
+            .keypad { max-width: 320px; margin: 4px auto 0 auto; } /* Center keypad layout perfectly on device */
+        }
     </style>
 </head>
 <body>
@@ -171,7 +178,7 @@
     <div class="workspace-master-wrapper">
 
         <div class="status-bar">
-            <span>((●)) TACNET OPERATIONAL INTERFACE CORE LOCKED</span>
+            <span>((●)) TACNET MOBILE ENGINE ACTIVE</span>
             <span id="live-clock">05/16/2026 --:--:--</span>
         </div>
 
@@ -192,7 +199,7 @@
                 <div class="roster-list" id="roster-container"></div>
                 <button class="action-btn" onclick="addNewRosterPrompt()" style="margin-top: 4px;">+ Add New Unit</button>
                 
-                <div style="margin-top: auto;">
+                <div style="margin-top: 15px;">
                     <div class="panel-title">🔐 KEYPAD AUTHENTICATOR</div>
                     <input type="text" class="search-input" id="interop-token" readonly placeholder="[ SECURE ENTRY ]" style="text-align:center; margin-bottom:2px; width:100%;">
                     <div class="keypad">
@@ -215,7 +222,7 @@
             <div class="center-operational-workspace">
                 <div id="map-canvas"></div>
 
-                <div style="background: rgba(0, 8, 0, 0.95); border: 1px solid var(--gold-primary); padding: 3px; font-size: 0.75rem;" id="hud-mode-text">
+                <div style="background: rgba(0, 8, 0, 0.95); border: 1px solid var(--gold-primary); padding: 4px; font-size: 0.75rem;" id="hud-mode-text">
                     STATUS: Protected Grid Interface Lockbox active.
                 </div>
 
@@ -225,10 +232,10 @@
                 </div>
 
                 <div class="map-legend">
-                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('LE')"><span class="color-sphere" style="background:#0066ff;"></span>⚡ DEPLOY LE</div>
-                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('K9')"><span class="color-sphere" style="background:#33ccff;"></span>🐾 DEPLOY K9</div>
-                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('SAR')"><span class="color-sphere" style="background:#ff0033;"></span>🧡 DEPLOY SAR</div>
-                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('POI')"><span class="color-sphere" style="background:#ff9900;"></span>🎯 DEPLOY POI</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('LE')"><span class="color-sphere" style="background:#0066ff;"></span>⚡ LE</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('K9')"><span class="color-sphere" style="background:#33ccff;"></span>🐾 K9</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('SAR')"><span class="color-sphere" style="background:#ff0033;"></span>🧡 SAR</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('POI')"><span class="color-sphere" style="background:#ff9900;"></span>🎯 POI</div>
                 </div>
             </div>
 
@@ -244,14 +251,14 @@
                 </select>
 
                 <label style="font-size:0.65rem; color:var(--gold-worn); display:block; margin-bottom:1px;">OPERATIONAL FIELD NOTES:</label>
-                <textarea class="hud-textarea" id="field-notes-box" placeholder="Enter continuous log evidence updates here..."></textarea>
+                <textarea class="hud-textarea" id="field-notes-box" placeholder="Enter continuous log updates here..."></textarea>
                 
                 <div class="report-grid-btns">
                     <button class="action-btn" onclick="triggerEmailLog()" style="border-color:var(--gold-primary); color:var(--gold-primary);">📧 EMAIL LOGS</button>
                     <button class="action-btn" onclick="triggerPrintPDF()" style="border-color:var(--gold-primary); color:var(--gold-primary);">🖨️ PRINT PDF</button>
                 </div>
 
-                <div class="panel-title" style="margin-top: 6px;">📡 FIELD TELEMETRY FEED</div>
+                <div class="panel-title" style="margin-top: 8px;">📡 FIELD TELEMETRY FEED</div>
                 <div class="live-feed-log" id="system-log-terminal">
                     <div class="log-entry"><span class="log-timestamp">[HUD]</span> Display constraints initialized.</div>
                 </div>
@@ -259,10 +266,10 @@
                 <div class="k9-audio-panel">
                     <div class="panel-title" style="font-size:0.7rem; margin-bottom:2px; color:#fff; border:none;">🎙️ EMERGENCY AUDIO PROTOCOLS</div>
                     <div class="audio-grid">
-                        <button class="audio-btn" onclick="deployVoiceGuide('cpr')">🗣️ CPR GUIDE</button>
-                        <button class="audio-btn" onclick="deployVoiceGuide('snake')">🗣️ SNAKE BITE</button>
-                        <button class="audio-btn" onclick="deployVoiceGuide('bleed')">🗣️ BLEEDING</button>
-                        <button class="audio-btn" onclick="deployVoiceGuide('heat')">🗣️ HEAT STROKE</button>
+                        <button class="audio-btn" onclick="deployVoiceGuide('cpr')">🗣️ CPR</button>
+                        <button class="audio-btn" onclick="deployVoiceGuide('snake')">🗣️ SNAKE</button>
+                        <button class="audio-btn" onclick="deployVoiceGuide('bleed')">🗣️ BLEED</button>
+                        <button class="audio-btn" onclick="deployVoiceGuide('heat')">🗣️ HEAT</button>
                         <button class="audio-btn" onclick="deployVoiceGuide('stop')" style="grid-column: span 2; border-color:var(--alert-red); color:var(--alert-red);">🛑 STOP AUDIO</button>
                     </div>
                 </div>
@@ -278,7 +285,6 @@
     <script>
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
-        // Core Operational Asset Database Array Configuration
         let rosterData = [
             { id: '1', name: "[Sheriff] Unit 101", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9", color: "#33ccff", lat: null, lng: null, markerInstance: null },
@@ -350,7 +356,7 @@
                 perimeterLat = null; perimeterLng = null; perimeterRadius = null;
                 map.dragging.disable();
                 map.on('mousedown', startPerimeterDragCircle);
-                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER ACTIVE: Hold left-click and drag on map to size cordon boundary.</span>`;
+                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER ACTIVE: Drag outward to cordon boundary.</span>`;
             } else {
                 map.dragging.enable();
                 map.off('mousedown', startPerimeterDragCircle);
@@ -395,11 +401,15 @@
         function initiateUnitPlacement(unitId) {
             currentlyDeployingUnitId = unitId;
             const unit = rosterData.find(u => String(u.id) === String(unitId));
-            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET ACQUIRED: Click inside map to drop [ ${unit.name} ] pin.</span>`;
+            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET: Tap map to drop [ ${unit.name} ] pin.</span>`;
+            
+            // On mobile devices, automatically scroll smooth view straight back up to the map area
+            if (window.innerWidth < 850) {
+                document.getElementById('map-canvas').scrollIntoView({ behavior: 'smooth' });
+            }
             renderRoster();
         }
 
-        // Fast match function for legend quick-click placement deck
         function initiateUnitPlacementByLegend(typeString) {
             const match = rosterData.find(u => u.type === typeString);
             if (match) {
@@ -409,7 +419,6 @@
             }
         }
 
-        // Hardened GIS Pointer Click Listener
         map.on('click', function(e) {
             if (currentlyDeployingUnitId === null || perimeterDrawState) return;
             
@@ -429,7 +438,6 @@
             }
         });
 
-        // Removes pin icon layer from satellite view map
         function clearUnitMarkerNode(unitId) {
             const unitIndex = rosterData.findIndex(u => String(u.id) === String(unitId));
             if (unitIndex !== -1) {
@@ -444,20 +452,14 @@
             renderRoster();
         }
 
-        // CRITICAL UPGRADE: Hard Purge function to remove officer entirely from left matrix pane
         function purgeOfficerEntirelyFromRoster(unitId) {
             const unit = rosterData.find(u => String(u.id) === String(unitId));
             if (!unit) return;
             
             if (confirm(`CRITICAL DIRECTION: Permanently purge asset [ ${unit.name} ] from active shift records?`)) {
-                // Wipe map marker if deployed
-                if (unit.markerInstance) {
-                    map.removeLayer(unit.markerInstance);
-                }
-                // Filter record out of database array
+                if (unit.markerInstance) { map.removeLayer(unit.markerInstance); }
                 rosterData = rosterData.filter(u => String(u.id) !== String(unitId));
                 logSystemEvent(`ROSTER FRESHED: Purged asset registry line.`);
-                
                 if (currentlyDeployingUnitId === String(unitId)) {
                     currentlyDeployingUnitId = null;
                     document.getElementById('hud-mode-text').innerText = "STATUS: Protected Grid Interface Lockbox active.";
@@ -466,7 +468,6 @@
             }
         }
 
-        // UPGRADED: Dynamic dual-button stack configuration inside left matrix block
         function renderRoster() {
             const container = document.getElementById('roster-container');
             container.innerHTML = "";
@@ -481,7 +482,7 @@
                 let permanentPurgeBtn = `<button class="roster-btn clear-node-btn" style="background:#110000;" onclick="purgeOfficerEntirelyFromRoster('${user.id}')">❌ PURGE</button>`;
 
                 row.innerHTML = `
-                    <div style="max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <div style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <strong>${user.name}</strong><br>
                         <span style="color:${user.color}; font-size:0.68rem; font-weight:bold;">CLASS: ${user.type}</span>
                     </div>
@@ -494,7 +495,6 @@
             });
         }
 
-        // Dynamic Prompt Selection Menu for Variable Agencies
         function addNewRosterPrompt() {
             const selectionMenu = prompt(
                 "CHOOSE AGENCY CLASSIFICATION FOR ASSET:\n" +
@@ -525,7 +525,6 @@
             let finalLabel = `[${chosenAgency}] ${callsign}`;
             let newId = String(Date.now());
             
-            // Contextual tweaks for specialized symbols based on classification
             if (chosenAgency === "Sheriff") assignedColor = "#0066ff";
             else if (chosenAgency === "Local PD") assignedColor = "#0055cc";
             else if (chosenAgency === "State Police") assignedColor = "#1188ff";
@@ -537,7 +536,6 @@
             renderRoster();
         }
 
-        // Automated Address Search Engine with Flashing Red Target Locator Node
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
@@ -549,9 +547,7 @@
                         const latVal = parseFloat(data[0].lat);
                         const lonVal = parseFloat(data[0].lon);
                         
-                        if (targetAddressMarkerInstance) {
-                            map.removeLayer(targetAddressMarkerInstance);
-                        }
+                        if (targetAddressMarkerInstance) { map.removeLayer(targetAddressMarkerInstance); }
 
                         let customTargetIcon = L.divIcon({
                             className: 'target-locator-css',
@@ -560,10 +556,14 @@
                         });
 
                         targetAddressMarkerInstance = L.marker([latVal, lonVal], { icon: customTargetIcon }).addTo(map);
-                        targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET OBJECTIVE LOCATION ACQUIRED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
+                        targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET LOCATION ACQUIRED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
 
                         map.setView([latVal, lonVal], 18); 
                         logSystemEvent(`GRID TARGET LOCK: Address tracker node placed at [${addr}]`);
+                        
+                        if (window.innerWidth < 850) {
+                            document.getElementById('map-canvas').scrollIntoView({ behavior: 'smooth' });
+                        }
                         recompileTacticalLayers();
                     } else {
                         alert("SEARCH COMPILATION FAILURE: Address location link unknown.");
