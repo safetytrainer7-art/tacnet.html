@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,6 +105,19 @@
             font-size: 0.85rem;
             margin-top: 3px;
             letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        /* Law Enforcement Sub-Header Configuration */
+        .header-titles h4 {
+            font-family: 'Black Ops One', sans-serif;
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px #000, 0 0 10px rgba(223, 183, 32, 0.3);
+            line-height: 1.1;
+            margin-top: 5px;
+            text-transform: uppercase;
         }
 
         .badge-row {
@@ -233,16 +245,18 @@
             background: #000;
         }
 
-        /* Neon Night-Vision Layer tint over the live satellite stream */
-        .map-wrapper::after {
-            content: " ";
-            display: block;
+        /* Active Green Night-Vision Lens tint over the live map streams */
+        .map-night-light-tint {
             position: absolute;
-            top: 40px; left: 0; width: 100%; height: 480px;
-            background: rgba(0, 255, 51, 0.06);
+            top: 40px; 
+            left: 0; 
+            width: 100%; 
+            height: 480px;
+            background: rgba(0, 255, 51, 0.18); /* Intensified green illumination */
             pointer-events: none;
             z-index: 1000;
             border-radius: 4px;
+            box-shadow: inset 0 0 50px rgba(0, 255, 51, 0.4);
         }
 
         .map-legend {
@@ -405,6 +419,7 @@
             <h1>TACNET</h1>
             <h2>MULTI-AGENCY TASK FORCE SEARCH APP</h2>
             <h3>FEDERAL - STATE - LOCAL</h3>
+            <h4>BUILT BY LAW ENFORCEMENT FOR LAW ENFORCEMENT</h4>
         </div>
         <div class="patch" style="background-image: url('image (2).png');"></div>
     </div>
@@ -454,6 +469,8 @@
             </div>
 
             <div id="map-canvas"></div>
+            
+            <div class="map-night-light-tint"></div>
 
             <div class="map-legend">
                 <div class="legend-node"><span class="color-sphere" style="background:var(--blue-agency);"></span>LE (Blue)</div>
@@ -564,7 +581,7 @@
                 }
                 logSystemEvent(`GPS TELEMETRY FIXED: Unit Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`);
             }, () => {
-                logSystemEvent("GPS COMPONENT: Seeking satellite array handshake...");
+                logSystemEvent("GPS COMPONENT: Searching for satellite array handshake...");
             }, { enableHighAccuracy: true });
         }
 
@@ -762,3 +779,4 @@
     </script>
 </body>
 </html>
+
