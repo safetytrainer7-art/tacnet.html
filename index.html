@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET - Mission Control Workspace</title>
+    <title>TACNET - Alpha Command Dashboard</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root {
@@ -205,22 +202,17 @@
             box-shadow: var(--hud-glow);
         }
 
-        /* DYNAMIC HUB CONTAINERS */
-        .center-operational-workspace {
-            min-height: 520px;
-            display: flex;
-            flex-direction: column;
-        }
-
+        /* CENTER DASHBOARD AREA STYLES */
         .center-dashboard-terminal {
+            min-height: 480px;
             border: 2px solid var(--hud-neon-green);
             background: #000;
             border-radius: 4px;
             box-shadow: var(--hud-glow);
             padding: 20px;
-            flex-grow: 1;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start;
             gap: 15px;
         }
 
@@ -257,74 +249,6 @@
             100% { border-color: var(--alert-red); box-shadow: 0 0 15px rgba(255,0,51,0.4); }
         }
 
-        /* LIVE MAP WRAPPER COMPONENTS */
-        .map-wrapper {
-            display: none; /* Initially hidden until deployed */
-            position: relative;
-            flex-grow: 1;
-        }
-
-        .map-layer-controls {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 8px;
-        }
-
-        .map-mode-btn {
-            flex: 1;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid var(--hud-neon-green);
-            color: var(--hud-neon-green);
-            padding: 8px;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .map-mode-btn.active {
-            background: var(--hud-neon-green);
-            color: #000;
-            font-weight: bold;
-            box-shadow: var(--hud-glow);
-        }
-
-        #map-canvas {
-            width: 100%;
-            height: 440px;
-            border: 2px solid var(--hud-neon-green);
-            border-radius: 4px;
-            box-shadow: var(--hud-glow);
-            background: #000;
-        }
-
-        .leaflet-popup-content-wrapper {
-            background: #000 !important;
-            color: #fff !important;
-            border: 2px solid var(--hud-neon-green) !important;
-            font-family: 'Share Tech Mono', monospace !important;
-        }
-        .leaflet-popup-tip { background: var(--hud-neon-green) !important; }
-
-        .map-legend {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin-top: 8px;
-            background: rgba(0,0,0,0.9);
-            padding: 8px;
-            border: 1px solid var(--hud-neon-green);
-            font-size: 0.75rem;
-        }
-
-        .legend-node { display: flex; align-items: center; }
-        .color-sphere { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; display: inline-block; border: 1px solid #fff; }
-
-        .perimeter-controls-row {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;
-        }
-
-        /* CORE UTILITIES */
         .roster-list {
             display: flex;
             flex-direction: column;
@@ -342,6 +266,12 @@
             padding: 8px;
             border: 1px solid var(--hud-translucent);
             font-size: 0.85rem;
+        }
+
+        .roster-btn {
+            width: 24px; height: 24px; background: #000;
+            border: 1px solid var(--alert-red); color: var(--alert-red);
+            cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
 
         .keypad {
@@ -369,16 +299,6 @@
             border-color: var(--gold-primary); color: var(--gold-primary);
             background: rgba(223, 183, 32, 0.08);
         }
-
-        .deploy-map-mega-btn {
-            background: #000; border: 3px double var(--hud-neon-green);
-            color: var(--hud-neon-green); font-family: 'Black Ops One', sans-serif;
-            font-size: 1.2rem; padding: 15px; width: 100%; margin-top: auto;
-            cursor: pointer; border-radius: 4px; box-shadow: var(--hud-glow);
-            letter-spacing: 1px; display: none; text-align: center;
-        }
-
-        .deploy-map-mega-btn:active { background: var(--hud-neon-green); color: #000; }
 
         .live-feed-log {
             background: #000; border: 1px solid var(--hud-translucent);
@@ -413,8 +333,8 @@
 <body>
 
     <div class="status-bar">
-        <span>((●)) TACNET CENTRAL PIPELINE ONLINE</span>
-        <span id="live-clock">05/16/2026 09:20:00 AM</span>
+        <span>((●)) TACNET CENTRAL COMM SYSTEM ONLINE</span>
+        <span id="live-clock">05/16/2026 09:27:00 AM</span>
     </div>
 
     <div class="app-header">
@@ -437,7 +357,7 @@
     <div class="interface-grid">
         
         <div class="search-bar-container">
-            <input type="text" class="search-input" id="target-address" placeholder="STAGE 1: ENTER FOCUS TARGET ADDRESS FOR INTEL SCREENING">
+            <input type="text" class="search-input" id="target-address" placeholder="ENTER LOCATION TARGET ADDRESS FOR MAINFRAME RE-SCREENING">
             <button class="go-btn" onclick="executeAddressSearch()">GO</button>
         </div>
 
@@ -466,56 +386,25 @@
             </div>
         </div>
 
-        <div class="center-operational-workspace">
+        <div class="center-dashboard-terminal">
+            <div class="panel-title" style="margin-bottom:0;">🖥️ CENTRAL INTELLIGENCE DATA MONITOR</div>
             
-            <div class="center-dashboard-terminal" id="screener-dashboard-view">
-                <div class="panel-title" style="margin-bottom:0;">🖥️ CENTRAL INTELLIGENCE INTAKE SCREENER</div>
-                
-                <div class="panel-standby-screen" id="standby-panel">
-                    ⚡ SYSTEM ONLINE & STANDING BY FOR RE-SCREENING RUN<br>
-                    <span style="font-size:0.85rem; margin-top:10px; display:block; color:#fff;">Type destination target above and strike GO to process data.</span>
-                </div>
-
-                <div class="warrant-alert-panel" id="warrant-alert-box">
-                    <span style="color:var(--alert-red); font-family:'Black Ops One', sans-serif; font-size:1.3rem; display:block; margin-bottom:10px; text-shadow:0 0 5px #000;">⚠️ MAINFRAME ACTIVE THREAT ALERT DETECTED</span>
-                    <div id="warrant-details-frame" style="color:#fff; font-size:1rem; line-height:1.5; background:#000; padding:12px; border:1px solid var(--alert-red);"></div>
-                </div>
-
-                <div class="intel-override-box" id="intel-box">
-                    <span style="color:var(--gold-primary); font-family:'Black Ops One', sans-serif; font-size:1.05rem; display:block; margin-bottom:8px;">🛡️ ADDRESS UNLISTED - SEED DYNAMIC ENTRY FIELD</span>
-                    <p style="font-size:0.85rem; color:#fff; margin-bottom:12px;">No pre-set filing linked. Build custom local database profile entry below:</p>
-                    <input type="text" class="search-input" id="resident-name-input" placeholder="ENTER CURRENT INTEL / OCCUPANT IDENTIFICATION" style="font-size:0.95rem; padding:8px; margin-bottom:10px; border-color:var(--gold-worn);">
-                    <button class="action-btn gold-btn" onclick="saveLocalIntelData()">COMMIT DIRECT TO SESSION LOCAL REGISTRY</button>
-                </div>
-
-                <button class="deploy-map-mega-btn" id="launch-map-pipeline-btn" onclick="transitionToTacticalSatelliteView()">🛰️ DEPLOY TACTICAL MAP ARRAYS</button>
+            <div class="panel-standby-screen" id="standby-panel">
+                ⚡ SYSTEM READY FOR RUN<br>
+                <span style="font-size:0.85rem; margin-top:10px; display:block; color:#fff;">Type address above and click GO to screen occupants.</span>
             </div>
 
-            <div class="map-wrapper" id="tactical-map-view">
-                <div class="map-layer-controls">
-                    <button class="map-mode-btn active" id="btn-sat" onclick="switchMapLayer('satellite')">🛰️ Satellite View</button>
-                    <button class="map-mode-btn" id="btn-str" onclick="switchMapLayer('street')">🗺️ Street Grid</button>
-                    <button class="map-mode-btn" id="btn-ter" onclick="switchMapLayer('terrain')">⛰️ Topographic</button>
-                    <button class="map-mode-btn" style="border-color:var(--gold-primary); color:var(--gold-primary);" onclick="returnToScreenerIntake()">◀ SCREENER</button>
-                </div>
-
-                <div id="map-canvas"></div>
-
-                <div class="map-legend">
-                    <div class="legend-node"><span class="color-sphere" style="background:#0066ff;"></span>LE (Blue)</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#33ccff;"></span>K9 (Lt Blue)</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#ff0033;"></span>SAR (Red)</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#00ff33;"></span>CIV (Green)</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#cc00ff;"></span>TARGET RECT</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#fff;"></span>YOUR NODE</div>
-                </div>
-                
-                <div class="perimeter-controls-row">
-                    <button class="action-btn" style="margin-bottom:0; border-color:var(--hud-neon-green);" onclick="togglePerimeterDrawMode()" id="perimeter-toggle-btn">✏️ DRAG PERIMETER</button>
-                    <button class="action-btn" style="margin-bottom:0; border-color:var(--alert-red); color:var(--alert-red); background:rgba(255,0,51,0.08);" onclick="resetMapPerimeterField()">⚠️ RESET PERIMETER</button>
-                </div>
+            <div class="warrant-alert-panel" id="warrant-alert-box">
+                <span style="color:var(--alert-red); font-family:'Black Ops One', sans-serif; font-size:1.4rem; display:block; margin-bottom:10px; text-shadow:0 0 5px #000;">⚠️ CRISIS INTELLIGENCE HIGH THREAT ALERT</span>
+                <div id="warrant-details-frame" style="color:#fff; font-size:1.1rem; line-height:1.5; background:#000; padding:15px; border:1px solid var(--alert-red);"></div>
             </div>
 
+            <div class="intel-override-box" id="intel-box">
+                <span style="color:var(--gold-primary); font-family:'Black Ops One', sans-serif; font-size:1.1rem; display:block; margin-bottom:8px;">🛡️ SYSTEM CLEAR - FIELD RECORD EXPEDITION</span>
+                <p style="font-size:0.9rem; color:#fff; margin-bottom:12px;">No proactive warrant profile matches this location address on internal database servers. Enter field identification logs below:</p>
+                <input type="text" class="search-input" id="resident-name-input" placeholder="ENTER CURRENT KNOWN OCCUPANT NAME & HAZARD CODES" style="font-size:1rem; padding:10px; margin-bottom:10px; border-color:var(--gold-worn);">
+                <button class="action-btn gold-btn" onclick="saveLocalIntelData()">COMMIT INTEL FILE TO CASE DATA</button>
+            </div>
         </div>
 
         <div class="panel">
@@ -526,7 +415,7 @@
             <div style="margin-top:10px;"></div>
             <div class="panel-title">📡 REAL-TIME FIELD TELEMETRY FEED</div>
             <div class="live-feed-log" id="system-log-terminal">
-                <div class="log-entry"><span class="log-timestamp">[09:20:00]</span> TACNET Operational Module Active. Comm Hub Linked...</div>
+                <div class="log-entry"><span class="log-timestamp">[09:27:00]</span> TACNET Operational Module Active. Core Terminal Standing By...</div>
             </div>
 
             <div class="k9-audio-panel">
@@ -553,21 +442,26 @@
     </div>
 
     <script>
+        let sessionStartTime = new Date().toLocaleString();
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
-        let courtLogs = [{ time: new Date().toLocaleTimeString(), details: "Terminal Bootup Complete. Intake sequence awaiting input." }];
-        let activeTargetAddressLabel = "None Entered";
-        let localResidentIntelNotes = "No current filing logged.";
-        let targetLatitude = 37.5857;
-        let targetLongitude = -79.0517;
+        let courtLogs = [{ time: new Date().toLocaleTimeString(), details: "System Terminal Active. Standing by for command line input." }];
+        let activeTargetAddressLabel = "None Active";
+        let localResidentIntelNotes = "No Entry File Linked.";
 
-        // DYNAMIC CENTRAL DATABASE REPOSITORY (Saves runtime entries locally)
-        const localMainframeRegistryDatabase = {
+        // MOCK RECORDS WARRANTS MATRIX
+        const departmentIntelMainframeDatabase = {
             "123 main st, amherst, va": {
                 occupant: "Thomas 'Mac' Miller",
                 warrantStatus: "ACTIVE felony capias (failure to appear - drug distribution)",
-                cautionNotes: "SUBJECT KNOWN TO FLEE ON FOOT. EXERCISE CAUTION.",
+                cautionNotes: "SUBJECT KNOWN TO FLEE ON FOOT. UNCOOPERATIVE WITH L.E. EXERCISE CAUTION.",
                 classification: "HIGH THREAT"
+            },
+            "456 courthouse ln, amherst, va": {
+                occupant: "Secure Local Government Office",
+                warrantStatus: "No Active Filings Detected.",
+                cautionNotes: "Clear operational parameters.",
+                classification: "CLEARED"
             }
         };
 
@@ -579,190 +473,7 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // Active Leaflet Map Engine Initialization
-        let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
-        let satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
-        let streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', { maxZoom: 19 });
-        let terrainLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
-        satelliteLayer.addTo(map);
-
-        function switchMapLayer(type) {
-            map.removeLayer(satelliteLayer); map.removeLayer(streetLayer); map.removeLayer(terrainLayer);
-            document.getElementById('btn-sat').classList.remove('active');
-            document.getElementById('btn-str').classList.remove('active');
-            document.getElementById('btn-ter').classList.remove('active');
-            
-            if (type === 'satellite') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
-            if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-str').classList.add('active'); }
-            if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-ter').classList.add('active'); }
-        }
-
-        let addressMarkerNode = null;
-
-        // STAGE 1: INTAKE PROCESSING SEARCH ENGINE
-        function executeAddressSearch() {
-            const addr = document.getElementById('target-address').value;
-            if (!addr) return;
-
-            activeTargetAddressLabel = addr;
-            document.getElementById('standby-panel').style.display = 'none';
-            document.getElementById('warrant-alert-box').style.display = 'none';
-            document.getElementById('intel-box').style.display = 'none';
-            document.getElementById('launch-map-pipeline-btn').style.display = 'none';
-
-            logSystemEvent(`DATA INTERCEPT SEQUENCE: Screening location parameters for: [${addr}]`);
-            
-            const searchKey = addr.toLowerCase().trim();
-
-            // Run Nominatim Fetch behind scenes to lock down coordinates first
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        targetLatitude = parseFloat(data[0].lat);
-                        targetLongitude = parseFloat(data[0].lon);
-
-                        // Scan local database matrix
-                        if (localMainframeRegistryDatabase[searchKey]) {
-                            const record = localMainframeRegistryDatabase[searchKey];
-                            localResidentIntelNotes = `DATABASE MATCHED: Occupant: ${record.occupant} | Status: ${record.warrantStatus}`;
-                            
-                            const detailsFrame = document.getElementById('warrant-details-frame');
-                            detailsFrame.innerHTML = `
-                                <strong>TARGET OCCUPANT PROFILE:</strong> ${record.occupant}<br>
-                                <strong>CURRENT RECORD MATRIX:</strong> <span style="color:var(--gold-primary); font-weight:bold;">${record.warrantStatus}</span><br>
-                                <strong>CRITICAL DIRECTIONAL NOTES:</strong> ${record.cautionNotes}
-                            `;
-                            document.getElementById('warrant-alert-box').style.display = 'block';
-                            logSystemEvent(`🚨 DATABASE WARNING FLAG: Target occupant confirmed: ${record.occupant}`);
-                            
-                            // Immediately expose deployment gateway link
-                            document.getElementById('launch-map-pipeline-btn').style.display = 'block';
-                        } else {
-                            // No preset profile matching. Prompt custom tracking assembly.
-                            document.getElementById('intel-box').style.display = 'block';
-                            document.getElementById('resident-name-input').value = "";
-                            logSystemEvent(`REGISTRY FILE CLEAR: Awaiting manual dynamic database override inputs.`);
-                        }
-                    } else {
-                        alert("Geographic coordinate locating error. Re-verify search address line syntax.");
-                        document.getElementById('standby-panel').style.display = 'flex';
-                    }
-                });
-        }
-
-        // BUILDING YOUR OWN FREE DATABASE ON THE FLY
-        function saveLocalIntelData() {
-            const inputVal = document.getElementById('resident-name-input').value;
-            if(!inputVal) return;
-
-            const searchKey = activeTargetAddressLabel.toLowerCase().trim();
-            
-            // Write input directly into database dictionary object at runtime!
-            localMainframeRegistryDatabase[searchKey] = {
-                occupant: inputVal,
-                warrantStatus: "No Active Automated Filings Found",
-                cautionNotes: "FIELD ENTRY REGISTERED DURING INTERCEPT OPERATIONAL SEQUENCE.",
-                classification: "FIELD ENTRYED"
-            };
-
-            localResidentIntelNotes = `DYNAMIC DATA REGISTERED: Occupant Notes -> ${inputVal}`;
-            logSystemEvent(`LOCAL FILE SEEDED: Recorded info attached to database index -> ${inputVal}`);
-            
-            document.getElementById('intel-box').style.display = 'none';
-            
-            // Expose deployment gate button
-            document.getElementById('launch-map-pipeline-btn').style.display = 'block';
-        }
-
-        // STAGE 2: HUD ARRAYS PIPELINE ROUTING
-        function transitionToTacticalSatelliteView() {
-            document.getElementById('screener-dashboard-view').style.display = 'none';
-            document.getElementById('tactical-map-view').style.display = 'block';
-            
-            // Wake up and adjust map size parameters dynamically
-            setTimeout(() => { 
-                map.invalidateSize(); 
-                map.setView([targetLatitude, targetLongitude], 16);
-                
-                if (addressMarkerNode) { map.removeLayer(addressMarkerNode); }
-                
-                let targetDisplayLabel = localMainframeRegistryDatabase[activeTargetAddressLabel.toLowerCase().trim()]?.occupant || "Field Verified Point";
-                
-                let targetIcon = L.divIcon({ 
-                    html: `<div style="background:#cc00ff; width:16px; height:16px; border:2px solid #fff; box-shadow:0 0 10px #cc00ff;"></div>`, 
-                    iconSize: [16, 16] 
-                });
-
-                addressMarkerNode = L.marker([targetLatitude, targetLongitude], {icon: targetIcon})
-                    .addTo(map)
-                    .bindPopup(`<b>TARGET SECTOR LOCATION</b><br>${activeTargetAddressLabel}<br><br><b style="color:var(--gold-primary);">INTEL PROFILE:</b> ${targetDisplayLabel}`)
-                    .openPopup();
-
-                logSystemEvent(`TACTICAL MAP ENGAGED: Satellites locked down over coordinates: ${targetLatitude}, ${targetLongitude}`);
-            }, 150);
-        }
-
-        function returnToScreenerIntake() {
-            document.getElementById('tactical-map-view').style.display = 'none';
-            document.getElementById('screener-dashboard-view').style.display = 'block';
-            document.getElementById('standby-panel').style.display = 'flex';
-            document.getElementById('launch-map-pipeline-btn').style.display = 'none';
-            logSystemEvent("WORKSPACE RETREAT: Returned to initial processing intake screen dashboard.");
-        }
-
-        // Active Circle Drag Perimeter Tooling logic
-        let perimeterDrawState = false;
-        let activePerimeterCircle = null;
-        let circleStartLatLng = null;
-
-        function togglePerimeterDrawMode() {
-            perimeterDrawState = !perimeterDrawState;
-            const btn = document.getElementById('perimeter-toggle-btn');
-            
-            if (perimeterDrawState) {
-                btn.innerText = "🖱️ HOLD & DRAG OUTWARD";
-                btn.style.borderColor = "var(--alert-red)"; btn.style.color = "var(--alert-red)";
-                if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); }
-                map.dragging.disable();
-                map.on('mousedown', startPerimeterDragCircle);
-            } else {
-                map.dragging.enable();
-                map.off('mousedown', startPerimeterDragCircle);
-                btn.innerText = "✏️ DRAG PERIMETER";
-                btn.style.borderColor = "var(--hud-neon-green)"; btn.style.color = "var(--hud-neon-green)";
-            }
-        }
-
-        function startPerimeterDragCircle(e) {
-            circleStartLatLng = e.latlng;
-            activePerimeterCircle = L.circle(circleStartLatLng, {
-                radius: 10, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.15
-            }).addTo(map);
-            map.on('mousemove', dragPerimeterCircleResize);
-            map.on('mouseup', endPerimeterDragCircle);
-        }
-
-        function dragPerimeterCircleResize(e) {
-            if (!circleStartLatLng || !activePerimeterCircle) return;
-            let currentRadius = map.distance(circleStartLatLng, e.latlng);
-            activePerimeterCircle.setRadius(currentRadius);
-        }
-
-        function endPerimeterDragCircle(e) {
-            map.off('mousemove', dragPerimeterCircleResize);
-            map.off('mouseup', endPerimeterDragCircle);
-            let finalRadiusMiles = (activePerimeterCircle.getRadius() / 1609.34).toFixed(2);
-            logSystemEvent(`CONTAINMENT BOUNDARY LOCKED: Radar cordon established at ${finalRadiusMiles} miles wide.`);
-            togglePerimeterDrawMode(); 
-        }
-
-        function resetMapPerimeterField() {
-            if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
-            logSystemEvent("PERIMETER FIELD DETACHED: Containment tracking loops clear.");
-        }
-
-        // Roster Elements Tracking Management
+        // Team Roster Management System
         let rosterData = [
             { id: '1', name: "VSP Trooper Davis", type: "LE (BLUE)" },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9 (LT BLUE)" },
@@ -777,7 +488,7 @@
                 row.className = "roster-row";
                 row.innerHTML = `
                     <span>${user.name} | <strong>${user.type}</strong></span>
-                    <button class="roster-btn" onclick="removeSearcherFromRoster('${user.id}')" style="background:#000; border:1px solid var(--alert-red); color:var(--alert-red); cursor:pointer; width:24px; height:24px; font-weight:bold;">-</button>
+                    <button class="roster-btn" onclick="removeSearcherFromRoster('${user.id}')">-</button>
                 `;
                 container.appendChild(row);
             });
@@ -786,22 +497,71 @@
         function removeSearcherFromRoster(id) {
             rosterData = rosterData.filter(u => String(u.id) !== String(id));
             renderRoster();
-            logSystemEvent(`ROSTER CHANGED: Purged asset registry tag context ID [${id}].`);
+            logSystemEvent(`ROSTER OVERRIDE: Removed unit reference ID [${id}] from grid.`);
         }
 
         function addNewRosterPrompt() {
             const name = prompt("Enter Field Officer Name or Identification Call Sign:");
             if (!name) return;
             const type = prompt("Enter Group Classification Type (LE, K9, SAR, CIVILIAN):", "LE").toUpperCase();
+
             let newId = String(Date.now());
             rosterData.push({ id: newId, name: name, type: type });
-            logSystemEvent(`Dynamic Asset Matrix Linked: ${name} (${type})`);
+            logSystemEvent(`Dynamic Asset Linked to Operations: ${name} (${type})`);
             renderRoster();
+        }
+
+        // LOOKUP LOGIC
+        function executeAddressSearch() {
+            const addr = document.getElementById('target-address').value;
+            if (!addr) return;
+
+            activeTargetAddressLabel = addr;
+            
+            document.getElementById('standby-panel').style.display = 'none';
+            document.getElementById('warrant-alert-box').style.display = 'none';
+            document.getElementById('intel-box').style.display = 'none';
+
+            logSystemEvent(`CRIMINAL RECORDS SYSTEM INTERCEPT: Processing address: ${addr}`);
+            
+            const searchKey = addr.toLowerCase().trim();
+
+            if (departmentIntelMainframeDatabase[searchKey]) {
+                const record = departmentIntelMainframeDatabase[searchKey];
+                localResidentIntelNotes = `MAINFRAME CODES: Occupant: ${record.occupant} | Flags: ${record.warrantStatus}`;
+                
+                const alertBox = document.getElementById('warrant-alert-box');
+                const detailsFrame = document.getElementById('warrant-details-frame');
+                
+                detailsFrame.innerHTML = `
+                    <strong>TARGET OCCUPANT IN FILE:</strong> ${record.occupant}<br><br>
+                    <strong>WARRANT RECORD MATRIX:</strong> <span style="color:var(--gold-primary); font-weight:bold;">${record.warrantStatus}</span><br><br>
+                    <strong>OFFICER CAUTION DIRECTIVE:</strong> ${record.cautionNotes}
+                `;
+                alertBox.style.display = 'block';
+                logSystemEvent(`🚨 DANGER: Warrant match triggered at target location! Name: ${record.occupant}.`);
+            } else {
+                document.getElementById('intel-box').style.display = 'block';
+                document.getElementById('resident-name-input').value = "";
+                localResidentIntelNotes = "No preset mainframe file. Logged via field team.";
+                logSystemEvent(`CRIMINAL RECORD SCAN: Address location clear of preset internal warrant files.`);
+            }
+        }
+
+        function saveLocalIntelData() {
+            const val = document.getElementById('resident-name-input').value;
+            if(val) {
+                localResidentIntelNotes = `MANUAL OVERRIDE ENTRY: ${val}`;
+                logSystemEvent(`FIELD MANUAL LOG ATTACHED: Occupant Info -> ${val}`);
+                alert("CASE LOGGED: Local occupant data saved to current mission summary records.");
+                document.getElementById('intel-box').style.display = 'none';
+                document.getElementById('standby-panel').style.display = 'flex';
+            }
         }
 
         function pressKey(num) { document.getElementById('interop-token').value += num; }
         function clearKeys() { document.getElementById('interop-token').value = ""; }
-        function submitCode() { clearKeys(); alert("SECURE ACCESS GRANTED"); }
+        function submitCode() { clearKeys(); alert("AUTHENTICATION CLEAR"); }
 
         function deployVoiceGuide(issue) {
             window.speechSynthesis.cancel();
@@ -828,7 +588,7 @@
                 </div>
             `;
             document.getElementById('judicial-print-frame').innerHTML = savedReportCacheHTML;
-            alert("JUDICIAL LOG MATRIX BUILT.");
+            alert("JUDICIAL OPERATION REPORT BUILT.");
         }
 
         function triggerSystemPrintPDF() { generateCourtReport(); window.print(); }
