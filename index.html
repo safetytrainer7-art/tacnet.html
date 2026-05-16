@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACNET CORE</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#020802;
+font-family:Arial,Helvetica,sans-serif;
+color:white;
+overflow:hidden;
+}
+
+body::before{
+content:"";
+position:fixed;
+inset:0;
+background:radial-gradient(circle at center,#103510 0%,#000 70%);
+z-index:-2;
+}
+
+body::after{
+content:"";
+position:fixed;
+inset:0;
+background:linear-gradient(rgba(57,255,20,.03) 1px,transparent 1px);
+background-size:100% 3px;
+pointer-events:none;
+z-index:-1;
+}
+
+header{
+height:120px;
+background:rgba(0,0,0,.82);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+border-bottom:2px solid #39ff14;
+box-shadow:0 0 20px #39ff14;
+}
+
+.logo{
+font-size:4rem;
+font-weight:900;
+letter-spacing:4px;
+color:#d4af37;
+text-shadow:
+0 0 5px #fff,
+0 0 10px #d4af37,
+0 0 20px #39ff14;
+}
+
+.subtitle{
+font-size:1.1rem;
+color:#ffe95c;
+font-weight:bold;
+margin-top:4px;
+}
+
+.tagline{
+font-size:.9rem;
+color:#9cc4ff;
+letter-spacing:2px;
+margin-top:4px;
+}
+
+.main{
+display:grid;
+grid-template-columns:1.4fr .8fr;
+height:calc(100vh - 120px);
+}
+
+.map-wrap{
+position:relative;
+padding:10px;
+}
+
+#map{
+width:100%;
+height:100%;
+border:2px solid #39ff14;
+border-radius:18px;
+box-shadow:0 0 20px rgba(57,255,20,.6);
+}
+
+.status-top{
+position:absolute;
+top:22px;
+left:22px;
+display:flex;
+gap:10px;
+z-index:999;
+}
+
+.pill{
+background:rgba(0,0,0,.78);
+padding:10px 15px;
+border:1px solid #39ff14;
+border-radius:12px;
+font-size:.9rem;
+font-weight:bold;
+color:#39ff14;
+box-shadow:0 0 12px rgba(57,255,20,.4);
+}
+
+.side{
+padding:12px;
+overflow-y:auto;
+background:rgba(0,0,0,.72);
+border-left:1px solid #d4af37;
+}
+
+.card{
+background:rgba(5,20,5,.92);
+border:1px solid #39ff14;
+border-radius:18px;
+padding:14px;
+margin-bottom:12px;
+box-shadow:0 0 12px rgba(57,255,20,.35);
+}
+
+.card h2{
+font-size:1rem;
+color:#ffe95c;
+margin-bottom:12px;
+letter-spacing:1px;
+}
+
+input,textarea,select{
+width:100%;
+padding:13px;
+margin-bottom:10px;
+background:#000;
+border:1px solid #39ff14;
+border-radius:10px;
+color:white;
+font-size:1rem;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+font-weight:800;
+font-size:1rem;
+cursor:pointer;
+margin-bottom:10px;
+transition:.2s;
+}
+
+button:hover{
+transform:scale(1.02);
+}
+
+.green{
+background:#39ff14;
+color:#000;
+box-shadow:0 0 18px #39ff14;
+}
+
+.blue{
+background:#0f4fff;
+color:white;
+}
+
+.red{
+background:#8d0000;
+color:white;
+}
+
+.action-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.action{
+background:#101810;
+color:#39ff14;
+border:1px solid #39ff14;
+}
+
+.feed{
+height:180px;
+overflow-y:auto;
+font-family:monospace;
+font-size:.9rem;
+}
+
+.feed div{
+padding:7px 0;
+border-bottom:1px solid rgba(57,255,20,.2);
+}
+
+.footer{
+text-align:center;
+font-size:.9rem;
+color:#d4af37;
+padding-top:10px;
+letter-spacing:1px;
+}
+
+.searchers{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+.searcher{
+background:#081108;
+border:1px solid #39ff14;
+padding:10px;
+border-radius:10px;
+text-align:center;
+color:#39ff14;
+font-weight:bold;
+}
+
+@media(max-width:900px){
+
+.main{
+grid-template-columns:1fr;
+grid-template-rows:55vh auto;
+}
+
+.logo{
+font-size:2.8rem;
+}
+
+header{
+height:100px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">TACNET</div>
+
+<div class="subtitle">
+MULTI-AGENCY TASK FORCE SEARCH APP
+</div>
+
+<div class="tagline">
+FEDERAL • STATE • LOCAL
+</div>
+
+</header>
+
+<div class="main">
+
+<div class="map-wrap">
+
+<div class="status-top">
+<div class="pill">NET ACTIVE</div>
+<div class="pill" id="gps-status">GPS READY</div>
+</div>
+
+<div id="map"></div>
+
+</div>
+
+<div class="side">
+
+<div class="card">
+
+<h2>ADDRESS SEARCH</h2>
+
+<input type="text" id="address-search" placeholder="ENTER ADDRESS">
+
+<button class="green" onclick="searchAddress()">
+GO
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>TACTICAL DEPLOYMENT</h2>
+
+<input type="text" id="incident" placeholder="INCIDENT NAME">
+
+<input type="text" id="agency" placeholder="AGENCY">
+
+<input type="text" id="callsign" placeholder="CALLSIGN">
+
+<button class="green" onclick="deployNet()">
+DEPLOY THE NET
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>LIVE SEARCHERS</h2>
+
+<div class="searchers">
+
+<div class="searcher">K9-1</div>
+<div class="searcher">UNIT-12</div>
+<div class="searcher">SAR-4</div>
+<div class="searcher">AIR-1</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>TACTICAL TOOLS</h2>
+
+<div class="action-grid">
+
+<button class="action" onclick="togglePerimeter()">
+PERIMETER
+</button>
+
+<button class="action" onclick="markEvidence()">
+EVIDENCE
+</button>
+
+<button class="action" onclick="markOfficer()">
+UNIT
+</button>
+
+<button class="action" onclick="markK9()">
+K9
+</button>
+
+<button class="action" onclick="dropLKP()">
+LKP
+</button>
+
+<button class="action" onclick="sendSOS()">
+SOS
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>MAP VIEWS</h2>
+
+<select id="map-type" onchange="changeMapLayer()">
+
+<option value="street">
+STREET VIEW
+</option>
+
+<option value="satellite">
+SATELLITE VIEW
+</option>
+
+<option value="terrain">
+TERRAIN VIEW
+</option>
+
+</select>
+
+</div>
+
+<div class="card">
+
+<h2>FIELD NOTES / DISPOSITION</h2>
+
+<textarea id="notes" rows="6" placeholder="ENTER NOTES / FINAL DISPOSITION"></textarea>
+
+<button class="blue" onclick="generatePDF()">
+GENERATE REPORT
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>NET ACTIVITY FEED</h2>
+
+<div class="feed" id="feed"></div>
+
+</div>
+
+<div class="card">
+
+<h2>MISSION STATUS</h2>
+
+<div class="pill">UNITS ACTIVE: 12</div>
+<br>
+<div class="pill">K9 ACTIVE: 3</div>
+<br>
+<div class="pill">GRID STATUS: LIVE</div>
+
+</div>
+
+<div class="card">
+
+<button class="red" onclick="terminateSearch()">
+TERMINATE SEARCH
+</button>
+
+</div>
+
+<div class="footer">
+
+APP CREATOR EARL A. WOOD<br>
+DEPUTY SHERIFF RETIRED
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let map = L.map('map').setView([37.3349,-79.5236],13);
+
+setTimeout(()=>{
+map.invalidateSize();
+},500);
+
+const streetLayer = L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+);
+
+const satelliteLayer = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+);
+
+const terrainLayer = L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+);
+
+streetLayer.addTo(map);
+
+let currentLayer = streetLayer;
+
+let officerMarker;
+
+let perimeterMode = false;
+
+let perimeterPoints = [];
+
+let perimeterLayer;
+
+let addressLock = false;
+
+function addFeed(text){
+
+const feed = document.getElementById('feed');
+
+const div = document.createElement('div');
+
+div.innerHTML =
+new Date().toLocaleTimeString()
++ ' — ' + text;
+
+feed.prepend(div);
+
+}
+
+navigator.geolocation.watchPosition((pos)=>{
+
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
+
+if(officerMarker){
+map.removeLayer(officerMarker);
+}
+
+officerMarker = L.circleMarker([lat,lng],{
+
+radius:10,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('ACTIVE LAW ENFORCEMENT UNIT');
+
+if(!addressLock){
+map.setView([lat,lng],15);
+}
+
+document.getElementById('gps-status').innerText =
+'LIVE GPS ACTIVE';
+
+},()=>{
+
+document.getElementById('gps-status').innerText =
+'GPS ERROR';
+
+});
+
+async function searchAddress(){
+
+const query =
+document.getElementById('address-search').value;
+
+if(!query){
+
+alert('ENTER ADDRESS');
+
+return;
+
+}
+
+try{
+
+const response = await fetch(
+
+'https://nominatim.openstreetmap.org/search?format=json&q='
++ encodeURIComponent(query)
+
+);
+
+const data = await response.json();
+
+if(data.length > 0){
+
+const lat = parseFloat(data[0].lat);
+const lng = parseFloat(data[0].lon);
+
+addressLock = true;
+
+map.setView([lat,lng],16);
+
+L.marker([lat,lng]).addTo(map)
+
+.bindPopup('SEARCH LOCATION')
+
+.openPopup();
+
+addFeed('ADDRESS SEARCH COMPLETED');
+
+setTimeout(()=>{
+
+addressLock = false;
+
+},15000);
+
+}else{
+
+alert('ADDRESS NOT FOUND');
+
+}
+
+}catch(err){
+
+alert('SEARCH ERROR');
+
+}
+
+}
+
+function changeMapLayer(){
+
+const value =
+document.getElementById('map-type').value;
+
+map.removeLayer(currentLayer);
+
+if(value === 'street'){
+currentLayer = streetLayer;
+}
+
+if(value === 'satellite'){
+currentLayer = satelliteLayer;
+}
+
+if(value === 'terrain'){
+currentLayer = terrainLayer;
+}
+
+currentLayer.addTo(map);
+
+addFeed(value.toUpperCase() + ' VIEW ENABLED');
+
+}
+
+function deployNet(){
+
+const incident =
+document.getElementById('incident').value;
+
+if(!incident){
+
+alert('ENTER INCIDENT');
+
+return;
+
+}
+
+addFeed('INCIDENT DEPLOYED: ' + incident);
+
+alert('TACNET DEPLOYED');
+
+}
+
+function togglePerimeter(){
+
+perimeterMode = !perimeterMode;
+
+addFeed(
+perimeterMode
+? 'PERIMETER MODE ACTIVE'
+: 'PERIMETER MODE OFF'
+);
+
+}
+
+map.on('click',(e)=>{
+
+if(!perimeterMode) return;
+
+perimeterPoints.push([
+e.latlng.lat,
+e.latlng.lng
+]);
+
+L.circleMarker(e.latlng,{
+radius:5,
+color:'#39ff14'
+}).addTo(map);
+
+if(perimeterPoints.length < 3){
+return;
+}
+
+if(perimeterLayer){
+map.removeLayer(perimeterLayer);
+}
+
+perimeterLayer = L.polygon(
+perimeterPoints,
+{
+color:'#39ff14',
+fillColor:'#39ff14',
+fillOpacity:.18
+}
+).addTo(map);
+
+});
+
+function markEvidence(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#ffd700',
+fillColor:'#ffd700',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('EVIDENCE');
+
+addFeed('EVIDENCE MARKED');
+
+});
+
+}
+
+function markOfficer(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('FIELD UNIT');
+
+addFeed('UNIT DEPLOYED');
+
+});
+
+}
+
+function markK9(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#7fdcff',
+fillColor:'#7fdcff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('K9 UNIT');
+
+addFeed('K9 UNIT DEPLOYED');
+
+});
+
+}
+
+function dropLKP(){
+
+map.once('click',(e)=>{
+
+L.marker(e.latlng)
+
+.addTo(map)
+
+.bindPopup('LAST KNOWN POSITION');
+
+addFeed('LKP DROPPED');
+
+});
+
+}
+
+function sendSOS(){
+
+alert('SOS ALERT SENT');
+
+addFeed('OFFICER SOS ALERT');
+
+}
+
+function generatePDF(){
+
+const notes =
+document.getElementById('notes').value;
+
+const printWindow =
+window.open('','_blank');
+
+printWindow.document.write(`
+
+<h1>TACNET OPERATION REPORT</h1>
+
+<p>${new Date().toLocaleString()}</p>
+
+<hr>
+
+<p>${notes}</p>
+
+<hr>
+
+<p>APP CREATOR EARL A. WOOD DEPUTY SHERIFF RETIRED</p>
+
+`);
+
+printWindow.print();
+
+addFeed('REPORT GENERATED');
+
+}
+
+function terminateSearch(){
+
+if(confirm('TERMINATE SEARCH?')){
+
+location.reload();
+
+}
+
+}
+
+addFeed('TACNET CORE INITIALIZED');
+
+</script>
+
+</body>
+</html>
