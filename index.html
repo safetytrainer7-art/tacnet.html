@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -443,7 +444,7 @@
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
-            fetch://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
