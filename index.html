@@ -32,7 +32,7 @@
             padding: 6px; 
         }
 
-        /* Fixed Viewport Container - Prevents any vertical scrolling */
+        /* Fixed Viewport Container - Prevents vertical scrolling */
         .workspace-master-wrapper {
             display: flex;
             flex-direction: column;
@@ -106,7 +106,7 @@
             min-height: 0;
         }
         
-        /* HARDENED FORCED CLICK OVERRIDES FOR LEAFLET LAYER */
+        /* Forced Click Target Layer Prioritization */
         .leaflet-container {
             z-index: 10 !important;
             pointer-events: auto !important;
@@ -115,7 +115,7 @@
         
         .perimeter-controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        /* Constrained Roster Settings to Protect Vertical Height */
+        /* Roster Matrix Panel */
         .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 110px; }
         .roster-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 4px 6px; border: 1px solid var(--hud-translucent); font-size: 0.75rem; }
         .roster-row.active-deploy { border: 2px solid var(--gold-primary) !important; background: rgba(223, 183, 32, 0.15); box-shadow: 0 0 10px var(--gold-primary); }
@@ -125,12 +125,11 @@
         .action-btn { width: 100%; background: var(--hud-translucent); border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); padding: 5px; font-family: 'Share Tech Mono', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 0.75rem; }
         .report-grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
         
-        /* Hard Caps on Log Terminals to Avoid Component Drift */
         .live-feed-log { background: #000; border: 1px solid var(--hud-translucent); height: 85px; overflow-y: auto; padding: 4px; font-size: 0.7rem; color: #fff; margin-bottom: 4px; }
         .log-entry { border-bottom: 1px dashed rgba(0,255,51,0.1); padding: 2px 0; }
         .log-timestamp { color: var(--gold-primary); margin-right: 4px; }
         
-        /* Functional Data Entry Elements */
+        /* Functional Telemetry Input Infrastructure */
         .hud-textarea { width: 100%; height: 50px; background: #000; border: 1px solid var(--hud-neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; padding: 4px; resize: none; margin-bottom: 4px; }
         .hud-select { width: 100%; background: #000; border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; padding: 3px; margin-bottom: 4px; }
         .hud-select option { background: var(--bg-dark-green); color: var(--hud-neon-green); }
@@ -138,15 +137,16 @@
         .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 2px; }
         .key-btn { background: rgba(0,0,0,0.7); border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); padding: 5px; font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; cursor: pointer; }
 
-        /* Hardened First Aid Controls Panel */
         .k9-audio-panel { background: rgba(223, 183, 32, 0.05); border: 1px solid var(--gold-worn); padding: 4px; margin-top: auto; border-radius: 4px; }
         .audio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 2px; }
         .audio-btn { background: #000; border: 1px solid var(--gold-worn); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 4px; font-size: 0.7rem; cursor: pointer; text-align: center; font-weight: bold; }
 
-        /* Solidified Map Legend Base Array */
-        .map-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(0,0,0,0.95); padding: 4px; border: 1px solid var(--hud-neon-green); font-size: 0.7rem; font-weight: bold; }
-        .legend-node { display: flex; align-items: center; justify-content: center; }
-        .color-sphere { width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; display: inline-block; border: 1px solid #fff; }
+        /* HARDENED INTERACTIVE ACTIVE-DEPLOY QUICK DECK UNDER THE MAP */
+        .map-legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(0,0,0,0.95); padding: 4px; border: 2px solid var(--hud-neon-green); font-size: 0.75rem; font-weight: bold; }
+        .legend-node { display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(0, 255, 51, 0.2); padding: 4px; cursor: pointer; border-radius: 3px; }
+        .legend-node:hover { border-color: var(--gold-primary); background: rgba(0, 255, 51, 0.1); }
+        .legend-node:active { background: rgba(223, 183, 32, 0.2); }
+        .color-sphere { width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; display: inline-block; border: 1px solid #fff; }
 
         .app-footer { text-align: center; border-top: 1px solid var(--hud-neon-green); padding-top: 2px; color: var(--gold-worn); font-size: 0.7rem; line-height: 1.1; margin-top: 2px; }
     </style>
@@ -210,10 +210,10 @@
                 </div>
 
                 <div class="map-legend">
-                    <div class="legend-node"><span class="color-sphere" style="background:#0066ff;"></span>LE</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#33ccff;"></span>K9</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#ff0033;"></span>SAR</div>
-                    <div class="legend-node"><span class="color-sphere" style="background:#ff9900;"></span>POI</div>
+                    <div class="legend-node" onclick="initiateUnitPlacement('1')"><span class="color-sphere" style="background:#0066ff;"></span>⚡ DEPLOY LE</div>
+                    <div class="legend-node" onclick="initiateUnitPlacement('2')"><span class="color-sphere" style="background:#33ccff;"></span>🐾 DEPLOY K9</div>
+                    <div class="legend-node" onclick="initiateUnitPlacement('4')"><span class="color-sphere" style="background:#ff0033;"></span>🧡 DEPLOY SAR</div>
+                    <div class="legend-node" onclick="initiateUnitPlacement('3')"><span class="color-sphere" style="background:#ff9900;"></span>🎯 DEPLOY POI</div>
                 </div>
             </div>
 
@@ -253,7 +253,7 @@
                 </div>
             </div>
 
-		</div>
+        </div>
 
         <div class="app-footer">
             SEARCH APPLICATION ARCHITECTURE CONCEIVED BY EARL A. WOOD &bull; RETIRED DEPUTY SHERIFF - 40 YEARS OPERATIONAL EXPERIENCE
@@ -263,10 +263,12 @@
     <script>
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
+        // Standard Operational Asset Array Configurations
         let rosterData = [
             { id: '1', name: "VSP Trooper Davis", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9", color: "#33ccff", lat: null, lng: null, markerInstance: null },
-            { id: '3', name: "Target Subject (POI)", type: "POI", color: "#ff9900", lat: null, lng: null, markerInstance: null }
+            { id: '3', name: "Target Subject (POI)", type: "POI", color: "#ff9900", lat: null, lng: null, markerInstance: null },
+            { id: '4', name: "Search & Rescue Team", type: "SAR", color: "#ff0033", lat: null, lng: null, markerInstance: null }
         ];
         
         let currentlyDeployingUnitId = null;
@@ -275,7 +277,7 @@
         let perimeterLat = null, perimeterLng = null, perimeterRadius = null;
         let circleStartLatLng = null;
 
-        // Leaflet GIS Mapping Frame Initialization
+        // GIS Engine Assembly
         let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
@@ -301,7 +303,7 @@
                             let pos = event.target.getLatLng();
                             rosterData[index].lat = pos.lat;
                             rosterData[index].lng = pos.lng;
-                            logSystemEvent(`UNIT VECTORS UPDATED: ${unit.name} repositioned.`);
+                            logSystemEvent(`VECTORS SHIFTED: [${unit.name}] repositioned.`);
                         });
                     } else {
                         rosterData[index].markerInstance.setLatLng([unit.lat, unit.lng]);
@@ -332,7 +334,7 @@
                 perimeterLat = null; perimeterLng = null; perimeterRadius = null;
                 map.dragging.disable();
                 map.on('mousedown', startPerimeterDragCircle);
-                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER MODE: Click and drag on map workspace to drop outer cordon boundary.</span>`;
+                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER ACTIVE: Hold left-click and drag on map to size cordon boundary.</span>`;
             } else {
                 map.dragging.enable();
                 map.off('mousedown', startPerimeterDragCircle);
@@ -364,24 +366,24 @@
             map.off('mousemove', dragPerimeterCircleResize);
             map.off('mouseup', endPerimeterDragCircle);
             let finalRadiusMiles = (perimeterRadius / 1609.34).toFixed(2);
-            logSystemEvent(`PERIMETER BOUNDARY LOCKED: Cordon deployed at ${finalRadiusMiles} mi radius.`);
+            logSystemEvent(`CORDON DEPLOYED: Perimeter lock verified at ${finalRadiusMiles} mi radius.`);
             togglePerimeterDrawMode(); 
         }
 
         function resetMapPerimeterField() {
             if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
             perimeterLat = null; perimeterLng = null; perimeterRadius = null;
-            logSystemEvent("PERIMETER RESET: Cleared boundary containment layers.");
+            logSystemEvent("PERIMETER RESET: Purged map perimeter array context layers.");
         }
 
         function initiateUnitPlacement(unitId) {
             currentlyDeployingUnitId = unitId;
             const unit = rosterData.find(u => String(u.id) === String(unitId));
-            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">AWAITING PIN DROP: Click anywhere on map to deploy [ ${unit.name} ] node.</span>`;
+            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET ACQUIRED: Click anywhere inside the map area to drop the [ ${unit.name} ] node pin.</span>`;
             renderRoster();
         }
 
-        // ABSOLUTE FORCED OVERRIDE CLICK CAPTURE FOR MAP PIN DROPS
+        // Hardened GIS Pointer Click Listener
         map.on('click', function(e) {
             if (currentlyDeployingUnitId === null || perimeterDrawState) return;
             
@@ -392,7 +394,7 @@
                 rosterData[unitIndex].lat = e.latlng.lat;
                 rosterData[unitIndex].lng = e.latlng.lng;
                 
-                logSystemEvent(`NODE ACQUIRED: Deployed map pin coordinates for [${rosterData[unitIndex].name}]`);
+                logSystemEvent(`PIN DROPPED: Fixed coordinate vectors for [${rosterData[unitIndex].name}]`);
                 currentlyDeployingUnitId = null;
                 document.getElementById('hud-mode-text').innerText = "STATUS: Protected Grid Interface Lockbox active.";
                 
@@ -410,7 +412,7 @@
                 }
                 rosterData[unitIndex].lat = null;
                 rosterData[unitIndex].lng = null;
-                logSystemEvent(`NODE REMOVED: Deleted tracking point data for [${rosterData[unitIndex].name}].`);
+                logSystemEvent(`NODE RESET: Purged map pin coordinates for [${rosterData[unitIndex].name}].`);
             }
             renderRoster();
         }
@@ -420,7 +422,6 @@
             container.innerHTML = "";
             rosterData.forEach(user => {
                 const row = document.createElement('div');
-                // Adds explicit CSS class if selection match occurs
                 row.className = `roster-row ${String(currentlyDeployingUnitId) === String(user.id) ? 'active-deploy' : ''}`;
                 
                 let controlBtn = (user.lat && user.lng) ? 
@@ -442,21 +443,20 @@
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
+            fetch://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
                         map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 15);
-                        logSystemEvent(`GRID FOCUS: Locked centering vectors onto [${addr}]`);
+                        logSystemEvent(`GRID CENTERING: Moving camera workspace to [${addr}]`);
                         recompileTacticalLayers();
                     }
                 });
         }
 
-        /* Reporting Engine Core Functions */
         function logDispositionChange() {
             const status = document.getElementById('case-disposition').value;
-            logSystemEvent(`DISPOSITION UPDATE: Case updated to status [${status}].`);
+            logSystemEvent(`DISPOSITION LOG: Operational field state updated to [${status}].`);
         }
 
         function triggerEmailLog() {
@@ -464,11 +464,11 @@
             const currentDisp = document.getElementById('case-disposition').value;
             const emailBody = encodeURIComponent(`TACNET SEARCH LOG ENTRY\nDisposition: ${currentDisp}\nField Notes:\n${notes}`);
             window.location.href = `mailto:?subject=TACNET%20Secure%20Mission%20Report&body=${emailBody}`;
-            logSystemEvent("COMM LINK INITIALIZED: Opening secure standard email dispatch stream.");
+            logSystemEvent("COMM DISPATCH: Initializing secure mail streaming array.");
         }
 
         function triggerPrintPDF() {
-            logSystemEvent("PRINT ENGINE ACTIVE: Compiling document arrays...");
+            logSystemEvent("PRINT ENGINE: Packaging document data nodes...");
             window.print();
         }
 
@@ -480,7 +480,7 @@
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             if (issue === 'stop') {
-                logSystemEvent("AUDIO TRANSMISSION: Emergency voice guides terminated by command.");
+                logSystemEvent("AUDIO CHANNELS: Emergency transmission terminated by monitor directive.");
                 return;
             }
             
@@ -492,7 +492,7 @@
 
             let tacticalUtterance = new SpeechSynthesisUtterance(messageText);
             window.speechSynthesis.speak(tacticalUtterance);
-            logSystemEvent(`AUDIO TRANSMISSION: Broadcasting emergency guide loop for ${issue.toUpperCase()}.`);
+            logSystemEvent(`AUDIO TRANSMISSION: Actively streaming guide loop for ${issue.toUpperCase()}.`);
         }
 
         renderRoster();
