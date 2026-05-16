@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +28,11 @@ body::before{
 content:"";
 position:fixed;
 inset:0;
-background:radial-gradient(circle at center,#103510 0%,#000 70%);
+background:
+radial-gradient(circle at center,
+rgba(30,120,30,.95) 0%,
+rgba(0,25,0,.98) 45%,
+#000 100%);
 z-index:-2;
 }
 
@@ -93,7 +98,15 @@ width:100%;
 height:100%;
 border:2px solid #39ff14;
 border-radius:18px;
-box-shadow:0 0 20px rgba(57,255,20,.6);
+
+filter:
+brightness(.9)
+contrast(1.1)
+saturate(1.2);
+
+box-shadow:
+0 0 15px rgba(57,255,20,.5),
+0 0 35px rgba(57,255,20,.3);
 }
 
 .status-top{
@@ -124,12 +137,15 @@ border-left:1px solid #d4af37;
 }
 
 .card{
-background:rgba(5,20,5,.92);
-border:1px solid #39ff14;
+background:rgba(20,80,20,.22);
+backdrop-filter:blur(10px);
+border:1px solid rgba(57,255,20,.7);
 border-radius:18px;
 padding:14px;
 margin-bottom:12px;
-box-shadow:0 0 12px rgba(57,255,20,.35);
+box-shadow:
+0 0 10px rgba(57,255,20,.5),
+0 0 20px rgba(57,255,20,.25);
 }
 
 .card h2{
@@ -180,6 +196,7 @@ color:white;
 .red{
 background:#8d0000;
 color:white;
+box-shadow:0 0 18px rgba(255,0,0,.5);
 }
 
 .action-grid{
@@ -350,8 +367,8 @@ K9
 LKP
 </button>
 
-<button class="action" onclick="sendSOS()">
-SOS
+<button class="red" onclick="sendSOS()">
+🚨 OFFICER DOWN SOS
 </button>
 
 </div>
@@ -623,6 +640,16 @@ alert('TACNET DEPLOYED');
 
 function togglePerimeter(){
 
+if(perimeterPoints.length >= 3){
+
+perimeterMode = false;
+
+addFeed('PERIMETER LOCKED');
+
+return;
+
+}
+
 perimeterMode = !perimeterMode;
 
 addFeed(
@@ -747,9 +774,29 @@ addFeed('LKP DROPPED');
 
 function sendSOS(){
 
-alert('SOS ALERT SENT');
+navigator.geolocation.getCurrentPosition((pos)=>{
 
-addFeed('OFFICER SOS ALERT');
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
+
+L.circleMarker([lat,lng],{
+
+radius:14,
+color:'#ff0000',
+fillColor:'#ff0000',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('🚨 OFFICER DOWN SOS');
+
+map.setView([lat,lng],17);
+
+alert('OFFICER DOWN SOS TRANSMITTED');
+
+addFeed('🚨 OFFICER DOWN SOS ACTIVATED');
+
+});
 
 }
 
