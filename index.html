@@ -94,14 +94,11 @@
             border-radius: 4px; 
             box-shadow: var(--hud-glow); 
             background: #000; 
-            /* CRITICAL: Disables native mobile browser touch actions during drawing interactions */
-            touch-action: none;
         }
         
         .leaflet-container {
             z-index: 10 !important;
             pointer-events: auto !important;
-            cursor: crosshair !important;
         }
         
         .perimeter-controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
@@ -296,8 +293,8 @@
         let perimeterLat = null, perimeterLng = null, perimeterRadius = null;
         let circleStartLatLng = null;
 
-        // GIS Engine Assembly
-        let map = L.map('map-canvas', { zoomControl: false, tap: false }).setView([37.5857, -79.0517], 14);
+        // GIS Engine Assembly (Clean initialization layer)
+        let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
         function logSystemEvent(msg) {
@@ -342,7 +339,7 @@
             }
         }
 
-        // HARDENED FOR MOBILE DRAWING OPERATIONS
+        // SMOOTH INTERLOCK SYSTEM FOR PERIMETER OPERATIONS
         function togglePerimeterDrawMode() {
             perimeterDrawState = !perimeterDrawState;
             const btn = document.getElementById('perimeter-toggle-btn');
@@ -353,28 +350,22 @@
                 if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
                 perimeterLat = null; perimeterLng = null; perimeterRadius = null;
                 
-                // CRITICAL INTERLOCK: Lock down map movement mechanics entirely (Stops slide bug)
+                // Lock map dragging layers cleanly
                 map.dragging.disable();
-                map.touchZoom.disable();
-                map.doubleClickZoom.disable();
                 
-                // Hook both Mouse (Desktop) and Touch (iOS) architecture listeners
+                // Desktop listeners
                 map.on('mousedown', startPerimeterDragCircle);
-                map.on('touchstart', startPerimeterDragCircle);
-                
-                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER LOCK: Map locked. Touch and drag outward to size search boundary.</span>`;
+                // Native Leaflet Touch interface compatibility adjustments
+                map.on('movestart', preventTouchShift); 
+
+                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER LOCK: Tap map once to place center, then drag to grow.</span>`;
             } else {
-                // RESTORE INTERLOCKS: Free up GIS map movement controls 
                 map.dragging.enable();
-                map.touchZoom.enable();
-                map.doubleClickZoom.enable();
                 
                 map.off('mousedown', startPerimeterDragCircle);
                 map.off('mousemove', dragPerimeterCircleResize);
                 map.off('mouseup', endPerimeterDragCircle);
-                map.off('touchstart', startPerimeterDragCircle);
-                map.off('touchmove', dragPerimeterCircleResize);
-                map.off('touchend', endPerimeterDragCircle);
+                map.off('movestart', preventTouchShift);
                 
                 btn.innerText = "✏️ DRAG PERIMETER";
                 btn.style.borderColor = "var(--hud-neon-green)"; btn.style.color = "var(--hud-neon-green)";
@@ -383,27 +374,28 @@
             }
         }
 
-        function startPerimeterDragCircle(e) {
-            // Support dual mouse click or native iOS touch event coordinate tracking
-            let latlng = e.latlng;
-            if (!latlng && e.originalEvent && e.originalEvent.touches) {
-                // Workaround for raw touch vector conversions if regular latlng map pipeline delays
-                return; 
-            }
-            if (!latlng) return;
+        function preventTouchShift() {
+            if (perimeterDrawState) { map.panBy([0,0], {animate: false}); }
+        }
 
-            circleStartLatLng = latlng;
-            perimeterLat = latlng.lat;
-            perimeterLng = latlng.lng;
+        function startPerimeterDragCircle(e) {
+            if (!e.latlng) return;
+
+            circleStartLatLng = e.latlng;
+            perimeterLat = e.latlng.lat;
+            perimeterLng = e.latlng.lng;
             
             activePerimeterCircle = L.circle(circleStartLatLng, {
                 radius: 15, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.15
             }).addTo(map);
 
             map.on('mousemove', dragPerimeterCircleResize);
-            map.on('touchmove', dragPerimeterCircleResize);
+            
+            // Handle native mobile finger tracking vectors
+            map.on('drag', dragPerimeterCircleResize); 
+            
             map.on('mouseup', endPerimeterDragCircle);
-            map.on('touchend', endPerimeterDragCircle);
+            map.on('click', endPerimeterDragCircle);
         }
 
         function dragPerimeterCircleResize(e) {
@@ -413,7 +405,7 @@
         }
 
         function endPerimeterDragCircle(e) {
-            if (!perimeterRadius) perimeterRadius = 100; // Safe default baseline cordon drop
+            if (!perimeterRadius) perimeterRadius = 150; 
             let finalRadiusMiles = (perimeterRadius / 1609.34).toFixed(2);
             logSystemEvent(`CORDON DEPLOYED: Perimeter lock verified at ${finalRadiusMiles} mi radius.`);
             togglePerimeterDrawMode(); 
@@ -612,3 +604,36 @@
             window.location.href = `mailto:?subject=TACNET%20Secure%20Mission%20Report&body=${emailBody}`;
             logSystemEvent("COMM DISPATCH: Initializing secure mail streaming array.");
         }
+
+        function triggerPrintPDF() {
+            logSystemEvent("PRINT ENGINE: Packaging document data nodes...");
+            window.print();
+        }
+
+        function pressKey(num) { document.getElementById('interop-token').value += num; }
+        function clearKeys() { document.getElementById('interop-token').value = ""; }
+        function submitCode() { clearKeys(); alert("AUTHENTICATION SEQUENCE LOGGED"); }
+
+        function deployVoiceGuide(issue) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            if (issue === 'stop') {
+                logSystemEvent("AUDIO CHANNELS: Emergency transmission terminated by monitor directive.");
+                return;
+            }
+            
+            let messageText = "";
+            if (issue === 'cpr') messageText = "Commencing CPR instruction protocol. Confirm airway is clear. Provide 30 compressions at a rate of 100 to 120 beats per minute, followed immediately by 2 rescue breaths.";
+            if (issue === 'snake') messageText = "Commencing snake bite response protocol. Keep the victim calm and absolutely still. Immobilize the bitten limb at or slightly below heart level. Do not apply a tourniquet.";
+            if (issue === 'bleed') messageText = "Commencing severe bleeding trauma protocol. Apply direct, localized pressure to the wound site using sterile dressing. Elevate injury above heart line if possible.";
+            if (issue === 'heat') messageText = "Commencing heat stroke mitigation protocol. Immediately transition the individual to a cooler environment out of direct sunlight. Strip down non-essential operational gear.";
+
+            let tacticalUtterance = new SpeechSynthesisUtterance(messageText);
+            window.speechSynthesis.speak(tacticalUtterance);
+            logSystemEvent(`AUDIO TRANSMISSION: Actively streaming guide loop for ${issue.toUpperCase()}.`);
+        }
+
+        renderRoster();
+    </script>
+</body>
+</html>
