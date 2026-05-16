@@ -116,10 +116,12 @@
         .perimeter-controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
         /* Roster Matrix Panel */
-        .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 115px; }
-        .roster-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 4px 6px; border: 1px solid var(--hud-translucent); font-size: 0.75rem; }
+        .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 140px; }
+        .roster-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 4px 6px; border: 1px solid var(--hud-translucent); font-size: 0.72rem; }
         .roster-row.active-deploy { border: 2px solid var(--gold-primary) !important; background: rgba(223, 183, 32, 0.15); box-shadow: 0 0 10px var(--gold-primary); }
-        .roster-btn { background: #000; border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); cursor: pointer; padding: 2px 4px; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; font-weight: bold; }
+        
+        .roster-control-block { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
+        .roster-btn { background: #000; border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); cursor: pointer; padding: 2px 4px; font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; font-weight: bold; width: 62px; text-align: center; }
         .roster-btn.clear-node-btn { border-color: var(--alert-red); color: var(--alert-red); }
         
         .action-btn { width: 100%; background: var(--hud-translucent); border: 1px solid var(--hud-neon-green); color: var(--hud-neon-green); padding: 5px; font-family: 'Share Tech Mono', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; font-size: 0.75rem; }
@@ -223,10 +225,10 @@
                 </div>
 
                 <div class="map-legend">
-                    <div class="legend-node" onclick="initiateUnitPlacement('1')"><span class="color-sphere" style="background:#0066ff;"></span>⚡ DEPLOY LE</div>
-                    <div class="legend-node" onclick="initiateUnitPlacement('2')"><span class="color-sphere" style="background:#33ccff;"></span>🐾 DEPLOY K9</div>
-                    <div class="legend-node" onclick="initiateUnitPlacement('4')"><span class="color-sphere" style="background:#ff0033;"></span>🧡 DEPLOY SAR</div>
-                    <div class="legend-node" onclick="initiateUnitPlacement('3')"><span class="color-sphere" style="background:#ff9900;"></span>🎯 DEPLOY POI</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('LE')"><span class="color-sphere" style="background:#0066ff;"></span>⚡ DEPLOY LE</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('K9')"><span class="color-sphere" style="background:#33ccff;"></span>🐾 DEPLOY K9</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('SAR')"><span class="color-sphere" style="background:#ff0033;"></span>🧡 DEPLOY SAR</div>
+                    <div class="legend-node" onclick="initiateUnitPlacementByLegend('POI')"><span class="color-sphere" style="background:#ff9900;"></span>🎯 DEPLOY POI</div>
                 </div>
             </div>
 
@@ -276,9 +278,9 @@
     <script>
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
-        // Flexible Asset Configuration Matrix Array
+        // Core Operational Asset Database Array Configuration
         let rosterData = [
-            { id: '1', name: "Amherst Sheriff Operator", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
+            { id: '1', name: "[Sheriff] Unit 101", type: "LE", color: "#0066ff", lat: null, lng: null, markerInstance: null },
             { id: '2', name: "Amherst Deputy K9 Wood", type: "K9", color: "#33ccff", lat: null, lng: null, markerInstance: null },
             { id: '4', name: "Search & Rescue Unit", type: "SAR", color: "#ff0033", lat: null, lng: null, markerInstance: null },
             { id: '3', name: "Target Subject (POI)", type: "POI", color: "#ff9900", lat: null, lng: null, markerInstance: null }
@@ -287,7 +289,7 @@
         let currentlyDeployingUnitId = null;
         let perimeterDrawState = false;
         let activePerimeterCircle = null;
-        let targetAddressMarkerInstance = null; // Global reference layer for address location indicator
+        let targetAddressMarkerInstance = null;
         let perimeterLat = null, perimeterLng = null, perimeterRadius = null;
         let circleStartLatLng = null;
 
@@ -393,8 +395,18 @@
         function initiateUnitPlacement(unitId) {
             currentlyDeployingUnitId = unitId;
             const unit = rosterData.find(u => String(u.id) === String(unitId));
-            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET ACQUIRED: Click anywhere inside the map area to drop the [ ${unit.name} ] node pin.</span>`;
+            document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET ACQUIRED: Click inside map to drop [ ${unit.name} ] pin.</span>`;
             renderRoster();
+        }
+
+        // Fast match function for legend quick-click placement deck
+        function initiateUnitPlacementByLegend(typeString) {
+            const match = rosterData.find(u => u.type === typeString);
+            if (match) {
+                initiateUnitPlacement(match.id);
+            } else {
+                alert(`NO ACTIVE ROSTER ASSETS CREATED FOR CATEGORY TYPE: ${typeString}\nUse "+ Add New Unit" first.`);
+            }
         }
 
         // Hardened GIS Pointer Click Listener
@@ -417,6 +429,7 @@
             }
         });
 
+        // Removes pin icon layer from satellite view map
         function clearUnitMarkerNode(unitId) {
             const unitIndex = rosterData.findIndex(u => String(u.id) === String(unitId));
             if (unitIndex !== -1) {
@@ -426,11 +439,34 @@
                 }
                 rosterData[unitIndex].lat = null;
                 rosterData[unitIndex].lng = null;
-                logSystemEvent(`NODE RESET: Purged map pin coordinates for [${rosterData[unitIndex].name}].`);
+                logSystemEvent(`NODE RESET: Removed map pin coordinate for [${rosterData[unitIndex].name}].`);
             }
             renderRoster();
         }
 
+        // CRITICAL UPGRADE: Hard Purge function to remove officer entirely from left matrix pane
+        function purgeOfficerEntirelyFromRoster(unitId) {
+            const unit = rosterData.find(u => String(u.id) === String(unitId));
+            if (!unit) return;
+            
+            if (confirm(`CRITICAL DIRECTION: Permanently purge asset [ ${unit.name} ] from active shift records?`)) {
+                // Wipe map marker if deployed
+                if (unit.markerInstance) {
+                    map.removeLayer(unit.markerInstance);
+                }
+                // Filter record out of database array
+                rosterData = rosterData.filter(u => String(u.id) !== String(unitId));
+                logSystemEvent(`ROSTER FRESHED: Purged asset registry line.`);
+                
+                if (currentlyDeployingUnitId === String(unitId)) {
+                    currentlyDeployingUnitId = null;
+                    document.getElementById('hud-mode-text').innerText = "STATUS: Protected Grid Interface Lockbox active.";
+                }
+                renderRoster();
+            }
+        }
+
+        // UPGRADED: Dynamic dual-button stack configuration inside left matrix block
         function renderRoster() {
             const container = document.getElementById('roster-container');
             container.innerHTML = "";
@@ -438,15 +474,27 @@
                 const row = document.createElement('div');
                 row.className = `roster-row ${String(currentlyDeployingUnitId) === String(user.id) ? 'active-deploy' : ''}`;
                 
-                let controlBtn = (user.lat && user.lng) ? 
-                    `<button class="roster-btn clear-node-btn" onclick="clearUnitMarkerNode('${user.id}')">❌ REMOVE</button>` : 
+                let actionToggleBtn = (user.lat && user.lng) ? 
+                    `<button class="roster-btn clear-node-btn" onclick="clearUnitMarkerNode('${user.id}')">📍 REM PIN</button>` : 
                     `<button class="roster-btn" onclick="initiateUnitPlacement('${user.id}')">📍 DEPLOY</button>`;
-                row.innerHTML = `<div><strong>${user.name}</strong><br><span style="color:${user.color}; font-size:0.75rem;">${user.type}</span></div><div>${controlBtn}</div>`;
+                
+                let permanentPurgeBtn = `<button class="roster-btn clear-node-btn" style="background:#110000;" onclick="purgeOfficerEntirelyFromRoster('${user.id}')">❌ PURGE</button>`;
+
+                row.innerHTML = `
+                    <div style="max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <strong>${user.name}</strong><br>
+                        <span style="color:${user.color}; font-size:0.68rem; font-weight:bold;">CLASS: ${user.type}</span>
+                    </div>
+                    <div class="roster-control-block">
+                        ${actionToggleBtn}
+                        ${permanentPurgeBtn}
+                    </div>
+                `;
                 container.appendChild(row);
             });
         }
 
-        // UPGRADED: Dynamic Prompt Selection Menu for Variable Agencies
+        // Dynamic Prompt Selection Menu for Variable Agencies
         function addNewRosterPrompt() {
             const selectionMenu = prompt(
                 "CHOOSE AGENCY CLASSIFICATION FOR ASSET:\n" +
@@ -460,13 +508,16 @@
             );
             
             let chosenAgency = "FIELD UNIT";
+            let assignedColor = "#0066ff"; 
+            let assignedType = "LE";
+
             if (selectionMenu === "1") chosenAgency = "Sheriff";
             else if (selectionMenu === "2") chosenAgency = "Local PD";
             else if (selectionMenu === "3") chosenAgency = "State Police";
             else if (selectionMenu === "4") chosenAgency = "FBI";
             else if (selectionMenu === "5") chosenAgency = "DEA";
-            else if (selectionMenu === "6") chosenAgency = "SAR Asset";
-            else if (!selectionMenu) return; // User pressed Cancel
+            else if (selectionMenu === "6") { chosenAgency = "SAR Asset"; assignedColor = "#ff0033"; assignedType = "SAR"; }
+            else if (!selectionMenu) return; 
 
             const callsign = prompt(`Enter Callsign or Officer's Name for [${chosenAgency.toUpperCase()}]:`);
             if (!callsign) return;
@@ -474,17 +525,19 @@
             let finalLabel = `[${chosenAgency}] ${callsign}`;
             let newId = String(Date.now());
             
-            // Map tracking colors automatically based on choices
-            let assignedColor = "#ff9900"; 
-            let assignedType = "LE";
-            if (selectionMenu === "6") { assignedColor = "#ff0033"; assignedType = "SAR"; }
+            // Contextual tweaks for specialized symbols based on classification
+            if (chosenAgency === "Sheriff") assignedColor = "#0066ff";
+            else if (chosenAgency === "Local PD") assignedColor = "#0055cc";
+            else if (chosenAgency === "State Police") assignedColor = "#1188ff";
+            else if (chosenAgency === "FBI") assignedColor = "#9900ff";
+            else if (chosenAgency === "DEA") assignedColor = "#cc00cc";
 
             rosterData.push({ id: newId, name: finalLabel, type: assignedType, color: assignedColor, lat: null, lng: null, markerInstance: null });
-            logSystemEvent(`ROSTER UPDATED: Registered ${finalLabel}`);
+            logSystemEvent(`ROSTER REGISTERED: Entry node linked for ${finalLabel}`);
             renderRoster();
         }
 
-        // UPGRADED: Automated Address Search Engine with Flashing Red Target Locator Node
+        // Automated Address Search Engine with Flashing Red Target Locator Node
         function executeAddressSearch() {
             const addr = document.getElementById('target-address').value;
             if (!addr) return;
@@ -496,24 +549,20 @@
                         const latVal = parseFloat(data[0].lat);
                         const lonVal = parseFloat(data[0].lon);
                         
-                        // Clear pre-existing address locator node layer if it exists
                         if (targetAddressMarkerInstance) {
                             map.removeLayer(targetAddressMarkerInstance);
                         }
 
-                        // Build a custom flashing tactical element wrapper style
                         let customTargetIcon = L.divIcon({
                             className: 'target-locator-css',
                             iconSize: [28, 28],
                             iconAnchor: [14, 14]
                         });
 
-                        // Drop the persistent target locator marker onto coordinates
                         targetAddressMarkerInstance = L.marker([latVal, lonVal], { icon: customTargetIcon }).addTo(map);
-                        targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET OBJECTIVE INTERSECTION LOCATED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
+                        targetAddressMarkerInstance.bindPopup(`<b style="color:red; font-family:'Share Tech Mono';">🎯 TARGET OBJECTIVE LOCATION ACQUIRED:</b><br><span style="font-size:0.75rem;">${addr}</span>`).openPopup();
 
-                        // Zoom view directly into specific target coordinates
-                        map.setView([latVal, lonVal], 18); // Level 18 brings search right onto individual roof/house lines
+                        map.setView([latVal, lonVal], 18); 
                         logSystemEvent(`GRID TARGET LOCK: Address tracker node placed at [${addr}]`);
                         recompileTacticalLayers();
                     } else {
