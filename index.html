@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET.DATA - THE MASTERPIECE CONSOLE</title>
+    <title>TACNET.DATA - iOS MOBILE CONSOLE</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
@@ -28,160 +28,138 @@
             background-color: var(--pure-black); 
             color: var(--neon-green); 
             font-family: 'Share Tech Mono', monospace; 
+            /* Fix for iOS viewport bounce */
             height: 100vh;
+            height: -webkit-fill-available;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            padding: 12px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 8px;
+            padding-top: calc(8px + env(safe-area-inset-top));
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
         }
 
         /* LIVE TELEMETRY TOP BAR */
         .telemetry-ticker {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             border-bottom: 1px dashed var(--neon-green);
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
             font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 8px var(--neon-green);
         }
 
         /* MASTER BANNER FRAMEWORK */
         .master-header-frame {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid var(--neon-green);
-            padding-bottom: 8px;
-            margin-bottom: 12px;
+            flex-direction: column;
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
         }
         .title-branding h1 { 
             font-family: 'Black Ops One', sans-serif; 
             color: var(--gold-primary); 
-            font-size: 2.8rem; 
-            letter-spacing: 4px;
-            line-height: 0.9;
+            font-size: 2rem; 
+            letter-spacing: 2px;
+            line-height: 1;
         }
         .title-branding span {
-            font-size: 0.95rem;
+            font-size: 0.75rem;
             color: #ffffff;
-            letter-spacing: 6px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            font-weight: bold;
-        }
-        .subtitle-spec h2 { 
-            font-size: 1.1rem; 
-            color: var(--gold-dark); 
-            text-transform: uppercase; 
-            text-align: right; 
-            line-height: 1.3; 
         }
 
-        /* INVIOLABLE APPARATUS ARCHITECT AUTHORIZATION SHIELD */
+        /* MOBILE ARCHITECT SHIELD */
         .patent-authority-shield {
-            background: rgba(223, 183, 32, 0.12);
-            border: 2px solid var(--gold-primary);
-            box-shadow: 0 0 12px rgba(223, 183, 32, 0.25);
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .shield-label {
-            font-family: 'Black Ops One', sans-serif;
-            font-size: 1rem;
-            color: var(--gold-primary);
-            letter-spacing: 1px;
+            background: rgba(223, 183, 32, 0.1);
+            border: 1px solid var(--gold-primary);
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            line-height: 1.2;
         }
         .shield-name {
-            font-size: 1.35rem;
             color: #ffffff;
             font-weight: bold;
-            text-shadow: 0 0 6px #fff;
-            letter-spacing: 1px;
         }
 
-        /* SPACIOUS INTERFACE NAVIGATION DECK */
+        /* NAVIGATION DECK */
         .navigation-grid-deck {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         .tactical-tab-trigger {
             background: var(--translucent-green);
-            border: 2px solid var(--neon-green);
+            border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            padding: 18px;
+            padding: 12px 4px;
             font-family: 'Black Ops One', sans-serif;
-            font-size: 1.3rem;
-            letter-spacing: 2px;
+            font-size: 0.85rem;
             cursor: pointer;
             text-align: center;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-        }
-        .tactical-tab-trigger:hover {
-            background: rgba(0, 255, 51, 0.18);
+            border-radius: 4px;
+            -webkit-tap-highlight-color: transparent;
         }
         .tactical-tab-trigger.active-deck-node {
             background: var(--neon-green);
             color: var(--pure-black);
-            box-shadow: 0 0 20px var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
             font-weight: bold;
         }
 
         /* VIEWPORT CONFIGURATION WINDOWS */
         .workspace-viewport-window {
-            flex-grow: 1;
             display: none;
             position: relative;
-            min-height: 0;
+            flex-direction: column;
+            /* Adaptive mobile scaling */
+            height: 58vh; 
+            min-height: 320px;
         }
         .workspace-viewport-window.active-window {
             display: flex;
-            flex-direction: column;
         }
 
         /* TAB 1: RADAR CANVAS LAYOUT */
         #radar-gis-canvas {
             width: 100%;
             height: 100%;
-            border: 2px solid var(--neon-green);
-            border-radius: 6px;
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
             background: #000;
+            z-index: 1;
         }
         
         .voice-interface-hud {
             position: absolute;
-            top: 16px;
-            left: 16px;
-            right: 16px;
+            top: 8px;
+            left: 8px;
+            right: 8px;
             z-index: 1000;
             display: flex;
-            gap: 12px;
-            background: rgba(0,0,0,0.94);
-            padding: 12px;
-            border: 2px solid var(--gold-primary);
-            border-radius: 6px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.85);
+            gap: 6px;
+            background: rgba(0,0,0,0.9);
+            padding: 6px;
+            border: 1px solid var(--gold-primary);
+            border-radius: 4px;
         }
         .voice-comms-mic-btn {
             background: var(--alert-red);
             color: #fff;
             border: none;
             font-family: 'Black Ops One', sans-serif;
-            font-size: 1.1rem;
-            padding: 0 26px;
+            font-size: 0.8rem;
+            padding: 0 12px;
             cursor: pointer;
-            border-radius: 4px;
-            box-shadow: 0 0 12px var(--alert-red);
+            border-radius: 3px;
             font-weight: bold;
-            letter-spacing: 1px;
         }
         .voice-telemetry-input {
             flex-grow: 1;
@@ -189,155 +167,173 @@
             border: 1px solid var(--neon-green);
             color: #fff;
             font-family: 'Share Tech Mono', monospace;
-            padding: 14px;
-            font-size: 1.3rem;
-            border-radius: 4px;
+            padding: 8px;
+            font-size: 0.95rem;
+            border-radius: 3px;
         }
 
         .radar-tactical-legend-strip {
             position: absolute;
-            bottom: 16px;
-            left: 16px;
-            right: 16px;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
             z-index: 1000;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            background: rgba(0,0,0,0.95);
-            padding: 10px;
-            border: 2px solid var(--neon-green);
-            border-radius: 6px;
+            gap: 4px;
+            background: rgba(0,0,0,0.9);
+            padding: 6px;
+            border: 1px solid var(--neon-green);
+            border-radius: 4px;
         }
         .legend-placement-node {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0,255,51,0.04);
+            background: rgba(0,255,51,0.02);
             border: 1px solid rgba(0,255,51,0.3);
-            padding: 14px;
-            font-size: 1.3rem;
+            padding: 8px 2px;
+            font-size: 0.7rem;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 3px;
             text-align: center;
         }
-        .legend-placement-node:active { background: var(--neon-green); color: #000; }
 
-        /* TAB 2: ROSTER TERMINAL FRAME */
+        /* SCROLLABLE INTERFACE VAULT FOR TEXT DATA */
         .scrollable-terminal-vault {
-            flex-grow: 1;
+            height: 100%;
             overflow-y: auto;
-            border: 2px solid var(--neon-green);
+            border: 1px solid var(--neon-green);
             background: var(--panel-bg);
-            padding: 16px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 4px;
+            -webkit-overflow-scrolling: touch; /* Smooth iOS momentum scrolling */
         }
         .regional-jurisdiction-control-deck {
-            background: rgba(223, 183, 32, 0.07);
-            border: 2px solid var(--gold-dark);
-            padding: 16px;
-            margin-bottom: 12px;
-            border-radius: 6px;
+            background: rgba(223, 183, 32, 0.05);
+            border: 1px solid var(--gold-dark);
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 4px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.2rem;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
             font-weight: bold;
         }
         .regional-jurisdiction-control-deck select {
             background: #000;
-            border: 2px solid var(--neon-green);
+            border: 1px solid var(--neon-green);
             color: var(--neon-green);
             font-family: 'Share Tech Mono', monospace;
-            padding: 8px 16px;
-            font-size: 1.2rem;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 6px;
+            font-size: 0.9rem;
+            border-radius: 3px;
+            width: 100%;
         }
         .terminal-roster-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--neon-green);
-            padding: 20px;
-            margin-bottom: 12px;
-            background: rgba(0,0,0,0.75);
-            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
         }
-        .terminal-roster-row h3 { font-size: 1.6rem; color: #fff; }
-        .terminal-roster-row p { font-size: 1.1rem; color: var(--gold-dark); margin-top: 4px; }
+        .terminal-roster-row h3 { font-size: 1.1rem; color: #fff; }
+        .terminal-roster-row p { font-size: 0.8rem; color: var(--gold-dark); }
+        .terminal-action-btn {
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            font-family: 'Black Ops One', sans-serif;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
 
-        /* TAB 3: CONVERSATIONAL & LAW INDEX ENGINE SCREEN */
+        /* TAB 3: TEXT OUT ENGINE */
         .statute-readout-vault {
             background: #000;
-            border: 2px solid var(--gold-primary);
-            padding: 28px;
-            border-radius: 6px;
-            margin-bottom: 14px;
-            flex-grow: 1;
+            border: 1px solid var(--gold-primary);
+            padding: 14px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            height: 100%;
             overflow-y: auto;
-            box-shadow: inset 0 0 30px rgba(223, 183, 32, 0.15);
+            -webkit-overflow-scrolling: touch;
         }
         .statute-title-banner {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
-            font-size: 2.1rem;
-            border-bottom: 2px dashed var(--neon-green);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
+            font-size: 1.3rem;
+            border-bottom: 1px dashed var(--neon-green);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
         }
         .statute-body-paragraph {
             color: var(--neon-green);
-            font-size: 1.7rem;
-            line-height: 1.6;
+            font-size: 1.1rem;
+            line-height: 1.4;
         }
         .timeline-audit-header {
             font-family: 'Black Ops One', sans-serif;
             color: #ffffff;
-            font-size: 1.3rem;
-            margin-top: 24px;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            margin-top: 14px;
+            margin-bottom: 6px;
             border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 4px;
         }
         .audit-log-line {
-            font-size: 1.1rem;
+            font-size: 0.75rem;
             color: #bbb;
-            margin-bottom: 6px;
-            padding-left: 8px;
-            border-left: 2px solid var(--gold-dark);
+            margin-bottom: 4px;
+            padding-left: 4px;
+            border-left: 1px solid var(--gold-dark);
+        }
+
+        /* iOS MOBILE DEDICATED TOUCH-SCROLL SAFE ZONE */
+        .ios-scroll-handle-pad {
+            background: rgba(0, 255, 51, 0.04);
+            border: 1px dashed rgba(0, 255, 51, 0.4);
+            text-align: center;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--gold-primary);
+            border-radius: 4px;
+            letter-spacing: 1px;
         }
 
         .system-action-footer-deck {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 14px;
+            gap: 8px;
+            margin-top: 8px;
         }
 
-        /* PULSING LOCATION MONITOR TARGETS */
         @keyframes locatorPulseRing {
             0% { transform: scale(0.7); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.8); }
-            70% { transform: scale(1.3); opacity: 0.7; box-shadow: 0 0 0 20px rgba(255, 0, 51, 0); }
+            70% { transform: scale(1.3); opacity: 0.7; box-shadow: 0 0 0 10px rgba(255, 0, 51, 0); }
             100% { transform: scale(0.7); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0); }
         }
         .target-locator-css {
             background: rgba(255, 0, 51, 0.3);
-            border: 3px double #ff0033;
+            border: 2px double #ff0033;
             border-radius: 50%;
             animation: locatorPulseRing 1.3s infinite;
         }
 
-        /* IMMUTABLE GLOBAL FRAME SIGNATURE */
         .global-footer-signature {
             text-align: center;
-            border-top: 2px solid var(--neon-green);
-            padding-top: 8px;
+            border-top: 1px solid var(--neon-green);
+            padding-top: 6px;
             color: var(--gold-dark);
-            font-size: 0.95rem;
-            margin-top: 12px;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-size: 0.75rem;
+            margin-top: 8px;
             text-transform: uppercase;
         }
     </style>
@@ -345,79 +341,80 @@
 <body>
 
     <div class="telemetry-ticker">
-        <span>📡 CONVERSATIONAL COGNITION ONLINE // CORE LINKS ARMED</span>
-        <span id="hud-clock-node">05/16/2026 --:--:--</span>
+        <span>📡 iOS MOBILE CORE ONLINE</span>
+        <span id="hud-clock-node">--/--/---- --:--:--</span>
     </div>
 
     <div class="master-header-frame">
         <div class="title-branding">
             <h1>TACNET.DATA</h1>
-            <span>TACTICAL CENTER MATRIX</span>
-        </div>
-        <div class="subtitle-spec">
-            <h2>Multi-Agency Joint Operations Deck<br>Multi-State Conversational Response Network</h2>
+            <span>MOBILE COMMAND INTERFACE</span>
         </div>
     </div>
 
     <div class="patent-authority-shield">
-        <div class="shield-label">🔒 PATENT CONTROL SYSTEM ARCHITECTURE INVENTED BY:</div>
-        <div class="shield-name">EARL A. WOOD, DEPUTY SHERIFF (RET) &bull; VIRGINIA</div>
+        🔒 SYSTEM SPECIFICATION DESIGNED BY:<br>
+        <span class="shield-name">EARL A. WOOD, DEPUTY SHERIFF (RET) &bull; VA</span>
     </div>
 
     <div class="navigation-grid-deck">
-        <button class="tactical-tab-trigger active-deck-node" id="tab-node-1" onclick="shiftWorkspaceWindow(1)">🛰️ 1. RADAR MONITOR</button>
-        <button class="tactical-tab-trigger" id="tab-node-2" onclick="shiftWorkspaceWindow(2)">👥 2. RESPONSE ROSTER</button>
-        <button class="tactical-tab-trigger" id="tab-node-3" onclick="shiftWorkspaceWindow(3)">📖 3. TAC INTELLIGENCE</button>
+        <button class="tactical-tab-trigger active-deck-node" id="tab-node-1" onclick="shiftWorkspaceWindow(1)">🛰️ 1. RADAR</button>
+        <button class="tactical-tab-trigger" id="tab-node-2" onclick="shiftWorkspaceWindow(2)">👥 2. ROSTER</button>
+        <button class="tactical-tab-trigger" id="tab-node-3" onclick="shiftWorkspaceWindow(3)">📖 3. TAC INTEL</button>
     </div>
 
     <div class="workspace-viewport-window active-window" id="viewport-window-1">
         <div class="voice-interface-hud">
-            <button class="voice-comms-mic-btn" onclick="engageVoiceProcessingCircuit()" id="mic-trigger-node">🎙️ SPEAK TAC</button>
-            <input type="text" class="voice-telemetry-input" id="voice-transcription-deck" placeholder="Talk or input orders (e.g., 'Hey TAC', 'TAC, query speeding', 'TAC, pull up Amherst, VA')">
+            <button class="voice-comms-mic-btn" onclick="engageVoiceProcessingCircuit()" id="mic-trigger-node">🎙️ MIC</button>
+            <input type="text" class="voice-telemetry-input" id="voice-transcription-deck" placeholder="Command (e.g. 'Hey TAC')">
         </div>
         
         <div id="radar-gis-canvas"></div>
 
         <div class="radar-tactical-legend-strip">
-            <div class="legend-placement-node" onclick="armVectorPinDrop('LE')" style="color:#0066ff;">⚡ BLUE FLANK PIN</div>
-            <div class="legend-placement-node" onclick="armVectorPinDrop('K9')" style="color:#33ccff;">🐾 K9 TRACK VECTOR</div>
-            <div class="legend-placement-node" onclick="armVectorPinDrop('SAR')" style="color:#ff0033;">🧡 TEAM SAR NODE</div>
-            <div class="legend-placement-node" onclick="armVectorPinDrop('POI')" style="color:#ff9900; border-color:#ff9900;">🎯 POI LAST SEEN</div>
+            <div class="legend-placement-node" onclick="armVectorPinDrop('LE')" style="color:#0066ff;">⚡ BLUE</div>
+            <div class="legend-placement-node" onclick="armVectorPinDrop('K9')" style="color:#33ccff;">🐾 K9</div>
+            <div class="legend-placement-node" onclick="armVectorPinDrop('SAR')" style="color:#ff0033;">🧡 SAR</div>
+            <div class="legend-placement-node" onclick="armVectorPinDrop('POI')" style="color:#ff9900; border-color:#ff9900;">🎯 POI</div>
         </div>
     </div>
 
     <div class="workspace-viewport-window" id="viewport-window-2">
-        <div class="regional-jurisdiction-control-deck">
-            <div>ACTIVE JURISDICTION CODE DATALINK REPOSITORY:</div>
-            <div>
+        <div class="scrollable-terminal-vault">
+            <div class="regional-jurisdiction-control-deck">
+                <div>ACTIVE CODE DATALINK:</div>
                 <select id="jurisdiction-toggle-node" onchange="executeJurisdictionHotSwap()">
-                    <option value="VA">COMMONWEALTH OF VIRGINIA (TITLES 18.2 / 46.2)</option>
-                    <option value="SC">STATE OF SOUTH CAROLINA (TITLES 16 / 56)</option>
+                    <option value="VA">VIRGINIA (TITLES 18.2 / 46.2)</option>
+                    <option value="SC">SOUTH CAROLINA (TITLES 16 / 56)</option>
                 </select>
             </div>
+            <div id="responder-roster-element"></div>
         </div>
-        <div class="scrollable-terminal-vault" id="responder-roster-element">
-            </div>
     </div>
 
     <div class="workspace-viewport-window" id="viewport-window-3">
         <div class="statute-readout-vault">
-            <div class="statute-title-banner" id="terminal-statute-title">TACNET DISPATCH ASSISTANT</div>
-            <div class="statute-body-paragraph" id="terminal-statute-body">No query initialized. Tap the red "SPEAK TAC" button on the Radar layout and state a target directive, or say hello to test your ride-along partner engine.</div>
+            <div class="statute-title-banner" id="terminal-statute-title">TACNET MOBILE DISPATCH</div>
+            <div class="statute-body-paragraph" id="terminal-statute-body">No query active. Use the mic link on Tab 1 or say hello to check in with TAC.</div>
             
-            <div class="timeline-audit-header">OFFICIAL FIELD DISPOSITION LOG (COURT FILE READY)</div>
+            <div class="timeline-audit-header">INCIDENT PACKET TIMELINE LOG</div>
             <div id="timeline-audit-rows">
-                <div class="audit-log-line">[SYSTEM BOOT]: Core systems engaged. Multi-state APIs armed. Partner brain linked. Ready for duty, Deputy Wood.</div>
+                <div class="audit-log-line">[BOOT]: iOS safe scaling active. Ready for patrol, Deputy Wood.</div>
             </div>
-        </div>
-        <div class="system-action-footer-deck">
-            <button class="tactical-tab-trigger" onclick="window.print()" style="border-color:var(--gold-primary); color:var(--gold-primary);">🖨️ PRINT CASE LOG PACKET</button>
-            <button class="tactical-tab-trigger" onclick="terminateCurrentMission()" style="border-color:var(--alert-red); color:var(--alert-red);">🛑 TERMINATE FIELD OPERATION</button>
         </div>
     </div>
 
+    <div class="ios-scroll-handle-pad">
+        ↕️ iOS TOUCH-SCROLL PANEL (DRAG HERE TO NAVIGATE UP/DOWN) ↕️
+    </div>
+
+    <div class="system-action-footer-deck">
+        <button class="tactical-tab-trigger" onclick="window.print()" style="border-color:var(--gold-primary); color:var(--gold-primary); padding: 8px 4px;">🖨️ PRINT REPORT</button>
+        <button class="tactical-tab-trigger" onclick="terminateCurrentMission()" style="border-color:var(--alert-red); color:var(--alert-red); padding: 8px 4px;">🛑 TERM ENCOUNTER</button>
+    </div>
+
     <div class="global-footer-signature">
-        TACNET.DATA INTELLIGENCE NETWORKS &bull; SYSTEM PROTOTYPE INTELLECTUAL PROPERTY REGISTERED BY DEPUTY SHERIFF EARL A. WOOD
+        PROPERTY SCHEMATICS DEPUTY EARL A. WOOD
     </div>
 
     <script>
@@ -427,22 +424,19 @@
         let dynamicCenterMarker = null;
         let systemActiveJurisdiction = "VA";
 
-        // MASTER RICH STATUTORY DICTIONARY
         const virginiaStatutes = {
-            "concealed weapon": { code: "VA Code § 18.2-308", text: "Carrying concealed weapons; penalties. Prohibits any person from carrying a concealed weapon hidden from common observation without a valid permit configuration. First violation registers as a Class 1 Misdemeanor." },
-            "speeding": { code: "VA Code § 46.2-870", text: "Maximum speed limits generally. Dictates that no vehicle shall be driven in excess of the established maximum speed limits set upon highways within the Commonwealth boundaries." },
-            "reckless driving": { code: "VA Code § 46.2-852", text: "Reckless driving; general rule. Irrespective of speed limits, driving in a manner that endangers life, limb, or property of any person constitutes reckless operation. Class 1 Misdemeanor status." }
+            "concealed weapon": { code: "VA Code § 18.2-308", text: "Carrying concealed weapons; penalties. Prohibits carrying concealed weapons hidden from common observation without a valid permit configuration. Class 1 Misdemeanor." },
+            "speeding": { code: "VA Code § 46.2-870", text: "Maximum speed limits generally. Dictates that no vehicle shall be driven in excess of maximum speed limits within the Commonwealth." },
+            "reckless driving": { code: "VA Code § 46.2-852", text: "Reckless driving; general rule. Driving in a manner that endangers life, limb, or property constitutes reckless operation. Class 1 Misdemeanor." }
         };
 
         const southCarolinaStatutes = {
-            "concealed weapon": { code: "SC Code § 16-23-20", text: "Unlawful carrying of handgun; exceptions. Declares carrying a handgun about the person unlawful, whether concealed or open, absent a recognized statutory license or exception structure. Penalties scale up to 1 year incarceration." },
-            "speeding": { code: "SC Code § 56-5-1520", text: "General rules as to maximum speed limits. Prohibits driving upon any highway layout at speeds greater than are reasonable and prudent under actual and potential situational hazards." }
+            "concealed weapon": { code: "SC Code § 16-23-20", text: "Unlawful carrying of handgun. Declares carrying a handgun about the person unlawful, whether concealed or open, absent a recognized license. Up to 1 year incarceration." },
+            "speeding": { code: "SC Code § 56-5-1520", text: "General maximum speed rules. Prohibits driving upon any highway at speeds greater than are reasonable and prudent under situational hazards." }
         };
 
-        // INTEGRATED LIVE DIGITAL CLOCK LOOP
         setInterval(() => { document.getElementById('hud-clock-node').innerText = new Date().toLocaleString(); }, 1000);
 
-        // VIEWPORT AREA SWITCH ROUTER
         function shiftWorkspaceWindow(targetWindowID) {
             document.getElementById(`tab-node-${operationalTabID}`).classList.remove('active-deck-node');
             document.getElementById(`viewport-window-${operationalTabID}`).classList.remove('active-window');
@@ -453,21 +447,22 @@
             document.getElementById(`viewport-window-${targetWindowID}`).classList.add('active-window');
 
             if (targetWindowID === 1 && mapCoreObject) {
-                setTimeout(() => { mapCoreObject.invalidateSize(); }, 220);
+                setTimeout(() => { mapCoreObject.invalidateSize(); }, 250);
             }
         }
 
-        // INITIALIZE MAP CANVAS ON BOOTSTRAP
         window.onload = function() {
-            mapCoreObject = L.map('radar-gis-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 13);
+            mapCoreObject = L.map('radar-gis-canvas', { zoomControl: false, dragging: true, tap: false }).setView([37.5857, -79.0517], 13);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(mapCoreObject);
             renderSystemResponders();
+            
+            // Prevent body rubber-banding on iOS map drags
+            document.getElementById('radar-gis-canvas').addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: true });
         };
 
         function executeJurisdictionHotSwap() {
             systemActiveJurisdiction = document.getElementById('jurisdiction-toggle-node').value;
-            logSystemEvent(`DATA HUB CONNECTED: Re-routed direct legal pipelines to ${systemActiveJurisdiction} records state database.`);
-            alert(`TACNET NETWORK UPDATE: Datalink re-mapped to ${systemActiveJurisdiction} system repositories.`);
+            logSystemEvent(`DATA SWITCHED: Re-routed to ${systemActiveJurisdiction} repositories.`);
         }
 
         function logSystemEvent(message) {
@@ -476,12 +471,11 @@
             auditDeck.innerHTML += `<div class="audit-log-line">[${timestamp}] ${message}</div>`;
         }
 
-        // SPEECH INPUT SYNTACTIC TRANSLATION ARRAY
         let localSpeechModule = null;
         function engageVoiceProcessingCircuit() {
             const SpeechVendorClass = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechVendorClass) {
-                alert("Voice communication driver absent on current hardware setup.");
+                alert("Voice driver absent on iOS browser (Try via Safari on iOS).");
                 return;
             }
 
@@ -492,7 +486,7 @@
                 localSpeechModule.interimResults = false;
 
                 localSpeechModule.onstart = function() {
-                    document.getElementById('mic-trigger-node').innerText = "🔊 VOICE LINK OPEN";
+                    document.getElementById('mic-trigger-node').innerText = "🔊 LISTENING";
                     document.getElementById('mic-trigger-node').style.background = "#dfb720";
                 };
 
@@ -509,35 +503,29 @@
         }
 
         function restoreMicHUD() {
-            document.getElementById('mic-trigger-node').innerText = "🎙️ SPEAK TAC";
+            document.getElementById('mic-trigger-node').innerText = "🎙️ MIC";
             document.getElementById('mic-trigger-node').style.background = "var(--alert-red)";
         }
 
-        // FULL TACTICAL CONVERSATIONAL INTELLIGENCE ROUTER
         function routeVoiceDirectives(spokenString) {
-            logSystemEvent(`INCOMING AUDIO TRANSCRIBED: "${spokenString}"`);
+            logSystemEvent(`AUDIO IN: "${spokenString}"`);
             
-            // CONVERSATIONAL SECTOR A: PEER-TO-PEER CHITCHAT MATRIX
             if (spokenString.includes("hey tac") || spokenString.includes("hello") || spokenString.includes("hi tac")) {
-                let responseText = "Hello Deputy Wood. Core telemetry matrix is green and multi-state legal taps are armed. Hope the shift is treating you right today, sir. What can I pull up for you?";
-                executeTextAndVoiceFeedback("TAC INTERACTIVE FEEDBACK", responseText);
+                let responseText = "Hello Deputy Wood. Systems green. Hope the shift is going well, sir. What can I check for you?";
+                executeTextAndVoiceFeedback("TAC FEEDBACK", responseText);
             } 
             else if (spokenString.includes("coffee")) {
-                let responseText = "Understood, sir—it's definitely been a long shift on the road. How do you take your coffee? Just let me know, and I can map out the nearest 24-hour location on your radar screen whenever you want.";
-                executeTextAndVoiceFeedback("PARTNER INTERACTIVE RESPONSE", responseText);
+                let responseText = "Understood, sir. How do you take your coffee? Let me know and I can locate an open spot on the radar map.";
+                executeTextAndVoiceFeedback("PARTNER SYSTEM", responseText);
             }
             else if (spokenString.includes("thank you") || spokenString.includes("appreciate you")) {
-                let responseText = "Right back at you, Deputy Wood. It is an honor to ride assistant shotgun on your dashboard console. Standing by for the next field vector directive, sir.";
-                executeTextAndVoiceFeedback("PARTNER INTERACTIVE RESPONSE", responseText);
+                let responseText = "Right back at you, Deputy Wood. Honor to have your back on the dashboard console, sir.";
+                executeTextAndVoiceFeedback("PARTNER SYSTEM", responseText);
             }
-            
-            // CONVERSATIONAL SECTOR B: REAL-TIME COORDINATE LOOKUP PERIMETER RING
             else if (spokenString.includes("pull up") || spokenString.includes("address") || spokenString.includes("street") || spokenString.includes("location")) {
                 let formattedAddress = spokenString.replace("tac", "").replace("pull up", "").replace("address", "").trim();
                 executeRadarCordonLock(formattedAddress);
             } 
-            
-            // CONVERSATIONAL SECTOR C: RAPID LEGAL DICTIONARY INDEXING
             else if (spokenString.includes("code") || spokenString.includes("query") || spokenString.includes("law") || spokenString.includes("statute")) {
                 let targetLibrary = (systemActiveJurisdiction === "VA") ? virginiaStatutes : southCarolinaStatutes;
                 let identificationFlag = false;
@@ -546,7 +534,7 @@
                     if (spokenString.includes(keyIdentifier)) {
                         let codeTitle = targetLibrary[keyIdentifier].code;
                         let codeText = targetLibrary[keyIdentifier].text;
-                        let fullReply = `That is ${codeTitle}, sir. ${codeText}... There you go, sir. I have locked the layout on the terminal grid for your court report package.`;
+                        let fullReply = `That is ${codeTitle}, sir. ${codeText}... There you go, sir. Locked on screen.`;
                         
                         executeTextAndVoiceFeedback(codeTitle, fullReply);
                         identificationFlag = true;
@@ -554,18 +542,16 @@
                     }
                 }
                 if (!identificationFlag) {
-                    document.getElementById('terminal-statute-body').innerText = `No localized match identified in offline index arrays for query sequence: "${spokenString}"`;
+                    document.getElementById('terminal-statute-body').innerText = `No match found for: "${spokenString}"`;
                 }
             }
         }
 
-        // PIPELINE TO POST SYSTEM MESSAGES VISUALLY AND SPEAK NATURAL AUDIO
         function executeTextAndVoiceFeedback(titleDisplay, speechPayload) {
             document.getElementById('terminal-statute-title').innerText = titleDisplay;
             document.getElementById('terminal-statute-body').innerText = speechPayload;
-            
-            logSystemEvent(`SYSTEM RESPONSE GENERATED: [${titleDisplay}]`);
-            shiftWorkspaceWindow(3); // Fly straight to spacious intelligence window instantly
+            logSystemEvent(`TAC SPEAK: [${titleDisplay}]`);
+            shiftWorkspaceWindow(3); 
             
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -574,10 +560,9 @@
             }
         }
 
-        // FULL INTEGRATION 1/2 MILE CONTAINMENT CALCULATOR
         function executeRadarCordonLock(targetLocationString) {
             if (!targetLocationString) return;
-            logSystemEvent(`GIS LOCATION ROUTER INITIALIZED FOR: "${targetLocationString}"`);
+            logSystemEvent(`GEO LOCATING: "${targetLocationString}"`);
             
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(targetLocationString)}`)
                 .then(res => res.json())
@@ -589,43 +574,30 @@
                         if (dynamicCenterMarker) { mapCoreObject.removeLayer(dynamicCenterMarker); }
                         if (boundaryCordonCircle) { mapCoreObject.removeLayer(boundaryCordonCircle); }
 
-                        let customPulsingCenterIcon = L.divIcon({ className: 'target-locator-css', iconSize: [34, 34], iconAnchor: [17, 17] });
+                        let customPulsingCenterIcon = L.divIcon({ className: 'target-locator-css', iconSize: [24, 24], iconAnchor: [12, 12] });
                         dynamicCenterMarker = L.marker([latitude, longitude], { icon: customPulsingCenterIcon }).addTo(mapCoreObject);
 
-                        // Strict 0.50 Mile Cordon Calculation Metrics = 804.67 Meters
                         boundaryCordonCircle = L.circle([latitude, longitude], {
-                            radius: 804.67, color: '#00ff33', weight: 4, fillColor: '#00ff33', fillOpacity: 0.16
+                            radius: 804.67, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.14
                         }).addTo(mapCoreObject);
 
                         mapCoreObject.setView([latitude, longitude], 14);
                         
-                        let visualMessage = `Target coordinates intercepted. Dropping epicenter marker at ${targetLocationString} and securing the target one-half mile cordon boundary line.`;
-                        let spokenMessage = `Target confirmed. Dropping point of interest and locking one half mile containment ring around the grid. There you go, sir.`;
-                        
-                        document.getElementById('terminal-statute-title').innerText = "GIS CONTAINMENT RADAR COMPILER";
-                        document.getElementById('terminal-statute-body').innerText = visualMessage;
-                        logSystemEvent(`RADAR LOCK ESTABLISHED: 1/2-mile circle mapped.`);
+                        document.getElementById('terminal-statute-title').innerText = "RADAR COMPILER";
+                        document.getElementById('terminal-statute-body').innerText = `Coordinates locked on target at ${targetLocationString}. Securing half-mile perimeter ring.`;
+                        logSystemEvent(`RADAR INTERCEPT: Ring set.`);
                         
                         if ('speechSynthesis' in window) {
                             window.speechSynthesis.cancel();
-                            let outputUtterance = new SpeechSynthesisUtterance(spokenMessage);
-                            window.speechSynthesis.speak(outputUtterance);
-                        }
-                    } else {
-                        if ('speechSynthesis' in window) {
-                            window.speechSynthesis.cancel();
-                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Target location matrix unrecognizable. Check geographic spell tracking inputs."));
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Target verified. Locking one half mile containment ring. There you go, sir."));
                         }
                     }
-                })
-                .catch(err => { console.error(err); });
+                }).catch(err => { console.error(err); });
         }
 
-        // SIMULATED SYSTEM ACTION DATA
         let respondersDatabase = [
-            { deploymentID: "[Sheriff] Unit 101 Command Hub", assignment: "Incident Commander / Joint Operations Supervisor" },
-            { deploymentID: "Amherst Deputy K9 Wood Vector", assignment: "Lead Tracker / Scent Grid Intercept Team" },
-            { deploymentID: "Interoperable Mutual Aid Response Asset", assignment: "Perimeter Checkpoint Blocking Line" }
+            { deploymentID: "Unit 101 Command Hub", assignment: "Incident Commander" },
+            { deploymentID: "Amherst K9 Wood Vector", assignment: "Lead Tracker" }
         ];
 
         function renderSystemResponders() {
@@ -636,24 +608,22 @@
                     <div class="terminal-roster-row">
                         <div>
                             <h3>${responder.deploymentID}</h3>
-                            <p>OPERATIONAL VECTOR SECTOR: ${responder.assignment}</p>
+                            <p>ROLE: ${responder.assignment}</p>
                         </div>
-                        <div>
-                            <button class="terminal-action-btn" onclick="shiftWorkspaceWindow(1)">🛰️ ZOOM FOCUS</button>
-                        </div>
+                        <button class="terminal-action-btn" onclick="shiftWorkspaceWindow(1)">🛰️ FOCUS</button>
                     </div>
                 `;
             });
         }
 
         function armVectorPinDrop(markerType) {
-            logSystemEvent(`HARDWARE VECTOR MATRIX PRIMED FOR POSITION: [ ${markerType} ]`);
-            alert(`📍 VECTOR PLACEMENT PRIMED: Tap directly onto any space on the open full-screen map interface canvas to instantly lock your [ ${markerType} ] field team position.`);
+            logSystemEvent(`PIN READY: [ ${markerType} ]`);
+            alert(`📍 TAP MAP: Tap directly on the map surface canvas to instantly lock your [ ${markerType} ] node position.`);
         }
 
         function terminateCurrentMission() {
-            logSystemEvent("CRITICAL DISPATCH WARNING: Encounter session closed out by command officer.");
-            alert("TACTICAL DISPOSITION NOTICE: Active field encounter terminated. Comprehensive chronological audit timelines compiled and closed out successfully.");
+            logSystemEvent("CRITICAL DISPATCH WARNING: Session terminated.");
+            alert("Encounter logged and packaged successfully.");
         }
     </script>
 </body>
