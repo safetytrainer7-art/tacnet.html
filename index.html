@@ -25,16 +25,14 @@ background:#000;
 color:#fff;
 }
 
-/* TRUE NIGHT VISION */
+/* TRUE NIGHT VISION ENGINE */
 
 body{
-
 background:
 radial-gradient(circle at center,
-rgba(0,255,80,.16) 0%,
-rgba(0,40,0,.92) 45%,
+rgba(0,255,70,.15) 0%,
+rgba(0,45,0,.88) 40%,
 #000 100%);
-
 }
 
 body::before{
@@ -45,8 +43,8 @@ inset:0;
 background:
 repeating-linear-gradient(
 to bottom,
-rgba(57,255,20,.035) 0px,
-rgba(57,255,20,.035) 1px,
+rgba(57,255,20,.03) 0px,
+rgba(57,255,20,.03) 1px,
 transparent 2px,
 transparent 4px
 );
@@ -62,12 +60,12 @@ inset:0;
 
 background:
 radial-gradient(circle at center,
-rgba(57,255,20,.18),
+rgba(57,255,20,.14),
 transparent 70%);
 
 mix-blend-mode:screen;
 
-animation:pulse 3s infinite;
+animation:pulse 4s infinite;
 
 pointer-events:none;
 z-index:9998;
@@ -79,12 +77,15 @@ z-index:9998;
 100%{opacity:.45;}
 }
 
+/* HEADER */
+
 header{
-height:115px;
+height:110px;
+
 display:flex;
 flex-direction:column;
-align-items:center;
 justify-content:center;
+align-items:center;
 
 background:rgba(0,0,0,.72);
 
@@ -92,7 +93,7 @@ border-bottom:2px solid #39ff14;
 
 box-shadow:
 0 0 12px #39ff14,
-0 0 30px rgba(57,255,20,.45);
+0 0 30px rgba(57,255,20,.3);
 }
 
 .logo{
@@ -105,8 +106,7 @@ color:#d4af37;
 text-shadow:
 0 0 10px #fff,
 0 0 20px #d4af37,
-0 0 40px #39ff14,
-0 0 70px #39ff14;
+0 0 45px #39ff14;
 }
 
 .subtitle{
@@ -118,18 +118,20 @@ color:#ffe95c;
 
 .tagline{
 margin-top:4px;
-font-size:.9rem;
+font-size:.85rem;
 letter-spacing:2px;
-color:#9cd4ff;
+color:#8db8ff;
 }
+
+/* LAYOUT */
 
 .main{
 display:grid;
-grid-template-columns:1.45fr .8fr;
-height:calc(100vh - 115px);
+grid-template-columns:1.5fr .8fr;
+height:calc(100vh - 110px);
 }
 
-.mapwrap{
+.map-panel{
 position:relative;
 padding:10px;
 }
@@ -141,17 +143,19 @@ border-radius:20px;
 border:2px solid #39ff14;
 
 box-shadow:
-0 0 15px rgba(57,255,20,.6),
+0 0 15px rgba(57,255,20,.5),
 0 0 40px rgba(57,255,20,.25),
-inset 0 0 35px rgba(57,255,20,.18);
+inset 0 0 30px rgba(57,255,20,.12);
 
 filter:
 brightness(.88)
-contrast(1.2)
-saturate(1.25);
+contrast(1.15)
+saturate(1.2);
 }
 
-.topstatus{
+/* STATUS */
+
+.top-status{
 position:absolute;
 top:22px;
 left:22px;
@@ -161,7 +165,7 @@ z-index:999;
 }
 
 .pill{
-padding:10px 15px;
+padding:10px 16px;
 border-radius:12px;
 
 background:rgba(0,0,0,.72);
@@ -170,13 +174,17 @@ border:1px solid #39ff14;
 
 color:#39ff14;
 
-font-weight:700;
+font-weight:bold;
 
 box-shadow:
 0 0 10px rgba(57,255,20,.45);
+
+backdrop-filter:blur(8px);
 }
 
-.side{
+/* SIDE PANEL */
+
+.side-panel{
 overflow-y:auto;
 padding:12px;
 
@@ -190,17 +198,18 @@ backdrop-filter:blur(10px);
 .card{
 margin-bottom:12px;
 padding:15px;
+
 border-radius:18px;
 
-background:rgba(20,70,20,.18);
+background:rgba(20,70,20,.16);
 
 border:1px solid rgba(57,255,20,.7);
 
-backdrop-filter:blur(12px);
-
 box-shadow:
-0 0 10px rgba(57,255,20,.4),
-0 0 25px rgba(57,255,20,.18);
+0 0 12px rgba(57,255,20,.35),
+0 0 25px rgba(57,255,20,.12);
+
+backdrop-filter:blur(10px);
 }
 
 .card h2{
@@ -211,17 +220,18 @@ color:#ffe95c;
 }
 
 input,
-textarea,
 select{
 width:100%;
+
 padding:13px;
+
 margin-bottom:10px;
 
-background:rgba(0,0,0,.82);
+border-radius:12px;
 
 border:1px solid #39ff14;
 
-border-radius:12px;
+background:rgba(0,0,0,.82);
 
 color:#fff;
 
@@ -230,6 +240,7 @@ font-size:1rem;
 
 button{
 width:100%;
+
 padding:14px;
 
 border:none;
@@ -238,11 +249,11 @@ border-radius:12px;
 
 font-weight:800;
 
+font-size:1rem;
+
 cursor:pointer;
 
 margin-bottom:10px;
-
-font-size:1rem;
 
 transition:.2s;
 }
@@ -260,27 +271,27 @@ box-shadow:
 }
 
 .red{
-background:#9a0000;
+background:#9d0000;
 color:#fff;
 
 box-shadow:
-0 0 18px rgba(255,0,0,.55);
+0 0 18px rgba(255,0,0,.45);
 }
 
-.actiongrid{
+.tool-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
 
-.action{
-background:#0f180f;
+.tool{
+background:#101810;
 color:#39ff14;
 border:1px solid #39ff14;
 }
 
 .feed{
-height:170px;
+height:180px;
 overflow-y:auto;
 font-family:monospace;
 font-size:.88rem;
@@ -288,15 +299,18 @@ font-size:.88rem;
 
 .feed div{
 padding:7px 0;
-border-bottom:1px solid rgba(57,255,20,.18);
+border-bottom:1px solid rgba(57,255,20,.16);
 }
 
 .footer{
 text-align:center;
 padding-top:10px;
-font-size:.9rem;
+font-size:.88rem;
 color:#d4af37;
+letter-spacing:1px;
 }
+
+/* MOBILE */
 
 @media(max-width:900px){
 
@@ -306,7 +320,7 @@ grid-template-rows:55vh auto;
 }
 
 .logo{
-font-size:2.7rem;
+font-size:2.8rem;
 }
 
 header{
@@ -336,15 +350,15 @@ FEDERAL • STATE • LOCAL
 
 <div class="main">
 
-<div class="mapwrap">
+<div class="map-panel">
 
-<div class="topstatus">
+<div class="top-status">
 
 <div class="pill">
 NET ACTIVE
 </div>
 
-<div class="pill" id="gpsstatus">
+<div class="pill" id="gps-status">
 GPS READY
 </div>
 
@@ -354,27 +368,18 @@ GPS READY
 
 </div>
 
-<div class="side">
-
-<div class="card">
-
-<h2>OS / AGENCY TOKEN ACCESS</h2>
-
-<input type="password" id="token" placeholder="ENTER OPERATION TOKEN">
-
-<button class="green" onclick="joinAgency()">
-JOIN SECURE OPS ROOM
-</button>
-
-</div>
+<div class="side-panel">
 
 <div class="card">
 
 <h2>ADDRESS SEARCH</h2>
 
-<input type="text" id="address" placeholder="ENTER ADDRESS">
+<input type="text"
+id="address"
+placeholder="ENTER ADDRESS">
 
-<button class="green" onclick="searchAddress()">
+<button class="green"
+onclick="searchAddress()">
 GO
 </button>
 
@@ -382,36 +387,61 @@ GO
 
 <div class="card">
 
+<h2>MAP MODES</h2>
+
+<select id="mapMode"
+onchange="changeMapMode()">
+
+<option value="street">
+STREET VIEW
+</option>
+
+<option value="satellite">
+SATELLITE VIEW
+</option>
+
+<option value="terrain">
+TERRAIN VIEW
+</option>
+
+</select>
+
+</div>
+
+<div class="card">
+
 <h2>TACTICAL TOOLS</h2>
 
-<div class="actiongrid">
+<div class="tool-grid">
 
-<button class="action" onclick="startPerimeter()">
-START PERIMETER
+<button class="tool"
+onclick="enablePerimeter()">
+PERIMETER
 </button>
 
-<button class="action" onclick="lockPerimeter()">
-LOCK PERIMETER
+<button class="tool"
+onclick="resetPerimeter()">
+RESET
 </button>
 
-<button class="action" onclick="resetPerimeter()">
-RESET PERIMETER
-</button>
-
-<button class="action" onclick="markEvidence()">
-EVIDENCE
-</button>
-
-<button class="action" onclick="markOfficer()">
+<button class="tool"
+onclick="markUnit()">
 UNIT
 </button>
 
-<button class="action" onclick="dropLKP()">
+<button class="tool"
+onclick="dropLKP()">
 LKP
 </button>
 
-<button class="red" onclick="sendSOS()">
-🚨 OFFICER DOWN SOS
+<button class="tool"
+onclick="markEvidence()">
+EVIDENCE
+</button>
+
+<button class="red"
+onclick="sendSOS()">
+SOS
 </button>
 
 </div>
@@ -420,21 +450,11 @@ LKP
 
 <div class="card">
 
-<h2>FIELD REPORT</h2>
+<h2>TACTICAL FEED</h2>
 
-<textarea id="notes" rows="7" placeholder="ENTER FIELD NOTES"></textarea>
-
-<button class="green" onclick="generateReport()">
-GENERATE REPORT
-</button>
-
+<div class="feed"
+id="feed">
 </div>
-
-<div class="card">
-
-<h2>NET ACTIVITY FEED</h2>
-
-<div class="feed" id="feed"></div>
 
 </div>
 
@@ -451,6 +471,8 @@ DEPUTY SHERIFF RETIRED
 
 <script>
 
+/* MAP */
+
 const map = L.map('map',{
 doubleClickZoom:false
 }).setView([37.3349,-79.5236],13);
@@ -459,48 +481,26 @@ setTimeout(()=>{
 map.invalidateSize();
 },500);
 
-L.tileLayer(
+/* MAP LAYERS */
+
+const streetLayer = L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
 maxZoom:19
 }
-).addTo(map);
+);
 
-/* GPS */
+const satelliteLayer = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+);
 
-let officerMarker;
+const terrainLayer = L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+);
 
-navigator.geolocation.watchPosition((pos)=>{
+streetLayer.addTo(map);
 
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
-
-if(officerMarker){
-map.removeLayer(officerMarker);
-}
-
-officerMarker = L.circleMarker([lat,lng],{
-
-radius:10,
-color:'#00aaff',
-fillColor:'#00aaff',
-fillOpacity:1
-
-}).addTo(map)
-
-.bindPopup('ACTIVE UNIT');
-
-map.setView([lat,lng],15);
-
-document.getElementById('gpsstatus').innerText =
-'LIVE GPS ACTIVE';
-
-},()=>{
-
-document.getElementById('gpsstatus').innerText =
-'GPS ERROR';
-
-});
+let activeLayer = streetLayer;
 
 /* FEED */
 
@@ -520,6 +520,46 @@ feed.prepend(div);
 
 }
 
+/* GPS */
+
+let officerMarker;
+
+navigator.geolocation.watchPosition((pos)=>{
+
+const lat =
+pos.coords.latitude;
+
+const lng =
+pos.coords.longitude;
+
+if(officerMarker){
+map.removeLayer(officerMarker);
+}
+
+officerMarker =
+L.circleMarker([lat,lng],{
+
+radius:9,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('ACTIVE UNIT');
+
+map.setView([lat,lng],15);
+
+document.getElementById('gps-status').innerText =
+'LIVE GPS ACTIVE';
+
+},()=>{
+
+document.getElementById('gps-status').innerText =
+'GPS ERROR';
+
+});
+
 /* ADDRESS SEARCH */
 
 async function searchAddress(){
@@ -528,18 +568,25 @@ const query =
 document.getElementById('address').value;
 
 if(!query){
+
 alert('ENTER ADDRESS');
+
 return;
+
 }
 
-const response = await fetch(
+try{
+
+const response =
+await fetch(
 'https://nominatim.openstreetmap.org/search?format=json&q='
 + encodeURIComponent(query)
 );
 
-const data = await response.json();
+const data =
+await response.json();
 
-if(data.length){
+if(data.length > 0){
 
 const lat =
 parseFloat(data[0].lat);
@@ -551,7 +598,7 @@ map.setView([lat,lng],16);
 
 L.marker([lat,lng])
 .addTo(map)
-.bindPopup('SEARCH LOCATION')
+.bindPopup('SEARCH TARGET')
 .openPopup();
 
 addFeed('ADDRESS SEARCH COMPLETE');
@@ -562,74 +609,60 @@ alert('ADDRESS NOT FOUND');
 
 }
 
-}
+}catch{
 
-/* TOKEN */
-
-function joinAgency(){
-
-const token =
-document.getElementById('token').value;
-
-if(token.length < 4){
-
-alert('INVALID TOKEN');
-
-return;
+alert('SEARCH ERROR');
 
 }
 
-addFeed('SECURE OPS JOINED');
+}
 
-alert('TOKEN ACCEPTED');
+/* MAP MODE */
+
+function changeMapMode(){
+
+const mode =
+document.getElementById('mapMode').value;
+
+map.removeLayer(activeLayer);
+
+if(mode === 'street'){
+activeLayer = streetLayer;
+}
+
+if(mode === 'satellite'){
+activeLayer = satelliteLayer;
+}
+
+if(mode === 'terrain'){
+activeLayer = terrainLayer;
+}
+
+activeLayer.addTo(map);
+
+addFeed(mode.toUpperCase() + ' ENABLED');
 
 }
 
 /* PERIMETER */
 
 let perimeterMode = false;
-let perimeterLocked = false;
 
 let perimeterPoints = [];
 
 let perimeterPolygon = null;
 
-function startPerimeter(){
+function enablePerimeter(){
 
 perimeterMode = true;
-perimeterLocked = false;
-
-perimeterPoints = [];
-
-if(perimeterPolygon){
-map.removeLayer(perimeterPolygon);
-}
 
 addFeed('PERIMETER MODE ACTIVE');
-
-}
-
-function lockPerimeter(){
-
-if(perimeterPoints.length < 3){
-
-alert('NEED 3 OR MORE POINTS');
-
-return;
-
-}
-
-perimeterLocked = true;
-perimeterMode = false;
-
-addFeed('PERIMETER LOCKED');
 
 }
 
 function resetPerimeter(){
 
 perimeterMode = false;
-perimeterLocked = false;
 
 perimeterPoints = [];
 
@@ -645,8 +678,6 @@ map.on('click',(e)=>{
 
 if(!perimeterMode) return;
 
-if(perimeterLocked) return;
-
 perimeterPoints.push([
 e.latlng.lat,
 e.latlng.lng
@@ -657,49 +688,56 @@ radius:5,
 color:'#39ff14'
 }).addTo(map);
 
+if(perimeterPoints.length >= 3){
+
 if(perimeterPolygon){
 map.removeLayer(perimeterPolygon);
 }
 
-perimeterPolygon = L.polygon(
-perimeterPoints,
-{
+perimeterPolygon =
+L.polygon(perimeterPoints,{
+
 color:'#39ff14',
 fillColor:'#39ff14',
 fillOpacity:.18,
 weight:2
+
+}).addTo(map);
+
 }
-).addTo(map);
 
 });
 
-/* SOS FIXED */
+/* SOS */
 
 function sendSOS(){
 
 navigator.geolocation.getCurrentPosition((pos)=>{
 
-const lat = pos.coords.latitude;
-const lng = pos.coords.longitude;
+const lat =
+pos.coords.latitude;
+
+const lng =
+pos.coords.longitude;
 
 L.circle([lat,lng],{
 
-radius:90,
+radius:100,
 color:'#ff0000',
 fillColor:'#ff0000',
-fillOpacity:.35,
+fillOpacity:.3,
 weight:3
 
 }).addTo(map);
 
 L.marker([lat,lng])
 .addTo(map)
-.bindPopup('🚨 OFFICER DOWN SOS')
+.bindPopup('🚨 OFFICER DOWN')
 .openPopup();
 
 map.setView([lat,lng],17);
 
-addFeed('🚨 OFFICER DOWN SOS ACTIVATED');
+addFeed('🚨 OFFICER DOWN SOS');
 
 alert('SOS TRANSMITTED');
 
@@ -711,7 +749,42 @@ alert('GPS UNAVAILABLE');
 
 }
 
-/* MARKERS */
+/* TOOLS */
+
+function markUnit(){
+
+map.once('click',(e)=>{
+
+L.circleMarker(e.latlng,{
+
+radius:8,
+color:'#00aaff',
+fillColor:'#00aaff',
+fillOpacity:1
+
+}).addTo(map)
+
+.bindPopup('FIELD UNIT');
+
+addFeed('FIELD UNIT DEPLOYED');
+
+});
+
+}
+
+function dropLKP(){
+
+map.once('click',(e)=>{
+
+L.marker(e.latlng)
+.addTo(map)
+.bindPopup('LAST KNOWN POSITION');
+
+addFeed('LKP DROPPED');
+
+});
+
+}
 
 function markEvidence(){
 
@@ -734,112 +807,7 @@ addFeed('EVIDENCE MARKED');
 
 }
 
-function markOfficer(){
-
-map.once('click',(e)=>{
-
-L.circleMarker(e.latlng,{
-
-radius:8,
-color:'#00aaff',
-fillColor:'#00aaff',
-fillOpacity:1
-
-}).addTo(map)
-
-.bindPopup('FIELD UNIT');
-
-addFeed('UNIT DEPLOYED');
-
-});
-
-}
-
-function dropLKP(){
-
-map.once('click',(e)=>{
-
-L.marker(e.latlng)
-.addTo(map)
-.bindPopup('LAST KNOWN POSITION');
-
-addFeed('LKP DROPPED');
-
-});
-
-}
-
-/* REPORT */
-
-function generateReport(){
-
-const notes =
-document.getElementById('notes').value;
-
-const win =
-window.open('','_blank');
-
-win.document.write(`
-
-<html>
-
-<head>
-
-<title>TACNET REPORT</title>
-
-<style>
-
-body{
-font-family:Arial;
-padding:40px;
-}
-
-h1{
-color:#1b5e20;
-}
-
-.report{
-border:2px solid #000;
-padding:20px;
-margin-top:20px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>TACNET FIELD REPORT</h1>
-
-<div class="report">
-
-<p><b>DATE:</b>
-${new Date().toLocaleString()}</p>
-
-<hr>
-
-<p>${notes}</p>
-
-</div>
-
-<br><br>
-
-<p>
-APP CREATOR EARL A. WOOD
-</p>
-
-</body>
-
-</html>
-
-`);
-
-win.print();
-
-addFeed('PROFESSIONAL REPORT GENERATED');
-
-}
+/* START */
 
 addFeed('TACNET CORE INITIALIZED');
 
