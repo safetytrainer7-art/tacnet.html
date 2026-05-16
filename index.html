@@ -63,7 +63,7 @@
             font-weight: bold;
         }
 
-        /* Header Layout matching your patches */
+        /* Header Layout matching patches */
         .app-header {
             display: flex;
             align-items: center;
@@ -108,7 +108,6 @@
             margin-bottom: 8px;
         }
 
-        /* Law Enforcement Sub-Header Configuration */
         .header-titles h4 {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
@@ -207,7 +206,6 @@
             box-shadow: var(--hud-glow);
         }
 
-        /* Map Screen Control Box */
         .map-wrapper { position: relative; }
 
         .map-layer-controls {
@@ -235,7 +233,6 @@
             box-shadow: var(--hud-glow);
         }
 
-        /* HARDWARE NIGHT LIGHT SWITCH */
         .night-light-toggle-btn {
             background: rgba(223, 183, 32, 0.1);
             border: 2px solid var(--gold-primary);
@@ -254,7 +251,6 @@
             box-shadow: var(--hud-glow);
         }
 
-        /* Real Live Map Frame */
         #map-canvas {
             width: 100%;
             height: 480px;
@@ -264,7 +260,27 @@
             background: #000;
         }
 
-        /* Active Green Night-Vision Lens tint over the live map streams */
+        /* Leaflet Specific Popup Style Fixes to Match Military HUD */
+        .leaflet-popup-content-wrapper {
+            background: #000 !important;
+            color: #fff !important;
+            border: 2px solid var(--hud-neon-green) !important;
+            font-family: 'Share Tech Mono', monospace !important;
+            border-radius: 4px !important;
+        }
+        .leaflet-popup-tip { background: var(--hud-neon-green) !important; }
+        .popup-remove-btn {
+            background: var(--alert-red);
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            margin-top: 5px;
+            font-weight: bold;
+            width: 100%;
+        }
+
         .map-night-light-tint {
             position: absolute;
             top: 40px; 
@@ -272,7 +288,7 @@
             width: 100%; 
             height: 480px;
             background: rgba(0, 255, 51, 0.22);
-            pointer-events: none; /* Direct finger gestures pass through instantly to map layer */
+            pointer-events: none; 
             z-index: 1000;
             border-radius: 4px;
             box-shadow: inset 0 0 60px rgba(0, 255, 51, 0.5);
@@ -369,6 +385,13 @@
             background: rgba(223, 183, 32, 0.08);
         }
 
+        .perimeter-controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
         .live-feed-log {
             background: #000;
             border: 1px solid var(--hud-translucent);
@@ -417,7 +440,6 @@
             font-size: 0.85rem;
         }
 
-        /* PDF Printing Standard Styles */
         @media print {
             body { background: #fff !important; color: #000 !important; }
             body::before, .interface-grid, .search-bar-container, .map-layer-controls { display: none !important; }
@@ -502,7 +524,10 @@
                 <div class="legend-node"><span class="color-sphere" style="background:#fff;"></span>YOUR NODE</div>
             </div>
             
-            <button class="action-btn" style="margin-top:8px; border-color:var(--hud-neon-green);" onclick="togglePerimeterDrawMode()" id="perimeter-toggle-btn">✏️ ENGAGE TOUCH-DRAW PERIMETER</button>
+            <div class="perimeter-controls-row">
+                <button class="action-btn" style="margin-bottom:0; border-color:var(--hud-neon-green);" onclick="togglePerimeterDrawMode()" id="perimeter-toggle-btn">✏️ DRAW PERIMETER</button>
+                <button class="action-btn" style="margin-bottom:0; border-color:var(--alert-red); color:var(--alert-red); background:rgba(255,0,51,0.08);" onclick="resetMapPerimeterField()">⚠️ RESET PERIMETER</button>
+            </div>
         </div>
 
         <div class="panel">
@@ -540,7 +565,6 @@
     </div>
 
     <script>
-        // System Clock Frame Initialization
         let sessionStartTime = new Date().toLocaleString();
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
 
@@ -554,7 +578,6 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // Night Vision Light Toggle State Control Function
         function toggleNightVisionLight() {
             const lens = document.getElementById('night-light-lens');
             const btn = document.getElementById('btn-night-light');
@@ -570,12 +593,11 @@
                 btn.classList.add('active-on');
                 logSystemEvent("NIGHT VISION OPTICS: High-contrast green field night light fully burning.");
             }
-            // Forces map layers to redraw instantly beneath the overlay tint
             if(map) { map.invalidateSize(); }
         }
 
         /* MASTER LIVE ENGINE LAYOUT (Leaflet Engine Integration)
-           Defaults position tracking over Amherst County Courthouse, Virginia out of professional respect.
+           Defaults position tracking over Amherst County Courthouse, Virginia.
         */
         let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
 
@@ -584,7 +606,7 @@
         let streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', { maxZoom: 19 });
         let terrainLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
 
-        satelliteLayer.addTo(map); // Default active layer on boot
+        satelliteLayer.addTo(map); 
 
         function switchMapLayer(type) {
             map.removeLayer(satelliteLayer);
@@ -599,7 +621,6 @@
             if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-str').classList.add('active'); }
             if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-ter').classList.add('active'); }
             
-            // CRITICAL RECALIBRATION FIX: Snaps the tile maps perfectly into standard grid lines
             setTimeout(() => { map.invalidateSize(); }, 50);
             logSystemEvent(`Map canvas layer toggled to display active ${type.toUpperCase()} streams.`);
         }
@@ -629,17 +650,49 @@
             }, { enableHighAccuracy: true });
         }
 
-        // Add Simulated Multi-Agency Task Force Team Members onto the real active map grid
-        function setupTaskForceSimMarkers() {
-            let blueIcon = L.divIcon({ html: `<div style="background:var(--blue-agency); width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px var(--blue-agency); border:1px solid #fff;"></div>`, iconSize: [12, 12] });
-            let ltBlueIcon = L.divIcon({ html: `<div style="background:var(--lt-blue-k9); width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px var(--lt-blue-k9); border:1px solid #fff;"></div>`, iconSize: [12, 12] });
-            let redIcon = L.divIcon({ html: `<div style="background:#ff0033; width:12px; height:12px; border-radius:50%; box-shadow:0 0 8px #ff0033; border:1px solid #fff;"></div>`, iconSize: [12, 12] });
+        // DYNAMIC ACTIVE MARKERS CONTROL REGISTRY
+        let activeMapMarkersRegistry = {};
 
-            L.marker([37.588, -79.053], { icon: blueIcon }).addTo(map).bindPopup("VSP Trooper Davis");
-            L.marker([37.584, -79.049], { icon: ltBlueIcon }).addTo(map).bindPopup("Amherst K9 Command Unit");
-            L.marker([37.589, -79.047], { icon: redIcon }).addTo(map).bindPopup("SAR Ground Asset");
+        function addActiveSearcherToMap(id, lat, lon, name, typeColor) {
+            let markerIcon = L.divIcon({ 
+                html: `<div style="background:${typeColor}; width:14px; height:14px; border-radius:50%; box-shadow:0 0 8px ${typeColor}; border:1px solid #fff;"></div>`, 
+                iconSize: [14, 14] 
+            });
+
+            // Build dynamic interactive popup panel matching tactical styles
+            let popupContent = `
+                <div style="padding: 5px; text-align: center;">
+                    <b style="color: #fff; font-size: 0.95rem;">${name}</b><br>
+                    <span style="color: var(--gold-primary); font-size: 0.75rem;">ACTIVE UNIT AGENT</span><br>
+                    <button class="popup-remove-btn" onclick="removeSearcherFromMapField('${id}')">REMOVE UNIT</button>
+                </div>
+            `;
+
+            let newMarker = L.marker([lat, lon], { icon: markerIcon }).addTo(map).bindPopup(popupContent);
+            activeMapMarkersRegistry[id] = newMarker;
         }
-        setupTaskForceSimMarkers();
+
+        // Action Trigger to completely terminate a frozen or unneeded searcher from map grid instantly
+        window.removeSearcherFromMapField = function(id) {
+            if (activeMapMarkersRegistry[id]) {
+                map.removeLayer(activeMapMarkersRegistry[id]);
+                delete activeMapMarkersRegistry[id];
+                
+                // Keep the sidebar roster records locked automatically in tandem
+                rosterData = rosterData.filter(u => String(u.id) !== String(id));
+                renderRoster();
+                
+                logSystemEvent(`TACTICAL MAP DISCONNECT: Unit target ID [${id}] purged from mapping frame.`);
+            }
+        };
+
+        // Initialize core track units directly to dynamic engine
+        function setupTaskForceLiveRegistry() {
+            addActiveSearcherToMap('1', 37.588, -79.053, "VSP Trooper Davis", "var(--blue-agency)");
+            addActiveSearcherToMap('2', 37.584, -79.049, "Amherst Deputy K9 Wood", "var(--lt-blue-k9)");
+            addActiveSearcherToMap('3', 37.589, -79.047, "SAR Team Alpha Leader", "#ff0033");
+        }
+        setupTaskForceLiveRegistry();
 
         // Tap, Hold, and Drag Perimeter Polygon Builder Mechanics
         let perimeterDrawState = false;
@@ -650,7 +703,7 @@
             perimeterDrawState = !perimeterDrawState;
             const btn = document.getElementById('perimeter-toggle-btn');
             if (perimeterDrawState) {
-                btn.innerText = "❌ CLICK MAP SITES TO PLOT PERIMETER";
+                btn.innerText = "❌ CLK MAP TO PLOT";
                 btn.style.borderColor = "var(--alert-red)";
                 btn.style.color = "var(--alert-red)";
                 drawnPointsArray = [];
@@ -677,18 +730,37 @@
         function finalizePerimeterBoundary() {
             perimeterDrawState = false;
             const btn = document.getElementById('perimeter-toggle-btn');
-            btn.innerText = "✏️ ENGAGE TOUCH-DRAW PERIMETER";
+            btn.innerText = "✏️ DRAW PERIMETER";
             btn.style.borderColor = "var(--hud-neon-green)";
             btn.style.color = "var(--hud-neon-green)";
             map.dragging.enable();
             logSystemEvent(`TACTICAL CONTAINMENT: Custom neon grid perimeter boundary locked on map coordinates.`);
         }
 
-        // Roster Database Configuration Array
+        // HARDWARE CLEAR SLATE TRIGGER: Wipes all tracking line geometries instantly
+        function resetMapPerimeterField() {
+            if (activePerimeterPolygon) {
+                map.removeLayer(activePerimeterPolygon);
+                activePerimeterPolygon = null;
+            }
+            drawnPointsArray = [];
+            perimeterDrawState = false;
+            
+            const btn = document.getElementById('perimeter-toggle-btn');
+            btn.innerText = "✏️ DRAW PERIMETER";
+            btn.style.borderColor = "var(--hud-neon-green)";
+            btn.style.color = "var(--hud-neon-green)";
+            map.dragging.enable();
+            
+            logSystemEvent("PERIMETER RESET: All active operational area boundaries completely purged from console grid.");
+            alert("PERIMETER RESET: Containment grid cleared.");
+        }
+
+        // Roster Management Database Layer
         let rosterData = [
-            { id: 1, name: "VSP Trooper Davis", type: "LE (BLUE)" },
-            { id: 2, name: "Amherst Deputy K9 Wood", type: "K9 (LT BLUE)" },
-            { id: 3, name: "SAR Team Alpha Leader", type: "SAR (RED)" }
+            { id: '1', name: "VSP Trooper Davis", type: "LE (BLUE)", color: "var(--blue-agency)" },
+            { id: '2', name: "Amherst Deputy K9 Wood", type: "K9 (LT BLUE)", color: "var(--lt-blue-k9)" },
+            { id: '3', name: "SAR Team Alpha Leader", type: "SAR (RED)", color: "#ff0033" }
         ];
 
         function renderRoster() {
@@ -700,8 +772,8 @@
                 row.innerHTML = `
                     <span>${user.name} | <strong>${user.type}</strong></span>
                     <div class="roster-controls">
-                        <button class="roster-btn" onclick="alert('Asset radio tracking signal synced.')">+</button>
-                        <button class="roster-btn" onclick="removeAsset(${user.id})" style="color:var(--alert-red); border-color:var(--alert-red);">-</button>
+                        <button class="roster-btn" onclick="alert('Asset tracking vector verified.')">+</button>
+                        <button class="roster-btn" onclick="removeAsset('${user.id}')" style="color:var(--alert-red); border-color:var(--alert-red);">-</button>
                     </div>
                 `;
                 container.appendChild(row);
@@ -709,16 +781,27 @@
         }
 
         function removeAsset(id) {
-            rosterData = rosterData.filter(u => u.id !== id);
-            logSystemEvent("Roster Adjustment: Field unit track removed from screen dashboard layer.");
-            renderRoster();
+            removeSearcherFromMapField(id);
         }
 
         function addNewRosterPrompt() {
             const name = prompt("Enter Field Officer Name or Identification Call Sign:");
             if (!name) return;
-            const type = prompt("Enter Group Classification Type (LE, K9, SAR, CIVILIAN, WANTED):", "LE");
-            rosterData.push({ id: Date.now(), name: name, type: type.toUpperCase() });
+            const type = prompt("Enter Group Classification Type (LE, K9, SAR, CIVILIAN, WANTED):", "LE").toUpperCase();
+            
+            let color = "#00ff33"; // Default CIV Green
+            if(type.includes("LE")) color = "var(--blue-agency)";
+            if(type.includes("K9")) color = "var(--lt-blue-k9)";
+            if(type.includes("SAR")) color = "#ff0033";
+            if(type.includes("WANT")) color = "#cc00ff";
+
+            let newId = String(Date.now());
+            rosterData.push({ id: newId, name: name, type: type, color: color });
+            
+            // Instantly sync onto live interactive mapping canvas structure
+            let center = map.getCenter();
+            addActiveSearcherToMap(newId, center.lat + (Math.random() * 0.002), center.lng + (Math.random() * 0.002), name, color);
+            
             logSystemEvent(`Dynamic Asset Linked: ${name} deployed into tracking file.`);
             renderRoster();
         }
@@ -749,10 +832,8 @@
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
                         
-                        // Shift map view instantly to the searched target area
                         map.setView([lat, lon], 14);
                         
-                        // Drop a tactical crosshair pinpoint marker on the spot
                         L.marker([lat, lon]).addTo(map)
                             .bindPopup(`<b>Search Vector Target:</b><br>${addr}`)
                             .openPopup();
@@ -843,10 +924,7 @@
             window.print(); 
         }
 
-        // Initialize display components upon ready trigger
         renderRoster();
-        
-        // Initial delayed calibration safety net to make sure maps load perfect on launch
         setTimeout(() => { map.invalidateSize(); }, 300);
     </script>
 </body>
