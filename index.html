@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TACNET CORE</title>
+
+<title>TACNET</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 
@@ -16,317 +19,300 @@ padding:0;
 box-sizing:border-box;
 }
 
-html,body{
-width:100%;
-height:100%;
-overflow:hidden;
-font-family:Arial,Helvetica,sans-serif;
-background:#000;
-color:#fff;
-}
-
-/* TRUE NIGHT VISION ENGINE */
-
 body{
-background:
-radial-gradient(circle at center,
-rgba(0,255,70,.15) 0%,
-rgba(0,45,0,.88) 40%,
-#000 100%);
+font-family:'Orbitron',sans-serif;
+background:#020804;
+color:white;
+overflow:hidden;
 }
+
+/* NIGHT VISION OVERLAY */
 
 body::before{
-content:"";
+content:'';
 position:fixed;
 inset:0;
-
 background:
+radial-gradient(circle at center, rgba(0,255,120,.10), transparent 70%),
 repeating-linear-gradient(
 to bottom,
-rgba(57,255,20,.03) 0px,
-rgba(57,255,20,.03) 1px,
+rgba(0,255,120,.02),
+rgba(0,255,120,.02) 2px,
 transparent 2px,
 transparent 4px
 );
-
 pointer-events:none;
+mix-blend-mode:screen;
 z-index:9999;
 }
 
-body::after{
-content:"";
-position:fixed;
+/* LANDING PAGE */
+
+#landingPage{
+position:absolute;
 inset:0;
-
 background:
-radial-gradient(circle at center,
-rgba(57,255,20,.14),
-transparent 70%);
-
-mix-blend-mode:screen;
-
-animation:pulse 4s infinite;
-
-pointer-events:none;
-z-index:9998;
-}
-
-@keyframes pulse{
-0%{opacity:.45;}
-50%{opacity:1;}
-100%{opacity:.45;}
-}
-
-/* HEADER */
-
-header{
-height:110px;
-
+linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.92)),
+url('landing-bg.jpg') center/cover no-repeat;
 display:flex;
 flex-direction:column;
-justify-content:center;
 align-items:center;
-
-background:rgba(0,0,0,.72);
-
-border-bottom:2px solid #39ff14;
-
-box-shadow:
-0 0 12px #39ff14,
-0 0 30px rgba(57,255,20,.3);
+justify-content:center;
+padding:30px;
+text-align:center;
 }
 
-.logo{
-font-size:4rem;
-font-weight:900;
-letter-spacing:4px;
+.headerRow{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:40px;
+flex-wrap:wrap;
+margin-bottom:30px;
+}
 
-color:#d4af37;
+.patch{
+width:140px;
+height:140px;
+object-fit:contain;
+border-radius:50%;
+border:2px solid rgba(215,170,34,.4);
+background:rgba(0,0,0,.6);
+padding:5px;
+box-shadow:0 0 25px rgba(0,255,120,.25);
+}
 
-text-shadow:
-0 0 10px #fff,
-0 0 20px #d4af37,
-0 0 45px #39ff14;
+.title{
+font-size:clamp(4rem,10vw,8rem);
+font-weight:800;
+letter-spacing:6px;
+color:#d7aa22;
+text-shadow:0 0 20px rgba(215,170,34,.4);
 }
 
 .subtitle{
-margin-top:4px;
+font-size:clamp(1.2rem,2vw,2rem);
+letter-spacing:4px;
+color:#d7aa22;
+margin-top:10px;
+}
+
+.subline{
+margin-top:10px;
+color:#8ad8ff;
+letter-spacing:5px;
 font-size:1rem;
-font-weight:bold;
-color:#ffe95c;
+}
+
+.warning{
+margin-top:40px;
+padding:14px 25px;
+border:1px solid rgba(215,170,34,.4);
+color:#ffd44f;
+font-size:1rem;
+letter-spacing:2px;
+background:rgba(0,0,0,.45);
 }
 
 .tagline{
-margin-top:4px;
-font-size:.85rem;
-letter-spacing:2px;
-color:#8db8ff;
+margin-top:40px;
+font-size:clamp(2rem,5vw,4rem);
+font-weight:800;
+line-height:1.2;
+max-width:1200px;
 }
 
-/* LAYOUT */
+.yellow{
+color:#ffe400;
+}
+
+.blue{
+color:#8ad8ff;
+}
+
+.desc{
+margin-top:30px;
+max-width:1000px;
+font-size:1.3rem;
+line-height:1.8;
+font-family:Arial;
+color:#f2f2f2;
+}
+
+.enterBtn{
+margin-top:45px;
+padding:22px 60px;
+font-size:1.3rem;
+background:linear-gradient(135deg,#102216,#000);
+color:#d7aa22;
+border:2px solid rgba(215,170,34,.45);
+cursor:pointer;
+font-family:'Orbitron',sans-serif;
+letter-spacing:3px;
+transition:.2s ease;
+}
+
+.enterBtn:hover{
+color:#4dff88;
+border-color:#4dff88;
+box-shadow:0 0 30px rgba(0,255,120,.35);
+transform:translateY(-3px);
+}
+
+.footer{
+position:absolute;
+bottom:25px;
+width:100%;
+text-align:center;
+font-size:1rem;
+letter-spacing:3px;
+color:#d7aa22;
+}
+
+/* APP PAGE */
+
+#appPage{
+display:none;
+position:absolute;
+inset:0;
+background:#040b06;
+}
+
+.topbar{
+height:85px;
+background:rgba(0,0,0,.88);
+border-bottom:2px solid rgba(0,255,120,.25);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 25px;
+}
+
+.topTitle{
+font-size:2rem;
+color:#d7aa22;
+letter-spacing:5px;
+}
+
+.status{
+color:#4dff88;
+letter-spacing:2px;
+}
 
 .main{
 display:grid;
-grid-template-columns:1.5fr .8fr;
-height:calc(100vh - 110px);
+grid-template-columns:320px 1fr;
+height:calc(100vh - 85px);
 }
 
-.map-panel{
-position:relative;
-padding:10px;
-}
-
-#map{
-width:100%;
-height:100%;
-border-radius:20px;
-border:2px solid #39ff14;
-
-box-shadow:
-0 0 15px rgba(57,255,20,.5),
-0 0 40px rgba(57,255,20,.25),
-inset 0 0 30px rgba(57,255,20,.12);
-
-filter:
-brightness(.88)
-contrast(1.15)
-saturate(1.2);
-}
-
-/* STATUS */
-
-.top-status{
-position:absolute;
-top:22px;
-left:22px;
-display:flex;
-gap:10px;
-z-index:999;
-}
-
-.pill{
-padding:10px 16px;
-border-radius:12px;
-
+.sidebar{
 background:rgba(0,0,0,.72);
-
-border:1px solid #39ff14;
-
-color:#39ff14;
-
-font-weight:bold;
-
-box-shadow:
-0 0 10px rgba(57,255,20,.45);
-
-backdrop-filter:blur(8px);
-}
-
-/* SIDE PANEL */
-
-.side-panel{
-overflow-y:auto;
-padding:12px;
-
-background:rgba(0,0,0,.55);
-
-border-left:1px solid #d4af37;
-
-backdrop-filter:blur(10px);
+padding:18px;
+overflow:auto;
+border-right:1px solid rgba(0,255,120,.2);
 }
 
 .card{
-margin-bottom:12px;
-padding:15px;
-
-border-radius:18px;
-
-background:rgba(20,70,20,.16);
-
-border:1px solid rgba(57,255,20,.7);
-
-box-shadow:
-0 0 12px rgba(57,255,20,.35),
-0 0 25px rgba(57,255,20,.12);
-
-backdrop-filter:blur(10px);
+background:rgba(0,0,0,.5);
+border:1px solid rgba(0,255,120,.25);
+padding:16px;
+margin-bottom:18px;
 }
 
-.card h2{
-margin-bottom:12px;
-font-size:1rem;
-letter-spacing:1px;
-color:#ffe95c;
-}
-
-input,
-select{
-width:100%;
-
-padding:13px;
-
-margin-bottom:10px;
-
-border-radius:12px;
-
-border:1px solid #39ff14;
-
-background:rgba(0,0,0,.82);
-
-color:#fff;
-
-font-size:1rem;
+.cardTitle{
+color:#4dff88;
+margin-bottom:15px;
+font-size:16px;
+letter-spacing:2px;
 }
 
 button{
 width:100%;
-
 padding:14px;
-
-border:none;
-
-border-radius:12px;
-
-font-weight:800;
-
-font-size:1rem;
-
-cursor:pointer;
-
 margin-bottom:10px;
-
-transition:.2s;
+background:linear-gradient(135deg,#102216,#000);
+color:#d7aa22;
+border:1px solid rgba(215,170,34,.4);
+font-family:'Orbitron',sans-serif;
+cursor:pointer;
 }
 
 button:hover{
-transform:scale(1.02);
+color:#4dff88;
+border-color:#4dff88;
 }
 
-.green{
-background:#39ff14;
-color:#000;
-
-box-shadow:
-0 0 18px #39ff14;
+input, textarea{
+width:100%;
+padding:14px;
+background:#050b07;
+border:1px solid rgba(0,255,120,.25);
+color:white;
+margin-bottom:12px;
+font-family:Arial;
 }
 
-.red{
-background:#9d0000;
-color:#fff;
-
-box-shadow:
-0 0 18px rgba(255,0,0,.45);
+textarea{
+height:120px;
+resize:none;
 }
 
-.tool-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
+.legendItem{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:12px;
+font-size:14px;
+}
+
+.dot{
+width:16px;
+height:16px;
+border-radius:50%;
+border:2px solid white;
+}
+
+.dotBlue{background:#2678ff;}
+.dotLight{background:#7cecff;}
+.dotRed{background:red;}
+.dotGreen{background:#1dd85b;}
+.dotPurple{background:#b300ff;}
+.dotYellow{background:#ffd800;}
+
+.mapArea{
+position:relative;
+}
+
+#map{
+height:100%;
+width:100%;
+filter:hue-rotate(35deg) saturate(1.1) brightness(.82);
+}
+
+.mapControls{
+position:absolute;
+top:20px;
+left:20px;
+z-index:1000;
+display:flex;
 gap:10px;
 }
 
-.tool{
-background:#101810;
-color:#39ff14;
-border:1px solid #39ff14;
+.mapControls button{
+width:auto;
+padding:12px 20px;
 }
 
-.feed{
-height:180px;
-overflow-y:auto;
-font-family:monospace;
-font-size:.88rem;
+.sos{
+background:#220000;
+color:#ff5555;
+border-color:#ff5555;
 }
 
-.feed div{
-padding:7px 0;
-border-bottom:1px solid rgba(57,255,20,.16);
-}
-
-.footer{
-text-align:center;
-padding-top:10px;
-font-size:.88rem;
-color:#d4af37;
-letter-spacing:1px;
-}
-
-/* MOBILE */
-
-@media(max-width:900px){
-
-.main{
-grid-template-columns:1fr;
-grid-template-rows:55vh auto;
-}
-
-.logo{
-font-size:2.8rem;
-}
-
-header{
-height:100px;
-}
-
+.terminate{
+background:#220000;
+color:#ff0000;
+border-color:#ff0000;
 }
 
 </style>
@@ -334,52 +320,83 @@ height:100px;
 
 <body>
 
-<header>
+<!-- LANDING PAGE -->
 
-<div class="logo">TACNET</div>
+<section id="landingPage">
+
+<div class="headerRow">
+
+<img src="vsp(1).png" class="patch">
+
+<div>
+
+<div class="title">TACNET</div>
 
 <div class="subtitle">
 MULTI-AGENCY TASK FORCE SEARCH APP
 </div>
 
-<div class="tagline">
+<div class="subline">
 FEDERAL • STATE • LOCAL
 </div>
 
-</header>
+</div>
+
+<img src="image (2)(1).png" class="patch">
+
+</div>
+
+<div class="warning">
+⚠ RESTRICTED — AUTHORIZED PERSONNEL ONLY
+</div>
+
+<div class="tagline">
+<span class="yellow">ONE NET.</span>
+<span class="blue">ALL AGENCIES.</span><br>
+<span class="yellow">ZERO BLIND SPOTS.</span>
+</div>
+
+<div class="desc">
+TACNET is the first multi-agency tactical search platform built by law enforcement, for law enforcement. Track every officer in real time, conduct coordinated search operations, mark LKP positions, document article drops, and maintain officer safety with live tactical visibility.
+</div>
+
+<button class="enterBtn" onclick="enterTacnet()">
+ENTER TACNET
+</button>
+
+<div class="footer">
+APP CREATED BY EARL A. WOOD • DEPUTY SHERIFF RETIRED • DECADES EXPERIENCE • K-9 SEARCHES
+</div>
+
+</section>
+
+<!-- APP PAGE -->
+
+<section id="appPage">
+
+<div class="topbar">
+
+<div class="topTitle">TACNET LIVE OPS</div>
+
+<div class="status">
+● NET ACTIVE
+</div>
+
+</div>
 
 <div class="main">
 
-<div class="map-panel">
-
-<div class="top-status">
-
-<div class="pill">
-NET ACTIVE
-</div>
-
-<div class="pill" id="gps-status">
-GPS READY
-</div>
-
-</div>
-
-<div id="map"></div>
-
-</div>
-
-<div class="side-panel">
+<div class="sidebar">
 
 <div class="card">
 
-<h2>ADDRESS SEARCH</h2>
+<div class="cardTitle">
+SEARCH ADDRESS
+</div>
 
-<input type="text"
-id="address"
-placeholder="ENTER ADDRESS">
+<input placeholder="Enter Address">
 
-<button class="green"
-onclick="searchAddress()">
+<button>
 GO
 </button>
 
@@ -387,429 +404,251 @@ GO
 
 <div class="card">
 
-<h2>MAP MODES</h2>
+<div class="cardTitle">
+MAP VIEWS
+</div>
 
-<select id="mapMode"
-onchange="changeMapMode()">
+<button onclick="setSatellite()">
+SATELLITE
+</button>
 
-<option value="street">
-STREET VIEW
-</option>
+<button onclick="setTerrain()">
+TERRAIN
+</button>
 
-<option value="satellite">
-SATELLITE VIEW
-</option>
-
-<option value="terrain">
-TERRAIN VIEW
-</option>
-
-</select>
+<button onclick="setStreet()">
+STREET
+</button>
 
 </div>
 
 <div class="card">
 
-<h2>TACTICAL TOOLS</h2>
+<div class="cardTitle">
+PERIMETER TOOLS
+</div>
 
-<div class="tool-grid">
-
-<button class="tool"
-onclick="enablePerimeter()">
-PERIMETER
+<button>
+DRAW / ADJUST
 </button>
 
-<button class="tool"
-onclick="resetPerimeter()">
-RESET
+<button>
+RESET PERIMETER
 </button>
 
-<button class="tool"
-onclick="markUnit()">
-UNIT
-</button>
+</div>
 
-<button class="tool"
-onclick="dropLKP()">
-LKP
-</button>
+<div class="card">
 
-<button class="tool"
-onclick="markEvidence()">
-EVIDENCE
-</button>
+<div class="cardTitle">
+SEARCHERS LEGEND
+</div>
 
-<button class="red"
-onclick="sendSOS()">
-SOS
-</button>
+<div class="legendItem">
+<div class="dot dotBlue"></div>
+LAW ENFORCEMENT
+</div>
 
+<div class="legendItem">
+<div class="dot dotLight"></div>
+K9 UNIT
+</div>
+
+<div class="legendItem">
+<div class="dot dotRed"></div>
+SEARCH & RESCUE
+</div>
+
+<div class="legendItem">
+<div class="dot dotGreen"></div>
+CIVILIAN
+</div>
+
+<div class="legendItem">
+<div class="dot dotPurple"></div>
+PERSON OF INTEREST
+</div>
+
+<div class="legendItem">
+<div class="dot dotYellow"></div>
+ARTICLE FOUND
 </div>
 
 </div>
 
 <div class="card">
 
-<h2>TACTICAL FEED</h2>
+<div class="cardTitle">
+SOS OFFICER DOWN
+</div>
 
-<div class="feed"
-id="feed">
+<button class="sos">
+TAP FOR EMERGENCY ALERT
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+TERMINATE SEARCH
+</div>
+
+<button class="terminate">
+TERMINATE COMPLETELY
+</button>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+FINAL REPORTS
+</div>
+
+<textarea placeholder="Disposition / Notes"></textarea>
+
+<button>
+GENERATE PDF
+</button>
+
+<button>
+EMAIL REPORT
+</button>
+
+<button>
+PRINT REPORT
+</button>
+
 </div>
 
 </div>
 
-<div class="footer">
+<div class="mapArea">
 
-APP CREATOR EARL A. WOOD<br>
-DEPUTY SHERIFF RETIRED
+<div class="mapControls">
+
+<button onclick="setSatellite()">
+SATELLITE
+</button>
+
+<button onclick="setTerrain()">
+TERRAIN
+</button>
+
+<button onclick="setStreet()">
+STREET
+</button>
+
+</div>
+
+<div id="map"></div>
 
 </div>
 
 </div>
 
-</div>
+</section>
 
 <script>
 
-/* MAP */
+function enterTacnet(){
 
-const map = L.map('map',{
-doubleClickZoom:false
-}).setView([37.3349,-79.5236],13);
+document.getElementById('landingPage').style.display='none';
+document.getElementById('appPage').style.display='block';
 
 setTimeout(()=>{
 map.invalidateSize();
-},500);
+},300);
 
-/* MAP LAYERS */
+}
 
-const streetLayer = L.tileLayer(
+let map = L.map('map').setView([37.5407,-77.4360],13);
+
+let satellite = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{maxZoom:19}
+);
+
+let terrain = L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+{maxZoom:17}
+);
+
+let street = L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-maxZoom:19
-}
+{maxZoom:19}
 );
 
-const satelliteLayer = L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-);
+satellite.addTo(map);
 
-const terrainLayer = L.tileLayer(
-'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
-);
-
-streetLayer.addTo(map);
-
-let activeLayer = streetLayer;
-
-/* FEED */
-
-function addFeed(text){
-
-const feed =
-document.getElementById('feed');
-
-const div =
-document.createElement('div');
-
-div.innerHTML =
-new Date().toLocaleTimeString()
-+ ' — ' + text;
-
-feed.prepend(div);
-
+function setSatellite(){
+map.eachLayer(layer=>map.removeLayer(layer));
+satellite.addTo(map);
 }
 
-/* GPS */
-
-let officerMarker;
-
-navigator.geolocation.watchPosition((pos)=>{
-
-const lat =
-pos.coords.latitude;
-
-const lng =
-pos.coords.longitude;
-
-if(officerMarker){
-map.removeLayer(officerMarker);
+function setTerrain(){
+map.eachLayer(layer=>map.removeLayer(layer));
+terrain.addTo(map);
 }
 
-officerMarker =
-L.circleMarker([lat,lng],{
-
-radius:9,
-color:'#00aaff',
-fillColor:'#00aaff',
-fillOpacity:1
-
-}).addTo(map)
-
-.bindPopup('ACTIVE UNIT');
-
-map.setView([lat,lng],15);
-
-document.getElementById('gps-status').innerText =
-'LIVE GPS ACTIVE';
-
-},()=>{
-
-document.getElementById('gps-status').innerText =
-'GPS ERROR';
-
-});
-
-/* ADDRESS SEARCH */
-
-async function searchAddress(){
-
-const query =
-document.getElementById('address').value;
-
-if(!query){
-
-alert('ENTER ADDRESS');
-
-return;
-
-}
-
-try{
-
-const response =
-await fetch(
-'https://nominatim.openstreetmap.org/search?format=json&q='
-+ encodeURIComponent(query)
-);
-
-const data =
-await response.json();
-
-if(data.length > 0){
-
-const lat =
-parseFloat(data[0].lat);
-
-const lng =
-parseFloat(data[0].lon);
-
-map.setView([lat,lng],16);
-
-L.marker([lat,lng])
-.addTo(map)
-.bindPopup('SEARCH TARGET')
-.openPopup();
-
-addFeed('ADDRESS SEARCH COMPLETE');
-
-}else{
-
-alert('ADDRESS NOT FOUND');
-
-}
-
-}catch{
-
-alert('SEARCH ERROR');
-
-}
-
-}
-
-/* MAP MODE */
-
-function changeMapMode(){
-
-const mode =
-document.getElementById('mapMode').value;
-
-map.removeLayer(activeLayer);
-
-if(mode === 'street'){
-activeLayer = streetLayer;
-}
-
-if(mode === 'satellite'){
-activeLayer = satelliteLayer;
-}
-
-if(mode === 'terrain'){
-activeLayer = terrainLayer;
-}
-
-activeLayer.addTo(map);
-
-addFeed(mode.toUpperCase() + ' ENABLED');
-
+function setStreet(){
+map.eachLayer(layer=>map.removeLayer(layer));
+street.addTo(map);
 }
 
 /* PERIMETER */
 
-let perimeterMode = false;
-
-let perimeterPoints = [];
-
-let perimeterPolygon = null;
-
-function enablePerimeter(){
-
-perimeterMode = true;
-
-addFeed('PERIMETER MODE ACTIVE');
-
-}
-
-function resetPerimeter(){
-
-perimeterMode = false;
-
-perimeterPoints = [];
-
-if(perimeterPolygon){
-map.removeLayer(perimeterPolygon);
-}
-
-addFeed('PERIMETER RESET');
-
-}
-
-map.on('click',(e)=>{
-
-if(!perimeterMode) return;
-
-perimeterPoints.push([
-e.latlng.lat,
-e.latlng.lng
-]);
-
-L.circleMarker(e.latlng,{
-radius:5,
-color:'#39ff14'
-}).addTo(map);
-
-if(perimeterPoints.length >= 3){
-
-if(perimeterPolygon){
-map.removeLayer(perimeterPolygon);
-}
-
-perimeterPolygon =
-L.polygon(perimeterPoints,{
-
-color:'#39ff14',
-fillColor:'#39ff14',
+let perimeter = L.polygon([
+[37.547,-77.45],
+[37.554,-77.43],
+[37.548,-77.40],
+[37.533,-77.41],
+[37.529,-77.44]
+],{
+color:'#4dff88',
+fillColor:'#4dff88',
 fillOpacity:.18,
-weight:2
-
+weight:4
 }).addTo(map);
 
-}
+/* MARKERS */
 
-});
+function addUnit(lat,lng,color,text){
 
-/* SOS */
-
-function sendSOS(){
-
-navigator.geolocation.getCurrentPosition((pos)=>{
-
-const lat =
-pos.coords.latitude;
-
-const lng =
-pos.coords.longitude;
-
-L.circle([lat,lng],{
-
-radius:100,
-color:'#ff0000',
-fillColor:'#ff0000',
-fillOpacity:.3,
+let marker = L.circleMarker([lat,lng],{
+radius:10,
+color:color,
+fillColor:color,
+fillOpacity:1,
 weight:3
-
 }).addTo(map);
 
-L.marker([lat,lng])
-.addTo(map)
-.bindPopup('🚨 OFFICER DOWN')
-.openPopup();
+marker.bindPopup(text);
 
-map.setView([lat,lng],17);
+}
 
-addFeed('🚨 OFFICER DOWN SOS');
+addUnit(37.540,-77.435,'blue','LAW ENFORCEMENT');
+addUnit(37.537,-77.438,'#7cecff','K9 UNIT');
+addUnit(37.543,-77.426,'red','SEARCH & RESCUE');
+addUnit(37.534,-77.429,'green','CIVILIAN');
+addUnit(37.538,-77.421,'#b300ff','PERSON OF INTEREST');
+addUnit(37.541,-77.417,'yellow','ARTICLE FOUND');
 
-alert('SOS TRANSMITTED');
+/* LIVE GPS */
 
-},()=>{
+if(navigator.geolocation){
 
-alert('GPS UNAVAILABLE');
+navigator.geolocation.watchPosition((position)=>{
+
+let lat = position.coords.latitude;
+let lng = position.coords.longitude;
+
+console.log(lat,lng);
 
 });
 
 }
-
-/* TOOLS */
-
-function markUnit(){
-
-map.once('click',(e)=>{
-
-L.circleMarker(e.latlng,{
-
-radius:8,
-color:'#00aaff',
-fillColor:'#00aaff',
-fillOpacity:1
-
-}).addTo(map)
-
-.bindPopup('FIELD UNIT');
-
-addFeed('FIELD UNIT DEPLOYED');
-
-});
-
-}
-
-function dropLKP(){
-
-map.once('click',(e)=>{
-
-L.marker(e.latlng)
-.addTo(map)
-.bindPopup('LAST KNOWN POSITION');
-
-addFeed('LKP DROPPED');
-
-});
-
-}
-
-function markEvidence(){
-
-map.once('click',(e)=>{
-
-L.circleMarker(e.latlng,{
-
-radius:8,
-color:'#ffd700',
-fillColor:'#ffd700',
-fillOpacity:1
-
-}).addTo(map)
-
-.bindPopup('EVIDENCE');
-
-addFeed('EVIDENCE MARKED');
-
-});
-
-}
-
-/* START */
-
-addFeed('TACNET CORE INITIALIZED');
 
 </script>
 
