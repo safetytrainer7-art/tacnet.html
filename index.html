@@ -31,7 +31,6 @@
             padding: 6px; 
         }
 
-        /* Fixed Viewport Container - Adapts seamlessly to iOS content bounds */
         .workspace-master-wrapper {
             display: flex;
             flex-direction: column;
@@ -62,7 +61,6 @@
         .search-input { flex-grow: 1; background: #000; border: 1px solid var(--hud-neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 6px 8px; font-size: 0.85rem; }
         .go-btn { background: var(--hud-neon-green); color: #000; border: none; padding: 0 15px; font-family: 'Black Ops One', sans-serif; font-size: 0.9rem; cursor: pointer; font-weight: bold; box-shadow: var(--hud-glow); }
 
-        /* Master Desktop Grid System Matrix */
         .interface-grid { 
             display: grid; 
             grid-template-columns: 260px 1fr 280px; 
@@ -82,12 +80,11 @@
 
         .panel-title { color: var(--gold-primary); font-family: 'Black Ops One', sans-serif; font-size: 0.75rem; margin-bottom: 4px; border-bottom: 1px dashed var(--hud-neon-green); padding-bottom: 2px; }
         
-        /* Center Column Layout Control */
         .center-operational-workspace { 
             display: flex; 
             flex-direction: column; 
             gap: 4px; 
-            height: 600px; /* Fixed robust map height for stable view on both desktop/mobile */
+            height: 600px; 
         }
 
         #map-canvas { 
@@ -97,6 +94,8 @@
             border-radius: 4px; 
             box-shadow: var(--hud-glow); 
             background: #000; 
+            /* CRITICAL: Disables native mobile browser touch actions during drawing interactions */
+            touch-action: none;
         }
         
         .leaflet-container {
@@ -107,7 +106,6 @@
         
         .perimeter-controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        /* Roster Matrix Panel */
         .roster-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 140px; }
         .roster-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); padding: 4px 6px; border: 1px solid var(--hud-translucent); font-size: 0.72rem; }
         .roster-row.active-deploy { border: 2px solid var(--gold-primary) !important; background: rgba(223, 183, 32, 0.15); box-shadow: 0 0 10px var(--gold-primary); }
@@ -154,22 +152,21 @@
 
         .app-footer { text-align: center; border-top: 1px solid var(--hud-neon-green); padding-top: 2px; color: var(--gold-worn); font-size: 0.7rem; line-height: 1.1; margin-top: 4px; }
 
-        /* CRITICAL UPGRADE: MOBILE RECONSTITUTION LAYER MATRIX */
         @media (max-width: 850px) {
-            html, body { overflow-y: auto; overflow-x: hidden; } /* Let mobile screens scroll downward naturally */
+            html, body { overflow-y: auto; overflow-x: hidden; } 
             .interface-grid {
-                grid-template-columns: 1fr; /* Snap columns into a robust vertical layout stack */
+                grid-template-columns: 1fr; 
                 gap: 8px;
             }
             .center-operational-workspace {
-                order: -1; /* Instantly force the map canvas to the very top of the phone screen */
-                height: 420px; /* Perfectly sized mobile tactical map dimensions */
+                order: -1; 
+                height: 420px; 
             }
             .panel {
-                height: auto; /* Allow side control blocks to scale out naturally */
+                height: auto; 
                 min-height: 0;
             }
-            .keypad { max-width: 320px; margin: 4px auto 0 auto; } /* Center keypad layout perfectly on device */
+            .keypad { max-width: 320px; margin: 4px auto 0 auto; } 
         }
     </style>
 </head>
@@ -300,7 +297,7 @@
         let circleStartLatLng = null;
 
         // GIS Engine Assembly
-        let map = L.map('map-canvas', { zoomControl: false }).setView([37.5857, -79.0517], 14);
+        let map = L.map('map-canvas', { zoomControl: false, tap: false }).setView([37.5857, -79.0517], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
         function logSystemEvent(msg) {
@@ -345,21 +342,40 @@
             }
         }
 
+        // HARDENED FOR MOBILE DRAWING OPERATIONS
         function togglePerimeterDrawMode() {
             perimeterDrawState = !perimeterDrawState;
             const btn = document.getElementById('perimeter-toggle-btn');
             
             if (perimeterDrawState) {
-                btn.innerText = "🖱️ HOLD & DRAG OUTWARD";
+                btn.innerText = "🛑 DRAG ON MAP NOW";
                 btn.style.borderColor = "var(--alert-red)"; btn.style.color = "var(--alert-red)";
                 if (activePerimeterCircle) { map.removeLayer(activePerimeterCircle); activePerimeterCircle = null; }
                 perimeterLat = null; perimeterLng = null; perimeterRadius = null;
+                
+                // CRITICAL INTERLOCK: Lock down map movement mechanics entirely (Stops slide bug)
                 map.dragging.disable();
+                map.touchZoom.disable();
+                map.doubleClickZoom.disable();
+                
+                // Hook both Mouse (Desktop) and Touch (iOS) architecture listeners
                 map.on('mousedown', startPerimeterDragCircle);
-                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER ACTIVE: Drag outward to cordon boundary.</span>`;
+                map.on('touchstart', startPerimeterDragCircle);
+                
+                document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--alert-red); font-weight:bold;">PERIMETER LOCK: Map locked. Touch and drag outward to size search boundary.</span>`;
             } else {
+                // RESTORE INTERLOCKS: Free up GIS map movement controls 
                 map.dragging.enable();
+                map.touchZoom.enable();
+                map.doubleClickZoom.enable();
+                
                 map.off('mousedown', startPerimeterDragCircle);
+                map.off('mousemove', dragPerimeterCircleResize);
+                map.off('mouseup', endPerimeterDragCircle);
+                map.off('touchstart', startPerimeterDragCircle);
+                map.off('touchmove', dragPerimeterCircleResize);
+                map.off('touchend', endPerimeterDragCircle);
+                
                 btn.innerText = "✏️ DRAG PERIMETER";
                 btn.style.borderColor = "var(--hud-neon-green)"; btn.style.color = "var(--hud-neon-green)";
                 document.getElementById('hud-mode-text').innerText = "STATUS: Protected Grid Interface Lockbox active.";
@@ -368,25 +384,36 @@
         }
 
         function startPerimeterDragCircle(e) {
-            circleStartLatLng = e.latlng;
-            perimeterLat = e.latlng.lat;
-            perimeterLng = e.latlng.lng;
+            // Support dual mouse click or native iOS touch event coordinate tracking
+            let latlng = e.latlng;
+            if (!latlng && e.originalEvent && e.originalEvent.touches) {
+                // Workaround for raw touch vector conversions if regular latlng map pipeline delays
+                return; 
+            }
+            if (!latlng) return;
+
+            circleStartLatLng = latlng;
+            perimeterLat = latlng.lat;
+            perimeterLng = latlng.lng;
+            
             activePerimeterCircle = L.circle(circleStartLatLng, {
-                radius: 10, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.15
+                radius: 15, color: '#00ff33', weight: 3, fillColor: '#00ff33', fillOpacity: 0.15
             }).addTo(map);
+
             map.on('mousemove', dragPerimeterCircleResize);
+            map.on('touchmove', dragPerimeterCircleResize);
             map.on('mouseup', endPerimeterDragCircle);
+            map.on('touchend', endPerimeterDragCircle);
         }
 
         function dragPerimeterCircleResize(e) {
-            if (!circleStartLatLng || !activePerimeterCircle) return;
+            if (!circleStartLatLng || !activePerimeterCircle || !e.latlng) return;
             perimeterRadius = map.distance(circleStartLatLng, e.latlng);
             activePerimeterCircle.setRadius(perimeterRadius);
         }
 
         function endPerimeterDragCircle(e) {
-            map.off('mousemove', dragPerimeterCircleResize);
-            map.off('mouseup', endPerimeterDragCircle);
+            if (!perimeterRadius) perimeterRadius = 100; // Safe default baseline cordon drop
             let finalRadiusMiles = (perimeterRadius / 1609.34).toFixed(2);
             logSystemEvent(`CORDON DEPLOYED: Perimeter lock verified at ${finalRadiusMiles} mi radius.`);
             togglePerimeterDrawMode(); 
@@ -403,7 +430,6 @@
             const unit = rosterData.find(u => String(u.id) === String(unitId));
             document.getElementById('hud-mode-text').innerHTML = `<span style="color:var(--gold-primary); font-weight:bold;">📍 TARGET: Tap map to drop [ ${unit.name} ] pin.</span>`;
             
-            // On mobile devices, automatically scroll smooth view straight back up to the map area
             if (window.innerWidth < 850) {
                 document.getElementById('map-canvas').scrollIntoView({ behavior: 'smooth' });
             }
@@ -586,36 +612,3 @@
             window.location.href = `mailto:?subject=TACNET%20Secure%20Mission%20Report&body=${emailBody}`;
             logSystemEvent("COMM DISPATCH: Initializing secure mail streaming array.");
         }
-
-        function triggerPrintPDF() {
-            logSystemEvent("PRINT ENGINE: Packaging document data nodes...");
-            window.print();
-        }
-
-        function pressKey(num) { document.getElementById('interop-token').value += num; }
-        function clearKeys() { document.getElementById('interop-token').value = ""; }
-        function submitCode() { clearKeys(); alert("AUTHENTICATION SEQUENCE LOGGED"); }
-
-        function deployVoiceGuide(issue) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            if (issue === 'stop') {
-                logSystemEvent("AUDIO CHANNELS: Emergency transmission terminated by monitor directive.");
-                return;
-            }
-            
-            let messageText = "";
-            if (issue === 'cpr') messageText = "Commencing CPR instruction protocol. Confirm airway is clear. Provide 30 compressions at a rate of 100 to 120 beats per minute, followed immediately by 2 rescue breaths.";
-            if (issue === 'snake') messageText = "Commencing snake bite response protocol. Keep the victim calm and absolutely still. Immobilize the bitten limb at or slightly below heart level. Do not apply a tourniquet.";
-            if (issue === 'bleed') messageText = "Commencing severe bleeding trauma protocol. Apply direct, localized pressure to the wound site using sterile dressing. Elevate injury above heart line if possible.";
-            if (issue === 'heat') messageText = "Commencing heat stroke mitigation protocol. Immediately transition the individual to a cooler environment out of direct sunlight. Strip down non-essential operational gear.";
-
-            let tacticalUtterance = new SpeechSynthesisUtterance(messageText);
-            window.speechSynthesis.speak(tacticalUtterance);
-            logSystemEvent(`AUDIO TRANSMISSION: Actively streaming guide loop for ${issue.toUpperCase()}.`);
-        }
-
-        renderRoster();
-    </script>
-</body>
-</html>
