@@ -1,134 +1,4 @@
 
-# TACNET CORE — FULL UPDATED OPERATIONAL BUILD
-
-Replace your ENTIRE current HTML with the complete version below.
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TACNET CORE</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#030b03;font-family:Arial,Helvetica,sans-serif;color:#fff;overflow:hidden;}
-body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at center,#0d3b0d 0%,#000 70%);opacity:.9;z-index:-2;}
-header{height:120px;border-bottom:1px solid #b68c1d;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.75);box-shadow:0 0 20px #39ff14;}
-.logo{font-size:4rem;font-weight:900;letter-spacing:4px;color:#e7c14f;text-shadow:0 0 5px #fff,0 0 10px #e7c14f,0 0 25px #39ff14;}
-.subtitle{color:#ffe95c;font-size:1.2rem;font-weight:700;margin-top:6px;}
-.tagline{color:#9cc4ff;font-size:.9rem;margin-top:4px;letter-spacing:2px;}
-.main{display:grid;grid-template-columns:1.4fr .8fr;height:calc(100vh - 120px);}
-.map-panel{position:relative;padding:12px;}
-#map{width:100%;height:100%;border:2px solid #39ff14;border-radius:18px;box-shadow:0 0 20px rgba(57,255,20,.6);}
-.status-bar{position:absolute;top:25px;left:25px;z-index:999;display:flex;gap:10px;}
-.status-pill{background:rgba(0,0,0,.75);padding:10px 16px;border:1px solid #39ff14;border-radius:12px;color:#39ff14;font-weight:700;box-shadow:0 0 10px rgba(57,255,20,.6);}
-.control-panel{padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;background:rgba(0,0,0,.7);border-left:1px solid #b68c1d;}
-.card{background:rgba(4,18,4,.92);border:1px solid #39ff14;border-radius:18px;padding:16px;box-shadow:0 0 15px rgba(57,255,20,.35);}
-.card h2{color:#ffe95c;margin-bottom:12px;font-size:1rem;letter-spacing:1px;}
-input,select,textarea{width:100%;padding:14px;margin-bottom:10px;background:#000;border:1px solid #39ff14;color:#fff;border-radius:10px;font-size:1rem;}
-button{width:100%;padding:15px;border:none;border-radius:12px;font-weight:800;font-size:1rem;cursor:pointer;margin-bottom:10px;}
-.deploy{background:#39ff14;color:#000;box-shadow:0 0 20px #39ff14;}
-.join{background:#0f4fff;color:#fff;}
-.warn{background:#8d0000;color:#fff;}
-.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.action-btn{background:#101810;color:#39ff14;border:1px solid #39ff14;}
-.feed{height:160px;overflow-y:auto;font-family:monospace;font-size:.9rem;}
-.feed div{padding:8px 0;border-bottom:1px solid rgba(57,255,20,.2);}
-.footer{text-align:center;font-size:.9rem;color:#e7c14f;padding-top:10px;letter-spacing:1px;}
-@media(max-width:900px){.main{grid-template-columns:1fr;grid-template-rows:55vh auto;}.logo{font-size:2.8rem;}header{height:100px;}}
-</style>
-</head>
-<body>
-
-<header>
-<div class="logo">TACNET</div>
-<div class="subtitle">MULTI-AGENCY TASK FORCE SEARCH APP</div>
-<div class="tagline">FEDERAL • STATE • LOCAL</div>
-</header>
-
-<div class="main">
-<div class="map-panel">
-
-<div class="status-bar">
-<div class="status-pill">NET ACTIVE</div>
-<div class="status-pill" id="gps-status">GPS READY</div>
-</div>
-
-<div id="map"></div>
-</div>
-
-<div class="control-panel">
-
-<div class="card">
-<h2>ADDRESS SEARCH</h2>
-<div style="display:flex;gap:8px;">
-<input type="text" id="address-search" placeholder="ENTER ADDRESS OR LOCATION" />
-<button class="join" onclick="searchAddress()">GO</button>
-</div>
-</div>
-
-<div class="card">
-<h2>TACTICAL OPERATION ROOM</h2>
-<input type="text" id="join-code" placeholder="ENTER TAC OPERATION CODE" />
-<button class="join" onclick="joinOperation()">JOIN LIVE OPERATION</button>
-</div>
-
-<div class="card">
-<h2>CREATE INCIDENT</h2>
-<input type="text" id="incident" placeholder="INCIDENT NAME" />
-<input type="text" id="agency" placeholder="AGENCY" />
-<input type="text" id="callsign" placeholder="CALLSIGN" />
-<input type="text" id="location" placeholder="LAST KNOWN LOCATION" />
-<input type="password" id="access" placeholder="SECURE ACCESS CODE" />
-<button class="deploy" onclick="deployNet()">DEPLOY THE NET</button>
-</div>
-
-<div class="card">
-<h2>TACTICAL TOOLS</h2>
-<div class="action-grid">
-<button class="action-btn" onclick="togglePerimeter()">SET PERIMETER</button>
-<button class="action-btn" onclick="toggleGridMode()">GRID MODE</button>
-<button class="action-btn" onclick="markEvidence()">MARK EVIDENCE</button>
-<button class="action-btn" onclick="markOfficer()">UNIT MARKER</button>
-<button class="action-btn" onclick="markK9()">K9 MARKER</button>
-<button class="action-btn" onclick="sendSOS()">SOS ALERT</button>
-</div>
-<button class="warn" onclick="terminateSearch()">TERMINATE SEARCH</button>
-</div>
-
-<div class="card">
-<h2>FIELD NOTES & FINAL DISPOSITION</h2>
-<textarea id="final-notes" placeholder="ENTER INCIDENT NOTES, EVIDENCE SUMMARY, FINAL DISPOSITION"></textarea>
-<button class="deploy" onclick="generatePDFReport()">GENERATE PDF REPORT</button>
-</div>
-
-<div class="card">
-<h2>LIVE OPERATION STATUS</h2>
-<div class="status-pill">OPS CODE: TAC-5297</div>
-<div class="status-pill">STATUS: ACTIVE</div>
-<div class="status-pill">SEARCH MODE: LIVE</div>
-</div>
-
-<div class="card">
-<h2>NET ACTIVITY FEED</h2>
-<div class="feed" id="feed"></div>
-</div>
-
-<div class="footer">
-APP CREATOR EARL A. WOOD<br>
-DEPUTY SHERIFF RETIRED
-</div>
-
-</div>
-</div>
-
 <script>
 
 const firebaseConfig = {
@@ -142,19 +12,36 @@ appId: "1:633429430474:web:9458093c40c218ca42e433"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.database();
 
 let map;
-let perimeterMode=false;
-let gridMode=false;
-let perimeterPoints=[];
+let officerMarker;
+let perimeterMode = false;
+let perimeterPoints = [];
 let perimeterLayer;
+let addressSearchActive = false;
 
-map=L.map('map').setView([37.3349,-79.5236],13);
+map = L.map('map').setView([37.3349,-79.5236],13);
 
-const streetLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19});
-const satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-const terrainLayer=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
+setTimeout(()=>{
+map.invalidateSize();
+},500);
+
+const streetLayer = L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+);
+
+const satelliteLayer = L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+);
+
+const terrainLayer = L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+);
 
 streetLayer.addTo(map);
 
@@ -165,152 +52,144 @@ L.control.layers({
 }).addTo(map);
 
 navigator.geolocation.watchPosition((pos)=>{
-const lat=pos.coords.latitude;
-const lng=pos.coords.longitude;
 
-L.circleMarker([lat,lng],{
+const lat = pos.coords.latitude;
+const lng = pos.coords.longitude;
+
+if(officerMarker){
+map.removeLayer(officerMarker);
+}
+
+officerMarker = L.circleMarker([lat,lng],{
 radius:10,
 color:'#00aaff',
 fillColor:'#00aaff',
 fillOpacity:1
-}).addTo(map).bindPopup('ACTIVE LAW ENFORCEMENT UNIT');
+}).addTo(map)
+.bindPopup('ACTIVE LAW ENFORCEMENT UNIT');
 
+if(!addressSearchActive){
 map.setView([lat,lng]);
+}
 
-document.getElementById('gps-status').innerText='LIVE GPS ACTIVE';
+document.getElementById('gps-status').innerText =
+'LIVE GPS ACTIVE';
+
 });
 
 async function searchAddress(){
-const query=document.getElementById('address-search').value;
-if(!query){alert('ENTER ADDRESS');return;}
-try{
-const response=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(query));
-const data=await response.json();
-if(data.length>0){
-const lat=parseFloat(data[0].lat);
-const lng=parseFloat(data[0].lon);
-map.setView([lat,lng],16);
-L.marker([lat,lng]).addTo(map).bindPopup('SEARCH LOCATION').openPopup();
-addFeed('ADDRESS SEARCH COMPLETED');
-}
-}catch(err){alert('SEARCH ERROR');}
-}
 
-function deployNet(){
-const access=document.getElementById('access').value;
-if(access!=='TACNET-DEMO-0515'){
-alert('INVALID ACCESS CODE');
+const query =
+document.getElementById('address-search').value;
+
+if(!query){
+alert('ENTER ADDRESS');
 return;
 }
-alert('TACNET DEPLOYED SUCCESSFULLY');
-addFeed('TACTICAL OPERATION DEPLOYED');
+
+try{
+
+const response = await fetch(
+'https://nominatim.openstreetmap.org/search?format=json&q='
++ encodeURIComponent(query)
+);
+
+const data = await response.json();
+
+if(data.length > 0){
+
+const lat = parseFloat(data[0].lat);
+const lng = parseFloat(data[0].lon);
+
+addressSearchActive = true;
+
+map.setView([lat,lng],16);
+
+L.marker([lat,lng]).addTo(map)
+.bindPopup('SEARCH LOCATION')
+.openPopup();
+
+addFeed('ADDRESS SEARCH COMPLETED');
+
+setTimeout(()=>{
+addressSearchActive = false;
+},10000);
+
+}else{
+alert('ADDRESS NOT FOUND');
 }
 
-function joinOperation(){
-alert('CONNECTED TO LIVE TACNET ROOM');
-addFeed('JOINED LIVE OPERATION');
+}catch(err){
+
+alert('SEARCH ERROR');
+
 }
 
-function toggleGridMode(){
-gridMode=!gridMode;
-addFeed(gridMode?'GRID MODE ENABLED':'GRID MODE DISABLED');
 }
 
 function togglePerimeter(){
-perimeterMode=!perimeterMode;
-addFeed(perimeterMode?'PERIMETER MODE ACTIVE':'PERIMETER MODE DISABLED');
+
+perimeterMode = !perimeterMode;
+
+addFeed(
+perimeterMode
+? 'PERIMETER MODE ACTIVE'
+: 'PERIMETER MODE DISABLED'
+);
+
 }
 
 map.on('click',(e)=>{
 
-if(gridMode){
-L.rectangle([
-[e.latlng.lat-0.0015,e.latlng.lng-0.0015],
-[e.latlng.lat+0.0015,e.latlng.lng+0.0015]
-],{
-color:'#00ff66',
-fillColor:'#00ff66',
-fillOpacity:.22,
-weight:1
-}).addTo(map).bindPopup('GRID CLEARED');
-addFeed('SEARCH GRID CLEARED');
+if(!perimeterMode) return;
+
+perimeterPoints.push([
+e.latlng.lat,
+e.latlng.lng
+]);
+
+L.circleMarker(e.latlng,{
+radius:5,
+color:'#39ff14'
+}).addTo(map);
+
+if(perimeterPoints.length < 3){
 return;
 }
-
-if(!perimeterMode)return;
-
-perimeterPoints.push([e.latlng.lat,e.latlng.lng]);
-
-L.circleMarker(e.latlng,{radius:5,color:'#39ff14'}).addTo(map);
-
-if(perimeterPoints.length<3)return;
 
 if(perimeterLayer){
 map.removeLayer(perimeterLayer);
 }
 
-perimeterLayer=L.polygon(perimeterPoints,{
+perimeterLayer = L.polygon(
+perimeterPoints,
+{
 color:'#39ff14',
 fillColor:'#39ff14',
 fillOpacity:.15
-}).addTo(map);
+}
+).addTo(map);
 
 });
-
-function markEvidence(){
-map.once('click',(e)=>{
-L.circleMarker(e.latlng,{radius:8,color:'#ffd700',fillColor:'#ffd700',fillOpacity:1}).addTo(map).bindPopup('EVIDENCE MARKED');
-addFeed('EVIDENCE LOGGED');
-});
-}
-
-function markOfficer(){
-map.once('click',(e)=>{
-L.circleMarker(e.latlng,{radius:8,color:'#00aaff',fillColor:'#00aaff',fillOpacity:1}).addTo(map).bindPopup('LAW ENFORCEMENT');
-addFeed('UNIT MARKER DEPLOYED');
-});
-}
-
-function markK9(){
-map.once('click',(e)=>{
-L.circleMarker(e.latlng,{radius:8,color:'#7fdcff',fillColor:'#7fdcff',fillOpacity:1}).addTo(map).bindPopup('K9 UNIT');
-addFeed('K9 UNIT DEPLOYED');
-});
-}
-
-function sendSOS(){
-alert('SOS ALERT SENT');
-addFeed('OFFICER DOWN SOS ALERT');
-}
-
-function terminateSearch(){
-if(confirm('TERMINATE ACTIVE SEARCH?')){
-location.reload();
-}
-}
-
-function generatePDFReport(){
-const notes=document.getElementById('final-notes').value;
-const reportWindow=window.open('','_blank');
-reportWindow.document.write(`
-<h1>TACNET OPERATION REPORT</h1>
-<p><strong>DATE:</strong> ${new Date().toLocaleString()}</p>
-<p><strong>FINAL NOTES:</strong></p>
-<p>${notes}</p>
-<hr>
-<p>APP CREATOR: EARL A. WOOD DEPUTY SHERIFF RETIRED</p>
-`);
-reportWindow.print();
-addFeed('PDF REPORT GENERATED');
-}
 
 function addFeed(text){
-const feed=document.getElementById('feed');
-const item=document.createElement('div');
-item.innerHTML=new Date().toLocaleTimeString()+' — '+text;
+
+const feed =
+document.getElementById('feed');
+
+if(!feed) return;
+
+const item =
+document.createElement('div');
+
+item.innerHTML =
+new Date().toLocaleTimeString()
++ ' — ' + text;
+
 feed.prepend(item);
+
 }
 
-a
-```
+addFeed('TACNET CORE INITIALIZED');
 
+</script>
