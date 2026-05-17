@@ -359,7 +359,38 @@
     </div>
 
     <script>
+      <script>
         var synth = window.speechSynthesis;
+        var tacticalVoice = null;
+
+        // FUNCTION TO LOG AND LOCK THE BEST PREMIUM MALE VOICE AVAILABLE
+        function loadTacticalVoice() {
+            if (!synth) return;
+            var voices = synth.getVoices();
+            
+            // Search criteria for clear, authoritative natural voices
+            // Looks for premium local voices first, then high-quality male options
+            var targetVoice = voices.find(function(voice) {
+                return voice.name.includes('David') || 
+                       voice.name.includes('Male') || 
+                       voice.name.includes('Natural') || 
+                       (voice.lang === 'en-US' && voice.name.includes('Google'));
+            });
+
+            // If a specific premium voice is found, lock it in. Otherwise, use the best US English option.
+            if (targetVoice) {
+                tacticalVoice = targetVoice;
+            } else {
+                tacticalVoice = voices.find(function(voice) { return voice.lang === 'en-US'; });
+            }
+        }
+
+        // Chrome and modern browsers load voices asynchronously
+        if (!!synth && 'onvoiceschanged' in synth) {
+            synth.onvoiceschanged = loadTacticalVoice;
+        } else {
+            loadTacticalVoice();
+        }
 
         function lockOperationalPerimeter() {
             var inputAddr = document.getElementById('target-address-input').value;
@@ -369,7 +400,8 @@
 
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
-            synth.cancel(); 
+            synth.cancel(); // Terminate any ongoing audio loops immediately
+            
             let message = "";
 
             if (actionType === 'cpr') {
@@ -387,8 +419,18 @@
             }
 
             var transmission = new SpeechSynthesisUtterance(message);
-            transmission.rate = 0.95; 
+            
+            // Apply our selected clear voice if available
+            if (tacticalVoice) {
+                transmission.voice = tacticalVoice;
+            }
+            
+            transmission.rate = 0.92; // Slightly slowed down to sound calm and tactical under stress
+            transmission.pitch = 1.0; // Keeps the tone deep, natural, and clear
+            
             synth.speak(transmission);
+        }
+    </script>
         }
     </script>
 </body>
