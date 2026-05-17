@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET Tactical Task Force Command</title>
+    <title>TACNET Tactical Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
@@ -36,26 +35,62 @@
             z-index: 9998;
         }
 
-        /* MASTER SCREEN CONTAINER */
+        /* MASTER VIEWPORT STACK */
         .main-viewport {
             display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;
         }
 
-        /* LOUD TOP-LEVEL COMMAND TITLE BANNER */
+        /* RE-ENGINEERED HEADER FLOW: PREVENTS OVERLAPPING CUSTOM OVAL GRAPHICS */
         .master-command-header {
-            background: #0d0000; border-bottom: 2px solid var(--red);
-            padding: 12px 6px; text-align: center; flex-shrink: 0;
-            box-shadow: 0 3px 10px rgba(255,0,0,0.2);
-        }
-        .master-command-header h1 {
-            margin: 0; padding: 0; font-size: 1.05rem; color: #fff;
-            letter-spacing: 1px; font-weight: 900; text-transform: uppercase;
-            text-shadow: 0 0 8px var(--red); line-height: 1.2;
+            background: #000;
+            border-bottom: 2px solid var(--red);
+            padding: 16px 10px;
+            text-align: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(255,0,0,0.25);
         }
 
-        /* PRESTIGE APP CREATOR REGISTRY BADGE */
+        /* MONSTERSIZED MASTER BRAND TITLE */
+        .master-command-header h1 {
+            margin: 0; padding: 0; 
+            font-size: 2.4rem; 
+            font-weight: 900; 
+            text-transform: uppercase;
+            color: #fff;
+            letter-spacing: 4px;
+            text-shadow: 0 0 12px var(--red), 0 0 4px #fff;
+            line-height: 1.1;
+        }
+
+        /* LINE 2: SUB-COMMAND SPECIFICATION */
+        .master-command-header h2 {
+            margin: 4px 0 0 0; padding: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #eeeeee;
+            letter-spacing: 1.5px;
+            line-height: 1.2;
+        }
+
+        /* LINE 3: CRACKED METALLIC WEATHERED GOLD TIER SYSTEM */
+        .master-command-header h3 {
+            margin: 6px 0 0 0; padding: 0;
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #d4af37;
+            /* CRACKED GOLD TEXTURED EFFECT LOOK */
+            background: linear-gradient(135deg, #ffea85 0%, #b8860b 25%, #ffd700 50%, #8b6508 75%, #ffea85 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.9)) drop-shadow(0 0 3px rgba(212,175,55,0.4));
+        }
+
+        /* APP CREATOR REGISTRY BADGE SLIDER */
         .creator-registry-badge {
-            background: #0a0f0a; border-bottom: 1px solid var(--neon-green);
+            background: #060a06; border-bottom: 1px solid var(--neon-green);
             padding: 6px 4px; text-align: center; flex-shrink: 0;
         }
         .creator-registry-badge p {
@@ -63,7 +98,7 @@
             font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase;
         }
 
-        /* TAB DECK CONTAINER SHEETS */
+        /* TAB DECK CONTAINER PANELS */
         .viewport-sheet {
             display: none; flex-direction: column; width: 100%; flex: 1; overflow: hidden;
         }
@@ -72,17 +107,17 @@
         .scrollable-content { flex: 1; overflow-y: auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; background: #030503; }
         .section-header { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 4px; }
 
-        /* MULTI-AGENCY COORDINATION SYNC HUD */
+        /* RE-TITLED AGENCY SYNC HUD BAR */
         .network-bar {
             padding: 8px 10px; background: #080d08; display: flex; gap: 8px;
             align-items: center; border-bottom: 1px solid var(--gold); flex-shrink: 0;
         }
-        .net-label { font-size: 0.75rem; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        .net-label { font-size: 0.72rem; color: var(--gold); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         #networkCodeInput { flex: 1; background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; outline: none; }
-        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.8rem; font-weight: 900; padding: 6px 12px; cursor: pointer; text-transform: uppercase; }
+        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.78rem; font-weight: 900; padding: 6px 10px; cursor: pointer; text-transform: uppercase; }
         #networkBanner { background: #002200; color: var(--neon-green); padding: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; display: none; text-transform: uppercase; border-bottom: 1px solid var(--neon-green); }
 
-        /* TARGET DISPATCH SEARCH HUD */
+        /* TARGET ADDRESS DISPATCH SLOT */
         .search-controls {
             padding: 8px; display: flex; gap: 8px; background: #000; flex-shrink: 0;
             border-bottom: 2px solid var(--neon-green);
@@ -101,12 +136,12 @@
 
         #map { flex: 1; width: 100%; background: #111; }
 
-        /* SYSTEM CHRONOLOGY CHIP RECORD LOGS BOX */
+        /* SYSTEM EVENT LEDGER INTERFACE TICKER */
         .terminal-box { height: 75px; background: #020502; border-top: 1px solid #112211; padding: 6px; flex-shrink: 0; box-sizing: border-box; }
         #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #33cc66; line-height: 1.3; }
         .ticker-line { padding: 1px 0; border-bottom: 1px solid #040a04; }
 
-        /* COMMAND SEARCH ASSETS GRID */
+        /* STRATEGIC UNIT SELECTION COMMAND MATRIX */
         .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .unitDeployBtn {
             padding: 16px 10px; font-size: 0.95rem; background: #111; color: #fff;
@@ -120,7 +155,7 @@
         .btn-gold { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 8px rgba(255,204,0,0.3); }
         .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; padding: 20px 0; font-size: 1.05rem; box-shadow: 0 0 10px rgba(191,102,255,0.4); }
 
-        /* EMERGENCY BROADCAST CONTROL BLOCK */
+        /* EMERGENCY AUDIO TRANSMISSION DECKS */
         .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .voiceBtn { padding: 14px 2px; font-size: .85rem; border: 1px solid var(--gold); font-weight: bold; cursor: pointer; background: #111; color: var(--gold); text-align: center; text-transform: uppercase; border-radius: 3px; }
         .btn-stop-transmission { grid-column: span 3; border: 1px solid var(--red); background: #1a0000; color: #ff9999; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; }
@@ -136,7 +171,7 @@
             border-radius: 4px; font-size: 1.1rem; box-shadow: 0 0 15px var(--neon-green); margin-top: auto; width: 100%; box-sizing: border-box;
         }
 
-        /* BOTTOM OPERATION VIEW Switch NAVIGATION PANEL */
+        /* BOTTOM MASTER SWITCH HOVER FOOTER CONTROLS */
         .deck-navigation-bar {
             height: 56px; background: #080808; border-top: 2px solid var(--gold);
             display: flex; flex-shrink: 0; z-index: 2000;
@@ -154,7 +189,7 @@
             line-height: 1.3; letter-spacing: 1px; flex-shrink: 0;
         }
 
-        /* HIGH-VISIBILITY TARGET STRUCT ANCHOR PIN */
+        /* COCKPIT COMPACT PULSE RADAR RING */
         .target-pulsing-icon {
             background: var(--neon-green); border: 2px solid #fff; border-radius: 50%;
             box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
@@ -171,7 +206,9 @@
     <div class="main-viewport">
         
         <div class="master-command-header">
-            <h1>Tacnet: The Multi-Agency Tactical Task Force Search App</h1>
+            <h1>Tacnet</h1>
+            <h2>Multi-Agency Task Force Search App</h2>
+            <h3>Federal • State • Local</h3>
         </div>
 
         <div class="creator-registry-badge">
@@ -180,9 +217,9 @@
         
         <div id="sheetMapCommand" class="viewport-sheet active-sheet">
             <div class="network-bar">
-                <span class="net-label">Agency Sync:</span>
-                <input id="networkCodeInput" placeholder="ENTER JOINT AGENCY CODE" value="ACSD-K9">
-                <button class="syncBtn" onclick="connectAgencyChannel()">LINK CODE</button>
+                <span class="net-label">Assisting Agency Sync:</span>
+                <input id="networkCodeInput" placeholder="ENTER SYSTEM INCIDENT CODE" value="ACSD-K9">
+                <button class="syncBtn" onclick="connectAgencyChannel()">Link Code</button>
             </div>
             <div id="networkBanner">CONNECTED DATA CHANNEL LINK ESTABLISHED</div>
 
@@ -269,7 +306,6 @@
 
         window.onload = function() {
             initMap();
-            // Pre-load professional voice directory arrays to ensure clean deployment
             if (synth && synth.onvoiceschanged !== undefined) {
                 synth.onvoiceschanged = function() { getProfessionalVoice(); };
             }
@@ -357,10 +393,10 @@
             if(code === "") return;
             
             var banner = document.getElementById('networkBanner');
-            banner.innerText = `SECURE CRYPTO CHANNEL ATTACHED: [${code.toUpperCase()}]`;
+            banner.innerText = `ASSISTING TUNNEL ACCESS LOCKED ON CODE: [${code.toUpperCase()}]`;
             banner.style.display = 'block';
 
-            logToSystemRecord(`MULTI-AGENCY COORDINATION LINK RE-ALIGNED TO CHANNEL: [${code.toUpperCase()}]`);
+            logToSystemRecord(`ASSISTING AGENCY SYNCED SECURE SESSION CODE: [${code.toUpperCase()}]`);
         }
 
         async function searchAddress(){
@@ -475,26 +511,21 @@
 
         function killVoiceTransmission(){ if(synth) { synth.cancel(); } }
 
-        // EXPLICIT SEARCH FILTER FOR HIGH-QUALITY NATURAL VOICES (ELIMINATES THE DRUNK/ROBOT GLITCH)
         function getProfessionalVoice() {
             if(!synth) return null;
             var voiceList = synth.getVoices();
-            
-            // Look for crisp, modern natural English accents first (Google, Apple, or Microsoft premium voices)
             var premiumTargets = ["Google US English", "en-US-Neural2", "en-GB-Neural2", "Samantha", "Microsoft David"];
             for (var i = 0; i < premiumTargets.length; i++) {
                 var found = voiceList.find(v => v.name.includes(premiumTargets[i]));
                 if(found) return found;
             }
-            
-            // Standard backup English voice filter
             var backupEnglish = voiceList.find(v => v.lang.startsWith('en'));
             return backupEnglish || null;
         }
 
         function speakMedicalProtocol(type) {
             if(!synth) return;
-            synth.cancel(); // Terminate any lingering channel buffers instantly
+            synth.cancel();
             
             var msg = '';
             if(type==='cpr') msg = 'Executing canine CPR instructions. Lay the dog on its right side. Verify airway is clear. Deliver thirty chest compressions behind the elbow, then deliver two breaths into the nostrils. Repeat.';
@@ -505,16 +536,11 @@
             if(type==='rally') msg = 'All cordon units cease search patterns and collapse positions back inward on lead K9 asset, Wood Canine One.';
 
             var speech = new SpeechSynthesisUtterance(msg);
-            
-            // LOCK IN THE CHOSEN PROFESSIONAL VOICE ENGINE
             var targetVoice = getProfessionalVoice();
-            if(targetVoice) {
-                speech.voice = targetVoice;
-            }
+            if(targetVoice) { speech.voice = targetVoice; }
             
-            // RE-CALIBRATED CADENCE CONTROLS: Locks pacing to a steady, clear, highly legible tactical standard
-            speech.rate = 0.95;  // Slightly throttled down to ensure clear articulation under stress
-            speech.pitch = 1.0;  // Balanced mid-tone profile to eliminate metallic distortion
+            speech.rate = 0.95;
+            speech.pitch = 1.0;
             
             synth.speak(speech);
             logToSystemRecord(`EMERGENCY FIELD TRANSMISSION ENGAGED: [${type.toUpperCase()}]`);
