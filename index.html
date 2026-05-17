@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - SEPARATED LAYER CORE</title>
+    <title>TACNET - LIVE TRACK LINE BUILD</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -185,7 +186,7 @@
             <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
             <div class="gate-status-line"><span>RADAR CONFIG:</span> <span style="color:var(--gold-primary);">SEPARATED SECTOR LAYERS</span></div>
-            <div class="gate-status-line"><span>UNIT TRACKING:</span> <span style="color:var(--neon-green);">INDEPENDENT DOT DRIVE</span></div>
+            <div class="gate-status-line"><span>TRACKING LOG:</span> <span style="color:var(--neon-green);">DYNAMIC BREADCRUMBS ENAMELED</span></div>
         </div>
     </div>
 
@@ -208,7 +209,7 @@
         <div class="medical-intel-readout">
             <div class="intel-header-title" id="intel-title">INCIDENT LOG DECK</div>
             <div class="intel-body-text" id="intel-body">
-                Independent Tracking Matrix Online. The background lines and target rings are locked. Drag your thumb to slide and position the units independently across the grid.
+                Independent Tracking Matrix Online. Drag your thumb to shift the units. The console will automatically draw glowing history lines showing the ground your units have cleared.
             </div>
         </div>
 
@@ -218,7 +219,7 @@
             <button class="action-click-btn" onclick="fireMedicalArray('heat')">☀️ 3. HEAT STROKE</button>
             <button class="action-click-btn" onclick="fireMedicalArray('snake')">🐍 4. SNAKE BITE</button>
             <button class="action-click-btn" onclick="fireMedicalArray('vet')" style="border-color:var(--gold-primary); color:var(--gold-primary);">🏥 EMERGENCY VET</button>
-            <button class="action-click-btn" onclick="resetRadarView()" style="border-color:#3366ff; color:#3366ff; background:rgba(0,68,255,0.08);">🐕 RALLY ON K9-1</button>
+            <button class="action-click-btn" onclick="resetRadarView()" style="border-color:#3366ff; color:#3366ff; background:rgba(0,68,255,0.08);">🐕 CLEAR TRAILS & RALLY</button>
         </div>
     </div>
 
@@ -226,7 +227,7 @@
         let canvas = null;
         let ctx = null;
 
-        // Vector tracking coordinates (Offsets separate from screen canvas center)
+        // Vector tracking offsets for the movable layer
         let offsetX = 0;
         let offsetY = 0;
         let isDragging = false;
@@ -236,12 +237,19 @@
         let cordonActive = false;
         let cordonText = "";
 
-        // Independent Unit Layer Points
+        // Roster of Independent Units
         const trackUnits = [
             { id: "1", label: "WOOD-K91", baseX: 0, baseY: -20 },
             { id: "2", label: "SMITH-104", baseX: 60, baseY: 40 },
             { id: "3", label: "VSP-212", baseX: -50, baseY: -60 }
         ];
+
+        // Memory array to hold historical track line coordinates for each unit
+        let trackHistory = {
+            "1": [],
+            "2": [],
+            "3": []
+        };
 
         const emergencyProtocols = {
             cpr: { title: "🚨 EMERGENCY PROTOCOL: K9 C.P.R.", text: "• POSITION: Place dog on its RIGHT side.\n• AIRWAY: Pull tongue forward, clear fluids.\n• COMPRESSIONS: 30 heavy chest compressions behind elbow line. 2 rescue breaths down muzzle. Repeat tracking cycle.", audio: "K9 C P R active. Lay dog on right side." },
@@ -270,6 +278,9 @@
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
 
+            // Log initial positions so trails start correctly
+            logCurrentPositions();
+
             drawRadarScreen();
 
             canvas.addEventListener('mousedown', dragStart);
@@ -281,14 +292,24 @@
             canvas.addEventListener('touchend', dragEnd);
         }
 
+        // Helper to record unit coordinates into the history arrays
+        function logCurrentPositions() {
+            trackUnits.forEach(unit => {
+                trackHistory[unit.id].push({
+                    x: unit.baseX + offsetX,
+                    y: unit.baseY + offsetY
+                });
+            });
+        }
+
         function drawRadarScreen() {
             if (!ctx) return;
             
-            // Wipe Field
+            // Wipe Field Clear
             ctx.fillStyle = "#0a130a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // FIX: Anchor Grid Center directly to the visual frame midpoints (Absolute Zero Motion)
+            // Anchor Grid Center directly to frame midpoint (Zero Grid Movement)
             let gridCenterX = canvas.width / 2;
             let gridCenterY = canvas.height / 2;
 
@@ -307,7 +328,25 @@
             ctx.beginPath(); ctx.moveTo(0, gridCenterY); ctx.lineTo(canvas.width, gridCenterY); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(gridCenterX, 0); ctx.lineTo(gridCenterX, canvas.height); ctx.stroke();
 
-            // Draw Active Perimeter Cordon (Tethered to the moving unit coordinates)
+            // DRAW GLOWING TRACK BREADCRUMBS LAYER
+            trackUnits.forEach(unit => {
+                let history = trackHistory[unit.id];
+                if (history.length > 1) {
+                    ctx.strokeStyle = "rgba(0, 102, 255, 0.8)"; /* Clear Tactical Blue Trail */
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([4, 4]); /* High-visibility dashed track line */
+                    ctx.beginPath();
+                    
+                    ctx.moveTo(gridCenterX + history[0].x, gridCenterY + history[0].y);
+                    for (let i = 1; i < history.length; i++) {
+                        ctx.lineTo(gridCenterX + history[i].x, gridCenterY + history[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]); /* Reset line to solid for other elements */
+                }
+            });
+
+            // Draw Active Perimeter Cordon (Tethered to the moving units)
             if (cordonActive) {
                 ctx.strokeStyle = "#00ff33";
                 ctx.lineWidth = 2.5;
@@ -326,12 +365,12 @@
                 ctx.fillText(`PERIMETER LOCKED`, cordonX + 85, cordonY + 4);
             }
 
-            // Render Detached Moving Unit Points (Responsive directly to user's finger offsets)
+            // Render Detached Moving Unit Points
             trackUnits.forEach(unit => {
                 let unitX = gridCenterX + unit.baseX + offsetX;
                 let unitY = gridCenterY + unit.baseY + offsetY;
 
-                // Blue/White Outer Border Core Ring
+                // Blue Core with Bold White Outer Ring Border
                 ctx.fillStyle = "#0044ff";
                 ctx.beginPath();
                 ctx.arc(unitX, unitY, 14, 0, 2 * Math.PI);
@@ -340,7 +379,7 @@
                 ctx.lineWidth = 2.5;
                 ctx.stroke();
 
-                // Unit Identifier Text Center Spot
+                // Unit Identifier Number Center Spot
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 12px sans-serif";
                 ctx.textAlign = "center";
@@ -367,12 +406,15 @@
             let dx = e.clientX - startX;
             let dy = e.clientY - startY;
             
-            // Adjust only the movable coordinates layer
+            // Adjust only the movable units layer coordinate tracking offsets
             offsetX += dx;
             offsetY += dy;
             
             startX = e.clientX;
             startY = e.clientY;
+            
+            // Constantly append the new coordinates to log historical sweeping lines
+            logCurrentPositions();
             
             drawRadarScreen();
         }
@@ -382,9 +424,14 @@
         function resetRadarView() {
             offsetX = 0;
             offsetY = 0;
+            
+            // Clear tracking memory banks completely on clear request
+            trackHistory = { "1": [], "2": [], "3": [] };
+            logCurrentPositions();
+            
             drawRadarScreen();
-            document.getElementById('intel-title').innerText = "🎯 SYSTEM FOCUS RESET";
-            document.getElementById('intel-body').innerText = "Radar layer reset. Teams shifted cleanly back to command zero-points.";
+            document.getElementById('intel-title').innerText = "🎯 MATRIX CLEARED & RESET";
+            document.getElementById('intel-body').innerText = "All historical track blue lines purged. Teams shifted clean back to zero baseline points.";
         }
 
         function triggerManualAddressOverride() {
@@ -396,6 +443,7 @@
             cordonActive = true;
             offsetX = -30;
             offsetY = 40;
+            logCurrentPositions();
             drawRadarScreen();
 
             document.getElementById('intel-title').innerText = "📍 PERIMETER CORDON LOCKED";
