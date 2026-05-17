@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +82,7 @@
             margin: 2px 0 0 0;
         }
 
-        /* HARD-LOCKED CONSOLE CONTAINER FOR MOBILE/IOS */
+        /* IOS STABLE SCROLLING SCAFFOLDING */
         .console-container {
             padding: 10px;
             display: flex;
@@ -96,7 +95,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* TELEMETRY INPUT STACK */
+        /* TELEMETRY INPUT TRACK */
         .address-bar-frame {
             display: flex;
             border: 2px solid var(--neon-green);
@@ -127,7 +126,7 @@
             font-weight: bold;
         }
 
-        /* HIGH-VISIBILITY SEARCH ADDRESS GO BUTTON */
+        /* HARD-LOCKED DYNAMIC ADDRESS SEARCH "GO" BUTTON */
         .action-trigger-bar {
             background-color: var(--neon-green);
             color: #000000;
@@ -140,10 +139,10 @@
             border-radius: 4px;
             text-transform: uppercase;
             flex-shrink: 0;
-            box-shadow: 0 0 8px rgba(0, 255, 51, 0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 51, 0.6);
         }
 
-        /* LIVE INTERACTIVE SATELLITE/TERRAIN MAP FRAME */
+        /* LIVE TACTICAL TERMINAL RADAR CONSOLE */
         .radar-screen-container {
             height: 280px; 
             background-color: #000000;
@@ -152,6 +151,7 @@
             border-radius: 4px;
             flex-shrink: 0;
             z-index: 1;
+            overflow: hidden;
         }
 
         #map {
@@ -160,16 +160,17 @@
             background: #000;
         }
 
-        /* RESTORED TACTICAL RED NIGHT VISION SCREEN GLOW OVERLAY */
+        /* NEON RED NIGHT VISION GLOW OVERLAY */
         .night-vision-glow {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 80%);
-            pointer-events: none; /* Allows you to tap and drag the map underneath perfectly */
+            background: radial-gradient(circle, rgba(255, 0, 51, 0.28) 0%, rgba(255, 0, 0, 0.08) 60%, rgba(0, 0, 0, 0.4) 100%);
+            box-shadow: inset 0 0 25px rgba(255, 0, 33, 0.5);
+            pointer-events: none; /* Allows fluid map manipulation directly underneath */
             z-index: 1000; 
         }
 
-        /* MAP LAYER VIEW SELECTOR BUTTON GROUP */
+        /* TACTICAL MAP MULTI-VIEW TOGGLES */
         .map-layer-controls {
             position: absolute;
             top: 10px;
@@ -196,7 +197,7 @@
             color: #000000;
         }
 
-        /* DATA LOG INTERFACE */
+        /* DATA LOG PANEL */
         .data-log-panel {
             border-top: 1px dashed var(--gold);
             padding-top: 8px;
@@ -217,7 +218,7 @@
             line-height: 1.4;
         }
 
-        /* EMERGENCY ACTION BUTTON GRID */
+        /* MEDICAL OPERATION MATRIX */
         .bottom-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -247,7 +248,7 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        /* EMERGENCY MUTE COMMAND RAIL */
+        /* COMMAND INTERRUPT AUDIO RAIL */
         .btn-stop-audio {
             grid-column: span 2;
             background-color: #2b0000;
@@ -265,7 +266,7 @@
 
         .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
 
-        /* BOTTOM SIGNATURE ROW */
+        /* CREATOR FOOTER STRIP */
         .fixed-creator-footer {
             background-color: #050505;
             border-top: 2px solid #222;
@@ -327,7 +328,7 @@
         <div class="data-log-panel">
             <div class="log-status-header">📍 PERIMETER CORDON STATUS</div>
             <div class="log-body-text">
-                GPS Telemetry Engine Online. Live multi-view tracking active.<br>
+                Tactical Satellite Systems synchronized.<br>
                 Target Cordon: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
             </div>
         </div>
@@ -354,11 +355,10 @@
         var synth = window.speechSynthesis;
         var map, activeLayer, searchCircle;
         
-        // Coordinates set directly onto Madison Heights, VA
+        // Exact Search Coordinate Base Target Area
         var defaultLat = 37.4338;
         var defaultLng = -79.1114;
 
-        // HIGH-VISIBILITY LIVE MAP MAP TILES (No APIs required, loads everywhere)
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Esri Satellite'
@@ -371,65 +371,59 @@
             })
         };
 
-        // INITIALIZE MAP LAYOUT
         function initMap() {
             map = L.map('map', {
                 center: [defaultLat, defaultLng],
                 zoom: 14,
-                zoomControl: false, // Hides bulky buttons to maximize tactical workspace
+                zoomControl: false, 
                 attributionControl: false
             });
 
-            // Start with Satellite View by default
             activeLayer = layers.sat;
             activeLayer.addTo(map);
 
-            // Add Tactical Cordon Circle Over Target Address Location
+            // Establish 1/2 Mile Vector Perimeter Cordon Circle Ring
             searchCircle = L.circle([defaultLat, defaultLng], {
                 color: '#00FF33',
                 fillColor: '#00FF33',
-                fillOpacity: 0.15,
-                radius: 804 // Exact 1/2 Mile Perimeter Cordon
+                fillOpacity: 0.12,
+                radius: 804 
             }).addTo(map);
 
-            // Add Working Dynamic Telemetry Markers
-            L.marker([defaultLat, defaultLng]).addTo(map).bindPopup("<b>TARGET SCENE</b>").openPopup();
-            L.marker([37.436, -79.115]).addTo(map); // Squad Unit VSP-212
-            L.marker([37.431, -79.108]).addTo(map); // Squad Unit SMITH-104
+            // Deploys active unit blip markers onto map grid array
+            L.marker([defaultLat, defaultLng]).addTo(map).bindPopup("<b>TARGET SEARCH SCENE</b>").openPopup();
+            L.marker([37.436, -79.115]).addTo(map); 
+            L.marker([37.431, -79.108]).addTo(map); 
         }
 
-        // TOGGLE SWITCH ENGINE FOR STREET/SAT/TERRAIN
         function switchMapLayer(type) {
             map.removeLayer(activeLayer);
             activeLayer = layers[type];
             activeLayer.addTo(map);
 
-            // Highlight chosen button text
             document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + type).classList.add('active');
         }
 
-        // ADDRESS GO BUTTON FUNCTIONALITY
+        // ADDRESS GO TRIGGER SYSTEM LOGIC
         function lockOperationalPerimeter() {
             var inputAddr = document.getElementById('target-address-input').value;
             document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
             
-            // Failsafe automatic simulation center sweep
             map.setView([defaultLat, defaultLng], 14);
-            alert("TACTICAL UPDATE: Satellite grid synchronized onto: " + inputAddr.toUpperCase());
+            alert("TACTICAL UPDATE: Satellite grid tracking synchronized on target destination.");
         }
 
-        // AUDIO MASTER KILL SWITCH
         function killVoiceTransmission() {
             if (synth) {
                 synth.cancel();
             }
         }
 
-        // CLEAN, SPEED-OPTIMIZED VOICE PROTOCOL MATRIX
+        // HIGH-VIS NATIVE APPLE COMPATIBLE VOICE BROADCAST DISPATCH
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
-            synth.cancel(); // Force stop instantly
+            synth.cancel(); 
             
             let message = "";
 
@@ -449,7 +443,7 @@
 
             var transmission = new SpeechSynthesisUtterance(message);
             
-            // Forces iOS to bypass sluggish legacy robots and use the clean native speaker voice file
+            // Hard-locks language framework to clear out sluggish synthetic automated voices
             transmission.lang = 'en-US';
             transmission.rate = 1.0; 
             transmission.pitch = 1.0; 
@@ -457,7 +451,6 @@
             synth.speak(transmission);
         }
 
-        // Initialize mapping mechanics on screen build
         window.onload = initMap;
     </script>
 </body>
