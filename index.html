@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET Tactical Recon System</title>
+    <title>TACNET Command Portal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
@@ -14,8 +13,9 @@
             --lightblue: #66d9ff;
             --red: #ff3030;
             --civilian: #28d96f;
-            --night-vision-red: rgba(255, 0, 0, 0.42);
-            --neon-glow-red: rgba(255, 0, 0, 0.80);
+            --purple: #bf66ff;
+            --night-vision-red: rgba(255, 0, 0, 0.40);
+            --neon-glow-red: rgba(255, 0, 0, 0.85);
         }
 
         html, body {
@@ -24,13 +24,13 @@
             color: #fff; overflow: hidden;
         }
 
-        /* FIXED HARD-CODED CRIMSON NIGHT VISION FILTERS */
+        /* CORE CRIMSON NIGHT VISION SHIELD */
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none;
             background: repeating-linear-gradient(
                 to bottom,
-                rgba(255, 0, 0, .04),
-                rgba(255, 0, 0, .04) 2px,
+                rgba(255, 0, 0, .03),
+                rgba(255, 0, 0, .03) 2px,
                 transparent 2px,
                 transparent 4px
             );
@@ -39,192 +39,231 @@
 
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 180px var(--night-vision-red), inset 0 0 80px rgba(100, 0, 0, 0.2);
+            box-shadow: inset 0 0 160px var(--night-vision-red);
             z-index: 9998;
         }
 
-        /* PAGE 1: STAGING GATEWAY SCREEN */
-        #landingPage {
-            position: absolute; inset: 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; background: #000; z-index: 3000;
+        /* FULL INTERACTIVE SCREEN CONTAINER */
+        .main-viewport {
+            display: flex; flex-direction: column; width: 100%; height: 100%;
         }
 
-        #landingImage {
-            width: min(94vw, 420px); height: auto; object-fit: contain;
-            box-shadow: 0 0 40px var(--night-vision-red);
-        }
-
-        .enterBtn {
-            margin-top: 25px; padding: 18px 45px; border: none; border-radius: 10px;
-            background: var(--neon-green); color: #000; font-size: 1.2rem;
-            font-weight: 900; letter-spacing: 3px; cursor: pointer;
-            box-shadow: 0 0 20px rgba(0,255,102,.8), 0 0 40px var(--night-vision-red);
-        }
-        .enterBtn:active { transform: scale(.96); }
-
-        /* PAGE 2: HIGH-VISIBILITY OPERATIONAL CONSOLE */
-        #appPage {
-            display: none; height: 100%; flex-direction: column; background: #000;
-        }
-
-        /* TACTICAL COMMAND BAR */
-        .topBar {
-            height: 72px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 12px; background: linear-gradient(to bottom, #3b3510, #0f0f08);
-            border-bottom: 2px solid var(--gold); box-shadow: 0 0 15px var(--night-vision-red);
-            flex-shrink: 0;
-        }
-
-        .patch { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
-        .titleWrap { text-align: center; flex: 1; }
-        .title { margin: 0; font-size: 1.9rem; font-weight: 900; letter-spacing: 4px; color: var(--gold); text-shadow: 0 0 12px var(--neon-glow-red); }
-        .subtitle { margin: 0; font-size: .70rem; letter-spacing: 2px; }
-
-        /* ADDRESS VECTOR SEARCH HUD */
+        /* COMPACT COMMAND INPUT HUD */
         .search-controls {
             padding: 8px; display: flex; gap: 8px; background: #050a05; flex-shrink: 0;
-            border-bottom: 1px solid #112211;
+            border-bottom: 2px solid var(--gold); z-index: 1001;
         }
 
         #addressInput {
             flex: 1; background: #000; border: 2px solid var(--neon-green); color: #fff;
             padding: 12px; font-weight: bold; font-size: 1rem; outline: none;
-            box-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
         }
 
         .goBtn {
-            width: 85px; background: var(--neon-green); color: #000; border: none;
-            font-weight: 900; font-size: 1.1rem; cursor: pointer; letter-spacing: 1px;
-            box-shadow: 0 0 12px var(--neon-green);
+            width: 75px; background: var(--neon-green); color: #000; border: none;
+            font-weight: 900; font-size: 1.1rem; cursor: pointer;
         }
 
-        /* THE MAXIMUM EXTENSION MAP MATRIX SCREEN */
+        .menuToggleBtn {
+            width: 50px; background: #111; color: var(--gold); border: 2px solid var(--gold);
+            font-size: 1.2rem; cursor: pointer; font-weight: bold; display: flex;
+            align-items: center; justify-content: center;
+        }
+
+        /* PLACEMENT HUD NOTIFICATION OVERLAY */
+        #placementStatus {
+            display: none; background: #ff3030; color: #fff; padding: 6px;
+            text-align: center; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;
+            text-transform: uppercase; z-index: 1001; box-shadow: 0 3px 10px rgba(255,0,0,0.5);
+        }
+
+        /* EXTENDED TARGET MAPPING PANEL */
         #map {
             flex: 1; width: 100%; background: #000; z-index: 1;
         }
 
-        /* ACTION SECTOR COUPLING PANELS */
-        .bottomPanel {
-            padding: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
-            background: #040904; border-top: 2px solid #152d15; flex-shrink: 0;
+        /* CRISIS VOICE COMMAND MATRIX */
+        .voicePanel {
+            padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+            background: #030703; border-top: 1px solid #112211; flex-shrink: 0;
         }
 
-        .actionBtn {
-            padding: 12px; font-size: .85rem; border: none; font-weight: bold; cursor: pointer;
-            background: #000; color: #fff; border: 2px solid var(--neon-green);
-            text-transform: uppercase; box-shadow: 0 0 6px rgba(0,255,102,0.1);
+        .voiceBtn {
+            padding: 10px 4px; font-size: .72rem; border: 1px solid var(--gold); font-weight: bold;
+            cursor: pointer; background: #000; color: var(--gold); text-align: center;
+            text-transform: uppercase; border-radius: 3px;
         }
 
+        .btn-stop-transmission {
+            grid-column: span 3; border: 1px solid #ff3333; background: #1a0000;
+            color: #ff9999; padding: 10px; text-align: center; font-weight: 900;
+            cursor: pointer; text-transform: uppercase; font-size: 0.8rem;
+        }
+
+        /* SLIDE-OUT COURT OPERATIONS DRAWER */
+        .sideDrawer {
+            position: fixed; top: 0; right: -320px; width: 320px; height: 100%;
+            background: rgba(5, 10, 5, 0.98); border-left: 2px solid var(--gold);
+            z-index: 5000; transition: right 0.3s ease; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+        }
+
+        .sideDrawer.open { right: 0; }
+
+        .drawerHeader {
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px dashed var(--gold); padding-bottom: 8px;
+        }
+        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.2rem; font-weight: 900; }
+        .closeDrawerBtn { background: none; border: none; color: #ff3333; font-size: 1.3rem; font-weight: bold; cursor: pointer; }
+
+        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; }
+        .patch { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
+
+        .drawerSectionTitle { color: var(--neon-green); font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+
+        /* MARKER DEPLOYMENT SECTOR CONTROLS */
+        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        
+        .unitDeployBtn {
+            padding: 10px; font-size: .78rem; background: #000; color: #fff;
+            border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
+            text-transform: uppercase; text-align: center; border-radius: 4px;
+        }
         .btn-blue { border-color: var(--blue); color: var(--blue); }
         .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); }
         .btn-red { border-color: var(--red); color: var(--red); }
         .btn-civilian { border-color: var(--civilian); color: var(--civilian); }
-        .btn-gold { border-color: var(--gold); color: var(--gold); }
-        
-        .btn-stop-audio {
-            grid-column: span 2; border: 2px solid #ff3333; background: #220000;
-            color: #ff9999; padding: 12px; text-align: center; border-radius: 4px;
-            font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
-            box-shadow: 0 0 10px var(--neon-glow-red);
+        .btn-purple { border-color: var(--purple); color: var(--purple); }
+
+        #notesBox {
+            width: 100%; height: 90px; background: #000; color: #fff;
+            border: 1px solid var(--neon-green); padding: 8px; font-size: 0.85rem; outline: none;
+            resize: none;
         }
 
-        /* FIXED AGENCY RECOGNITION STRIP FOOTER */
-        .footer {
-            height: 38px; display: flex; align-items: center; justify-content: center;
-            background: #050505; color: #ff7777; font-size: .8rem; font-weight: bold;
-            letter-spacing: 1px; border-top: 1px solid #1a1a1a; flex-shrink: 0;
-            text-shadow: 0 0 5px var(--neon-glow-red);
+        .reportBtn {
+            padding: 12px; background: var(--neon-green); color: #000; font-weight: 900;
+            border: none; text-transform: uppercase; cursor: pointer; text-align: center;
+            border-radius: 4px; font-size: 0.9rem; margin-top: 5px;
+        }
+
+        /* OFFICIAL CREATOR ATTRIBUTION FOOTER BLOCK */
+        .attributionBlock {
+            margin-top: auto; border-top: 1px solid #333; padding-top: 10px;
+            text-align: center; color: #ff7777; font-size: 0.72rem; font-weight: bold;
+            line-height: 1.4; letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <div id="landingPage">
-        <img src="FDD.png" id="landingImage" onerror="this.style.borderColor='red'">
-        <button class="enterBtn" onclick="enterTacnet()">ENTER TACNET</button>
-    </div>
-
-    <div id="appPage">
-        <div class="topBar">
-            <img src="amherst_badge.png.jpg" class="patch" onerror="this.style.display='none'">
-            <div class="titleWrap">
-                <h1 class="title">TACNET</h1>
-                <p class="subtitle">MULTI-AGENCY TASK FORCE SEARCH NETWORK</p>
-            </div>
-            <img src="va.png-modified.jpg" class="patch" onerror="this.style.display='none'">
-        </div>
-
+    <div class="main-viewport">
         <div class="search-controls">
-            <input id="addressInput" placeholder="ENTER TARGET SEARCH ADDRESS" value="135 FLOSSIE DRIVE MADISON HEIGHTS VA">
+            <input id="addressInput" placeholder="ENTER SEARCH TARGET ADDRESS" value="135 FLOSSIE DRIVE MADISON HEIGHTS VA">
             <button class="goBtn" onclick="searchAddress()">GO</button>
+            <button class="menuToggleBtn" onclick="toggleDrawer()">⚙️</button>
         </div>
+
+        <div id="placementStatus">TAP MAP LOCATION TO DEPLOY SEARCHER</div>
 
         <div id="map"></div>
 
-        <div class="bottomPanel">
-            <button class="actionBtn btn-blue" onclick="addUnit('leo')">🐾 ADD LEO</button>
-            <button class="actionBtn btn-lightblue" onclick="addUnit('k9')">🐕 ADD K9</button>
-            <button class="actionBtn btn-red" onclick="addUnit('sar')">🆘 ADD SAR</button>
-            <button class="actionBtn btn-civilian" onclick="addUnit('civilian')">🚶 ADD CIVILIAN</button>
-            <button class="actionBtn btn-gold" onclick="speakMedicalProtocol('cpr')">➕ K9 CPR</button>
-            <button class="actionBtn btn-gold" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</button>
-            <button class="actionBtn btn-gold" onclick="speakMedicalProtocol('heatstroke')">☀️ HEAT STROKE</button>
-            <button class="actionBtn btn-gold" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE BITE</button>
-            <button class="actionBtn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</button>
-            <button class="actionBtn btn-blue" onclick="speakMedicalProtocol('rally')">🚨 RALLY ON K9-1</button>
-            <button class="btn-stop-audio" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</button>
+        <div class="voicePanel">
+            <button class="voiceBtn" onclick="speakMedicalProtocol('cpr')">🐾 CPR</button>
+            <button class="voiceBtn" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</button>
+            <button class="voiceBtn" onclick="speakMedicalProtocol('heatstroke')">☀️ HEAT</button>
+            <button class="voiceBtn" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE</button>
+            <button class="voiceBtn" onclick="speakMedicalProtocol('vet')">🏥 VET</button>
+            <button class="voiceBtn" onclick="speakMedicalProtocol('rally')">🚨 RALLY</button>
+            <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP VOICE TRANSMISSION</button>
+        </div>
+    </div>
+
+    <div id="sideDrawer" class="sideDrawer">
+        <div class="drawerHeader">
+            <h3 class="drawerTitle">TACNET OPERATIONS</h3>
+            <button class="closeDrawerBtn" onclick="toggleDrawer()">✕</button>
         </div>
 
-        <div class="footer">
+        <div class="agencyLogos">
+            <img src="amherst_badge.png.jpg" class="patch" onerror="this.style.visibility='hidden'">
+            <img src="va.png-modified.jpg" class="patch" onerror="this.style.visibility='hidden'">
+        </div>
+
+        <div>
+            <div class="drawerSectionTitle">1. SELECT TRACKING ASSET</div>
+            <div class="unitGrid">
+                <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
+                <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
+                <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
+                <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
+                <button class="unitDeployBtn btn-purple" style="grid-column: span 2;" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="drawerSectionTitle">2. COURT LOG / DISPOSITION NOTES</div>
+            <textarea id="notesBox" placeholder="Enter target track specifics, field dispositions, or K9 alerts for certified report generation..."></textarea>
+        </div>
+
+        <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COURT REPORT (PDF)</button>
+
+        <div class="attributionBlock">
+            TACNET COMMAND MODULE<br>
             APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        function enterTacnet(){
-            document.getElementById('landingPage').style.display='none';
-            document.getElementById('appPage').style.display='flex';
-            initMap();
-        }
-
+        var map, perimeter;
         var synth = window.speechSynthesis;
-        var map, activeLayer, perimeter;
-        var units = [];
+        var deployedUnitsLog = [];
+        var reportTrackingHistory = [];
+        
+        var currentPlacementType = null;
+        var isPlacementActive = false;
 
-        // Operational Center Targets (Madison Heights, VA)
         var operationalLat = 37.4338;
         var operationalLng = -79.1114;
 
-        // FIXED CHANNELS: Standardized rendering URL pathways {z}/{y}/{x} locked down
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
             street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', { maxZoom: 20 }),
             terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{y}/{x}.png', { maxZoom: 17 })
         };
 
-        function initMap(){
-            // Launch satellite array directly over staging zone with native map controls active
-            map = L.map('map', {zoomControl: true, attributionControl: false}).setView([operationalLat, operationalLng], 15);
+        window.onload = function() {
+            initMap();
+        };
 
-            activeLayer = layers.sat;
-            activeLayer.addTo(map);
+        function initMap() {
+            map = L.map('map', {zoomControl: true, attributionControl: false}).setView([operationalLat, operationalLng], 15);
+            layers.sat.addTo(map);
 
             perimeter = L.circle([operationalLat, operationalLng], {
                 color: '#00ff66',
                 fillColor: '#00ff66',
                 fillOpacity: .10,
-                radius: 804 // 1/2 Mile Containment Circle Vector
+                radius: 804
             }).addTo(map);
 
-            // Layer Selector Control Module
             L.control.layers({
                 'Satellite Layer': layers.sat,
                 'Street Map': layers.street,
                 'Terrain View': layers.terrain
             }, null, { position: 'topright' }).addTo(map);
 
-            // Handle browser device live location injection if active
+            // MAP TAPPING LISTENER SYSTEM FOR TRUE COORDINATE CAPTURE PLACEMENT
+            map.bindPopup();
+            map.on('click', function(e) {
+                if (!isPlacementActive || !currentPlacementType) return;
+                executeManualPlacement(e.latlng.lat, e.latlng.lng);
+            });
+
             if(navigator.geolocation){
                 navigator.geolocation.getCurrentPosition((position)=>{
                     operationalLat = position.coords.latitude;
@@ -234,8 +273,13 @@
                 }, null, {enableHighAccuracy: true});
             }
 
-            // Instantly clear layout margins on mobile screens
-            setTimeout(()=>{ map.invalidateSize(); }, 350);
+            setTimeout(()=>{ map.invalidateSize(); }, 400);
+            reportTrackingHistory.push('TACTICAL OPERATIONS GRID RUN STARTED');
+        }
+
+        function toggleDrawer() {
+            document.getElementById('sideDrawer').classList.toggle('open');
+            setTimeout(()=>{ map.invalidateSize(); }, 310);
         }
 
         async function searchAddress(){
@@ -247,7 +291,7 @@
                 var data = await response.json();
 
                 if(data.length === 0){
-                    alert('TARGET COORDINATES NOT RESCANDED');
+                    alert('COORDINATES NOT SECURED');
                     return;
                 }
 
@@ -265,48 +309,74 @@
                     radius: 804
                 }).addTo(map);
 
+                reportTrackingHistory.push('TACTICAL TARGET RECENTERED IN SECTOR: ' + address.toUpperCase());
                 map.invalidateSize();
 
             } catch(e) {
-                alert('COMMUNICATIONS TIMEOUT');
+                alert('NETWORK SEARCH LINK TIMEOUT');
             }
         }
 
-        // FIXED: Grounded offset generator locks added units strictly within the active circle perimeter view bounds
-        function addUnit(type){
-            var colors = { leo: '#1d7dff', k9: '#66d9ff', sar: '#ff3030', civilian: '#28d96f' };
+        // LOCK ARREST SELECTION VALUE AND FLIP OPERATIONAL VIEW BACK TO MAP
+        function prepUnitPlacement(type) {
+            currentPlacementType = type;
+            isPlacementActive = true;
             
-            var placementLat = operationalLat + (Math.random() * .0024 - .0012);
-            var placementLng = operationalLng + (Math.random() * .0024 - .0012);
+            // Close slide panel drawer layout so user sees entire map screen clearly on device
+            toggleDrawer();
+            
+            var statusHUD = document.getElementById('placementStatus');
+            statusHUD.innerText = "TAP MAP LOCATION TO DEPLOY " + type.toUpperCase();
+            statusHUD.style.display = "block";
+        }
 
-            var marker = L.circleMarker([placementLat, placementLng], {
-                radius: 9, color: '#fff', fillColor: colors[type], fillOpacity: 1, weight: 2
-            }).addTo(map).bindPopup(`<b>${type.toUpperCase()} UNIT</b><br>Tracking Grid Active`);
+        // DEPLOY SPECIFIC COLORED MARKERS AT EXACT MAP FINGER COORDINATE HIT
+        function executeManualPlacement(lat, lng) {
+            var colors = { 
+                leo: '#1d7dff', 
+                k9: '#66d9ff', 
+                sar: '#ff3030', 
+                civilian: '#28d96f',
+                poi: '#bf66ff'
+            };
 
-            units.push(marker);
+            var marker = L.circleMarker([lat, lng], {
+                radius: 10,
+                color: '#fff',
+                fillColor: colors[currentPlacementType],
+                fillOpacity: 1,
+                weight: 2
+            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET</b><br>Manually Deployed`);
+
+            deployedUnitsLog.push({ type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
+            reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET PLACED MANUAL AT LAT: ${lat.toFixed(4)}, LNG: ${lng.toFixed(4)}`);
+
+            // Clear configuration flags and close notice bar indicator
+            isPlacementActive = false;
+            currentPlacementType = null;
+            document.getElementById('placementStatus').style.display = "none";
         }
 
         function killVoiceTransmission(){
             if(synth) { synth.cancel(); }
         }
 
-        // HIGH-FIDELITY HUMAN VOICE NATURAL HARDWARE DELIVERIES
         function speakMedicalProtocol(type){
             if(!synth) return;
             synth.cancel();
             var msg = '';
 
             if(type==='cpr'){
-                msg = 'Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.';
+                msg = 'Executing canine CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.';
             }
             if(type==='gunshot'){
-                msg = 'Executing K9 Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.';
+                msg = 'Executing canine Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.';
             }
             if(type==='heatstroke'){
-                msg = 'Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.';
+                msg = 'Executing canine Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads.';
             }
             if(type==='snakebite'){
-                msg = 'Executing K9 Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.';
+                msg = 'Executing canine Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.';
             }
             if(type==='vet'){
                 msg = 'Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.';
@@ -318,14 +388,81 @@
             var speech = new SpeechSynthesisUtterance(msg);
             speech.lang = 'en-US';
             speech.rate = 1.0; 
-            speech.pitch = 1.0; 
             synth.speak(speech);
         }
 
-        window.onload = function() {
-            // Keep window standard bounds clear on mobile displays
-            window.scrollTo(0, 0);
-        };
+        // PROFESSIONAL COURT PDF REPORT GENERATION COMPILATION MATRIX
+        function generateCourtPDF() {
+            var { jsPDF } = window.jspdf;
+            var doc = new jsPDF();
+            var userNotes = document.getElementById('notesBox').value;
+
+            var currentY = 20;
+            doc.setFontSize(16);
+            doc.setFont('Helvetica', 'bold');
+            doc.text('EVIDENTIARY SEARCH OPERATIONS LOG REPORT', 20, currentY);
+            
+            currentY += 10;
+            doc.setFontSize(10);
+            doc.setFont('Helvetica', 'normal');
+            doc.text('PRODUCED VIA TACNET SEARCH DEPLOYMENT SYSTEM', 20, currentY);
+            
+            currentY += 15;
+            doc.setFont('Helvetica', 'bold');
+            doc.text('I. OPERATIONAL TELEMETRY HISTORICAL TRACKS:', 20, currentY);
+            currentY += 8;
+            doc.setFont('Helvetica', 'normal');
+
+            reportTrackingHistory.forEach(function(logLine) {
+                if(currentY > 270) { doc.addPage(); currentY = 20; }
+                doc.text('- ' + logLine, 20, currentY);
+                currentY += 7;
+            });
+
+            currentY += 10;
+            doc.setFont('Helvetica', 'bold');
+            doc.text('II. DEPLOYED PERIMETER SEARCH ASSETS LOG MATRIX:', 20, currentY);
+            currentY += 8;
+            doc.setFont('Helvetica', 'normal');
+
+            if(deployedUnitsLog.length === 0) {
+                doc.text('No active markers logged during session.', 25, currentY);
+                currentY += 7;
+            } else {
+                deployedUnitsLog.forEach(function(unit) {
+                    if(currentY > 270) { doc.addPage(); currentY = 20; }
+                    doc.text(`Asset Type: ${unit.type} | Grid Location: Lat ${unit.lat}, Lng ${unit.lng}`, 25, currentY);
+                    currentY += 7;
+                });
+            }
+
+            if(userNotes.trim() !== "") {
+                currentY += 10;
+                if(currentY > 250) { doc.addPage(); currentY = 20; }
+                doc.setFont('Helvetica', 'bold');
+                doc.text('III. CASE LEGAL INVESTIGATIVE DISPOSITION NOTES:', 20, currentY);
+                currentY += 8;
+                doc.setFont('Helvetica', 'normal');
+                var multiLineNotes = doc.splitTextToSize(userNotes, 170);
+                doc.text(multiLineNotes, 20, currentY);
+                currentY += (multiLineNotes.length * 6);
+            }
+
+            // OFFICIAL FIXED CERTIFICATION LEGAL RUN FOOTER FOOTPRINT
+            currentY += 20;
+            if(currentY > 260) { doc.addPage(); currentY = 30; }
+            doc.setLineWidth(0.5);
+            doc.line(20, currentY, 190, currentY);
+            currentY += 8;
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.text('TACNET SYSTEMS LEGAL RECORD VERIFICATION', 20, currentY);
+            currentY += 5;
+            doc.setFont('Helvetica', 'normal');
+            doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
+
+            doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
+        }
     </script>
 </body>
 </html>
