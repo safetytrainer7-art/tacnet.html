@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET Multi-Agency Command Portal</title>
+    <title>TACNET Multi-Agency Tactical Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
@@ -14,140 +14,126 @@
             --red: #ff3030;
             --civilian: #28d96f;
             --purple: #bf66ff;
-            --terminal-dark: #050a05;
+            --night-red: rgba(255, 0, 0, 0.25);
         }
 
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: #000; font-family: Arial, Helvetica, sans-serif;
-            color: #fff; overflow: hidden;
+            color: #fff; overflow: hidden; position: relative;
         }
 
-        /* MASTER VIEWPORT CONTAINER STACK */
+        /* FIXED COMMAND-COCKPIT CRIMSON LIGHT FILTER */
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(255,0,0,0.02), rgba(255,0,0,0.02) 2px, transparent 2px, transparent 4px);
+            z-index: 9999;
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none;
+            box-shadow: inset 0 0 100px var(--night-red);
+            z-index: 9998;
+        }
+
+        /* MASTER STRUCTURE */
         .main-viewport {
-            display: flex; flex-direction: column; width: 100vw; height: 100vh;
-            overflow: hidden; position: relative;
+            display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;
         }
 
-        /* --- TOP HUD: MULTI-AGENCY SECURE NETWORK LINK --- */
-        .network-bar {
-            padding: 10px; background: #0a0f0a; display: flex; gap: 10px;
-            align-items: center; border-bottom: 2px solid var(--gold); flex-shrink: 0;
+        /* CORE VIEWPORT SHEET CONTAINERS */
+        .viewport-sheet {
+            display: none; flex-direction: column; width: 100%; height: calc(100% - 56px); overflow: hidden;
         }
-        .net-label { font-size: 0.8rem; color: var(--gold); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
-        #networkCodeInput { flex: 1; background: #000; border: 2px solid var(--gold); color: var(--gold); padding: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; outline: none; }
-        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.85rem; font-weight: 900; padding: 8px 14px; cursor: pointer; text-transform: uppercase; border-radius: 3px; box-shadow: 0 0 10px rgba(255,204,0,0.5); }
+        .viewport-sheet.active-sheet { display: flex; }
         
-        /* MULTI-AGENCY ACTIVE STATUS CONNECTOR INDICATOR */
-        #networkStatusBanner {
-            background: #001a00; color: var(--neon-green); border: 1px dashed var(--neon-green);
-            padding: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; display: none; text-transform: uppercase;
-        }
+        /* SCROLLABLE SHEETS FOR FORM ENTRIES */
+        .scrollable-content { flex: 1; overflow-y: auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; background: #030503; }
 
-        /* --- ADDRESS MISSION TARGET BAR --- */
+        /* HEADER SECTIONS */
+        .section-header { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 4px; }
+
+        /* --- TAB 1: HUD COMPONENTS --- */
+        .network-bar {
+            padding: 8px 10px; background: #080d08; display: flex; gap: 8px;
+            align-items: center; border-bottom: 1px solid var(--gold); flex-shrink: 0;
+        }
+        .net-label { font-size: 0.75rem; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        #networkCodeInput { flex: 1; background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; outline: none; }
+        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.8rem; font-weight: 900; padding: 6px 12px; cursor: pointer; text-transform: uppercase; }
+        #networkBanner { background: #002200; color: var(--neon-green); padding: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; display: none; text-transform: uppercase; border-bottom: 1px solid var(--neon-green); }
+
         .search-controls {
-            padding: 8px; display: flex; gap: 8px; background: var(--terminal-dark); flex-shrink: 0;
+            padding: 8px; display: flex; gap: 8px; background: #000; flex-shrink: 0;
             border-bottom: 2px solid var(--neon-green);
         }
         #addressInput {
             flex: 1; background: #000; border: 2px solid var(--neon-green); color: #fff;
-            padding: 12px; font-weight: bold; font-size: 1rem; outline: none;
-            text-shadow: 0 0 5px var(--neon-green);
+            padding: 10px; font-weight: bold; font-size: 0.95rem; outline: none;
         }
-        .goBtn { width: 70px; background: var(--neon-green); color: #000; border: none; font-weight: 900; font-size: 1.1rem; cursor: pointer; box-shadow: 0 0 12px var(--neon-green); }
-        .resetBtn { width: 75px; background: #220000; border: 2px solid var(--red); color: var(--red); font-weight: bold; font-size: 0.9rem; cursor: pointer; border-radius: 3px; }
+        .goBtn { width: 65px; background: var(--neon-green); color: #000; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
+        .resetBtn { width: 75px; background: #220000; border: 1px solid var(--red); color: var(--red); font-weight: bold; font-size: 0.85rem; cursor: pointer; }
 
-        /* MANUAL PLACEMENT TARGET NOTIFICATION ALERT HEADER */
         #placementStatus {
-            display: none; background: var(--red); color: #fff; padding: 10px;
-            text-align: center; font-weight: bold; font-size: 0.95rem; letter-spacing: 1px;
-            text-transform: uppercase; z-index: 5000; box-shadow: 0 4px 15px rgba(255,0,0,0.7);
+            display: none; background: var(--red); color: #fff; padding: 8px;
+            text-align: center; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; z-index: 5000;
         }
 
-        /* --- MAP FRAME VIEWPORT VIEW --- */
-        #map {
-            height: 44vh; width: 100%; background: #111; z-index: 1; border-bottom: 2px solid var(--gold);
-        }
+        #map { flex: 1; width: 100%; background: #111; }
 
-        /* --- BOTTOM SCREEN OPERATIONS HUDS --- */
-        .lower-deck-container {
-            flex: 1; display: flex; flex-direction: column; background: #000; overflow: hidden; position: relative;
-        }
+        /* THE ROBOT RECORDING LEDGER HUD */
+        .terminal-box { height: 75px; background: #020502; border-top: 1px solid #112211; padding: 6px; flex-shrink: 0; box-sizing: border-box; }
+        #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #33cc66; line-height: 1.3; }
+        .ticker-line { padding: 1px 0; border-bottom: 1px solid #051005; }
 
-        /* INTERCHANGEABLE ACTIVE PAGE PANELS */
-        .deck-page {
-            position: absolute; inset: 0; padding: 12px; box-sizing: border-box;
-            display: none; flex-direction: column; gap: 10px; overflow-y: auto;
-        }
-        .deck-page.active { display: flex; }
-
-        .section-header { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        
-        /* --- PAGE 1: DEPLOYMENT SECTOR MATRIX --- */
-        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px; }
+        /* --- TAB 2: ASSET PLACEMENT BUTTONS --- */
+        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .unitDeployBtn {
-            padding: 14px 10px; font-size: .9rem; background: #111; color: #fff;
+            padding: 18px 10px; font-size: 1rem; background: #111; color: #fff;
             border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
-            text-transform: uppercase; text-align: center; border-radius: 4px;
+            text-transform: uppercase; text-align: center; border-radius: 5px;
         }
-        .btn-blue { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 8px rgba(29,125,255,0.4); }
-        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); box-shadow: 0 0 8px rgba(102,217,255,0.4); }
-        .btn-red { border-color: var(--red); color: var(--red); box-shadow: 0 0 8px rgba(255,48,48,0.4); }
-        .btn-civilian { border-color: var(--civilian); color: var(--civilian); box-shadow: 0 0 8px rgba(40,217,111,0.4); }
-        .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; box-shadow: 0 0 10px rgba(191,102,255,0.5); font-size: 0.95rem; }
+        .btn-blue { border-color: var(--blue); color: var(--blue); }
+        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); }
+        .btn-red { border-color: var(--red); color: var(--red); }
+        .btn-civilian { border-color: var(--civilian); color: var(--civilian); }
+        .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; padding: 22px 0; font-size: 1.1rem; box-shadow: 0 0 12px rgba(191,102,255,0.5); }
 
-        /* LIVE EVENT RECORDER TICKER BOX (THE AUTOMATED ROBOT) */
-        .live-terminal-container { flex: 1; display: flex; flex-direction: column; background: #020502; border: 1px solid #112211; border-radius: 4px; padding: 6px; overflow: hidden; min-height: 80px; }
-        #liveEventTicker { flex: 1; overflow-y: auto; font-family: monospace; font-size: 0.78rem; color: #33cc66; line-height: 1.4; }
-        .ticker-line { border-bottom: 1px solid #040a04; padding: 2px 0; }
-
-        /* --- PAGE 2: EXTRA EXTRA OPERATIONS & SUPPORT LOGS --- */
-        .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .voiceBtn {
-            padding: 12px 2px; font-size: .8rem; border: 1px solid var(--gold); font-weight: bold;
-            cursor: pointer; background: #111; color: var(--gold); text-align: center;
-            text-transform: uppercase; border-radius: 3px;
-        }
-        .btn-stop-transmission {
-            grid-column: span 3; border: 1px solid var(--red); background: #1a0000;
-            color: #ff9999; padding: 12px; text-align: center; font-weight: 900;
-            cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; box-shadow: 0 0 10px rgba(255,0,0,0.3);
-        }
+        /* --- TAB 3: EMED & COURT DISPOSITIONS --- */
+        .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .voiceBtn { padding: 14px 2px; font-size: .85rem; border: 1px solid var(--gold); font-weight: bold; cursor: pointer; background: #111; color: var(--gold); text-align: center; text-transform: uppercase; border-radius: 3px; }
+        .btn-stop-transmission { grid-column: span 3; border: 1px solid var(--red); background: #1a0000; color: #ff9999; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; }
 
         #notesBox {
-            width: 100%; height: 80px; background: #000; color: #fff;
-            border: 1px solid var(--neon-green); padding: 10px; font-size: 0.9rem; outline: none;
+            width: 100%; height: 120px; background: #000; color: #fff;
+            border: 1px solid var(--neon-green); padding: 10px; font-size: 0.95rem; outline: none;
             resize: none; font-family: sans-serif; box-sizing: border-box; border-radius: 4px;
         }
-
-        /* ANCHORED COURT REPORT SUBMIT SYSTEM ACTION ASSIGNMENT */
         .reportBtn {
-            padding: 16px; background: var(--neon-green); color: #000; font-weight: 900;
+            padding: 18px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 5px; font-size: 1.05rem; box-shadow: 0 0 20px var(--neon-green);
-            margin-top: auto; display: block; width: 100%; box-sizing: border-box;
+            border-radius: 4px; font-size: 1.1rem; box-shadow: 0 0 15px var(--neon-green); margin-top: auto; width: 100%; box-sizing: border-box;
         }
 
-        /* --- DECK LOWER BOTTOM SWITCH NAVIGATION FOOTER BAR --- */
+        /* BOTTOM MASTER SWITCH NAVIGATION FOOTER BAR */
         .deck-navigation-bar {
-            height: 52px; background: #080808; border-top: 2px solid var(--gold);
+            height: 56px; background: #080808; border-top: 2px solid var(--gold);
             display: flex; flex-shrink: 0; z-index: 2000;
         }
         .navToggleBtn {
             flex: 1; background: none; border: none; color: var(--gold); font-weight: 900;
-            font-size: 0.95rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 0.82rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; justify-content: center; border-right: 1px solid #151515;
         }
-        .navToggleBtn.disabled { color: #333; background: #030303; cursor: not-allowed; text-shadow: none; border-bottom: 3px solid var(--gold); }
+        .navToggleBtn.active-tab { background: #111; border-bottom: 4px solid var(--gold); color: #fff; text-shadow: 0 0 5px var(--gold); }
 
-        /* CREATOR ATTRIBUTION LOG MATRIX FOOTPRINT */
+        /* LEGAL ATTRIBUTION BRANDING FOOTPRINT */
         .fixedAttribution {
-            background: #000; border-top: 1px solid #111; padding: 6px;
-            text-align: center; color: #ff7777; font-size: 0.72rem; font-weight: bold;
+            background: #000; border-top: 1px solid #111; padding: 5px;
+            text-align: center; color: #ff7777; font-size: 0.7rem; font-weight: bold;
             line-height: 1.3; letter-spacing: 1px; flex-shrink: 0;
         }
 
-        /* TARGET STRUCTURE PULSING ANCHOR GRAPHIC INTERFACE */
+        /* PULSING PIN GRAPHIC INTERFACE */
         .target-pulsing-icon {
             background: var(--neon-green); border: 2px solid #fff; border-radius: 50%;
             box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
@@ -162,43 +148,46 @@
 <body>
 
     <div class="main-viewport">
-        <div class="network-bar">
-            <span class="net-label">Agency Sync:</span>
-            <input id="networkCodeInput" placeholder="ENTER SYSTEM LINK CODE" value="ACSD-K9">
-            <button class="syncBtn" onclick="connectAgencyChannel()">LINK CODE</button>
-        </div>
-        <div id="networkStatusBanner">CONNECTED DATA CHANNEL LINK ESTABLISHED</div>
+        
+        <div id="sheetMapCommand" class="viewport-sheet active-sheet">
+            <div class="network-bar">
+                <span class="net-label">Agency Sync:</span>
+                <input id="networkCodeInput" placeholder="ENTER JOINT AGENCY CODE" value="ACSD-K9">
+                <button class="syncBtn" onclick="connectAgencyChannel()">LINK CODE</button>
+            </div>
+            <div id="networkBanner">CONNECTED DATA CHANNEL LINK ESTABLISHED</div>
 
-        <div class="search-controls">
-            <input id="addressInput" placeholder="ENTER SEARCH TARGET ADDRESS" value="135 FLOSSIE DRIVE MADISON HEIGHTS VA">
-            <button class="goBtn" onclick="searchAddress()">GO</button>
-            <button class="resetBtn" onclick="resetTrackingGrid()">RESET GRID</button>
-        </div>
+            <div class="search-controls">
+                <input id="addressInput" placeholder="ENTER SEARCH TARGET ADDRESS" value="135 FLOSSIE DRIVE MADISON HEIGHTS VA">
+                <button class="goBtn" onclick="searchAddress()">GO</button>
+                <button class="resetBtn" onclick="resetTrackingGrid()">RESET</button>
+            </div>
 
-        <div id="placementStatus">TAP MAP SECTOR TO MANUALLY PLUG UNIT COORD</div>
-
-        <div id="map"></div>
-
-        <div class="lower-deck-container">
+            <div id="placementStatus">TAP MAP SECTOR TO MANUALLY PLUG UNIT COORD</div>
             
-            <div id="deckPage1" class="deck-page active">
-                <div class="section-header">1. COMMAND ASSET PLACEMENT DEPLOYMENT DIRECTORY</div>
+            <div id="map"></div>
+
+            <div class="terminal-box">
+                <div id="liveEventTicker"></div>
+            </div>
+        </div>
+
+        <div id="sheetAssetDeployment" class="viewport-sheet">
+            <div class="scrollable-content">
+                <div class="section-header">SELECT COMMAND ASSET FOR FIELD PLACEMENT</div>
                 <div class="unitGrid">
                     <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
                     <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
                     <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
                     <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
-                    <button class="unitDeployBtn btn-purple" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
-                </div>
-
-                <div class="section-header">2. AUTOMATED INCIDENT TRACKER EVENT LOG (ROBOT)</div>
-                <div class="live-terminal-container">
-                    <div id="liveEventTicker"></div>
+                    <button class="unitDeployBtn btn-purple" onclick="prepUnitPlacement('poi')">⚠️ DEPLOY PERSON OF INTEREST (POI)</button>
                 </div>
             </div>
+        </div>
 
-            <div id="deckPage2" class="deck-page">
-                <div class="section-header">3. K9 EMERGENCY RESCUE DISPATCH FIRST AID AUDIO BROADCAST</div>
+        <div id="sheetOpsSupport" class="viewport-sheet">
+            <div class="scrollable-content">
+                <div class="section-header">K9 EMERGENCY FIELD BROADCAST PROTOCOLS</div>
                 <div class="voiceGrid">
                     <button class="voiceBtn" onclick="speakMedicalProtocol('cpr')">🐾 CPR</button>
                     <button class="voiceBtn" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</button>
@@ -206,24 +195,24 @@
                     <button class="voiceBtn" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE</button>
                     <button class="voiceBtn" onclick="speakMedicalProtocol('vet')">🏥 VET</button>
                     <button class="voiceBtn" onclick="speakMedicalProtocol('rally')">🚨 RALLY</button>
-                    <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP VOICE TRANSMISSION</button>
+                    <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</button>
                 </div>
 
-                <div class="section-header" style="margin-top: 4px;">4. LEGAL DECON / COURT JOURNAL DISPOSITION SUMMARY NOTES</div>
-                <textarea id="notesBox" placeholder="Type custom operational logs, tracks descriptions, or K9 alerts directly for courtroom filing documents..."></textarea>
+                <div class="section-header">COURT DISPOSITION JOURNALS / OPERATIONAL RECORDS</div>
+                <textarea id="notesBox" placeholder="Type custom operational tracking metadata, tracks logs descriptions, canine alerts, or seizure dispositions to seal inside final courtroom filing paperwork..."></textarea>
 
                 <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COMPREHENSIVE COURT REPORT (PDF)</button>
             </div>
-
         </div>
 
         <div class="deck-navigation-bar">
-            <button id="navBtn1" class="navToggleBtn disabled" onclick="switchDeckPage(1)" disabled>🗺️ ACTIVE MAP ASSETS</button>
-            <button id="navBtn2" class="navToggleBtn" onclick="switchDeckPage(2)">📋 NEXT PAGE: OPS DECK ➔</button>
+            <button id="navTab1" class="navToggleBtn active-tab" onclick="toggleSystemScreen(1)">🗺️ MAP DECK</button>
+            <button id="navTab2" class="navToggleBtn" onclick="toggleSystemScreen(2)">👥 DEPLOY UNITS</button>
+            <button id="navTab3" class="navToggleBtn" onclick="toggleSystemScreen(3)">📋 REPORTS & NOTES</button>
         </div>
 
         <div class="fixedAttribution">
-            TACNET COMMAND MODULE  •  MULTI-AGENCY TACTICAL SEARCH NETWORK<br>
+            TACNET COMMAND MODULE  •  MULTI-AGENCY TACTICAL NETWORK<br>
             APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
         </div>
     </div>
@@ -243,31 +232,28 @@
         var operationalLat = 37.4338;
         var operationalLng = -79.1114;
 
-        // DUAL-MODE STABLE RECON LAYERS MAP DIRECTORY
+        // FIXED HIGH-RECON DATA LAYER DIRECTORIES (SOLVES SERVER RESTRICTION CRASHES)
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
-            urbanGrid: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}.png', { maxZoom: 20 })
+            tacticalGrid: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}.png', { maxZoom: 20 })
         };
 
         window.onload = function() {
             initMap();
         };
 
-        function logEventToRobot(msg) {
+        function logToSystemRobot(msg) {
             var timestamp = new Date().toLocaleTimeString();
-            var entryText = `[${timestamp}] ${msg}`;
+            var fullLine = `[${timestamp}] ${msg}`;
+            reportTrackingHistory.push(fullLine);
             
-            // PUSH TO LOGGING ARRAY FOR PDF INCLUSION
-            reportTrackingHistory.push(entryText);
-            
-            // PRINT LIVE LINE ITEM TO FRONT GRAPHIC INTERFACE (THE ROBOT TICKER)
-            var tickerBox = document.getElementById('liveEventTicker');
-            if(tickerBox) {
-                var newLine = document.createElement('div');
-                newLine.className = 'ticker-line';
-                newLine.innerText = entryText;
-                tickerBox.appendChild(newLine);
-                tickerBox.scrollTop = tickerBox.scrollHeight; // Auto scrolls robot down
+            var ticker = document.getElementById('liveEventTicker');
+            if(ticker) {
+                var el = document.createElement('div');
+                el.className = 'ticker-line';
+                el.innerText = fullLine;
+                ticker.appendChild(el);
+                ticker.scrollTop = ticker.scrollHeight;
             }
         }
 
@@ -284,7 +270,7 @@
 
             L.control.layers({
                 'SATELLITE OVERHEAD RECON': layers.sat,
-                'HIGH-VIS URBAN GRID LAYER': layers.urbanGrid
+                'TACTICAL URBAN HIGH-VIS GRID': layers.tacticalGrid
             }, null, { position: 'topright' }).addTo(map);
 
             map.on('click', function(e) {
@@ -302,39 +288,47 @@
             }
 
             setTimeout(()=>{ map.invalidateSize(); }, 400);
-            
-            // FIRE INITIAL SYSTEM ROBOT LINE RECORD
-            logEventToRobot('SYSTEM CORE OPERATIONAL COMMAND RECON CHIP RUN RUNNING...');
+            logToSystemRobot('TACNET PROTOCOL RUN RUNNING DIRECT.');
         }
 
-        function switchDeckPage(pageNum) {
-            document.getElementById('deckPage1').classList.remove('active');
-            document.getElementById('deckPage2').classList.remove('active');
-            document.getElementById('navBtn1').classList.remove('disabled');
-            document.getElementById('navBtn2').classList.remove('disabled');
-            document.getElementById('navBtn1').disabled = false;
-            document.getElementById('navBtn2').disabled = false;
+        function toggleSystemScreen(screenNum) {
+            var sheetMap = document.getElementById('sheetMapCommand');
+            var sheetAsset = document.getElementById('sheetAssetDeployment');
+            var sheetOps = document.getElementById('sheetOpsSupport');
+            var tab1 = document.getElementById('navTab1');
+            var tab2 = document.getElementById('navTab2');
+            var tab3 = document.getElementById('navTab3');
 
-            if(pageNum === 1) {
-                document.getElementById('deckPage1').classList.add('active');
-                document.getElementById('navBtn1').classList.add('disabled');
-                document.getElementById('navBtn1').disabled = true;
-            } else {
-                document.getElementById('deckPage2').classList.add('active');
-                document.getElementById('navBtn2').classList.add('disabled');
-                document.getElementById('navBtn2').disabled = true;
+            // HIDE ALL SHEETS FIRST
+            sheetMap.style.display = 'none';
+            sheetAsset.style.display = 'none';
+            sheetOps.style.display = 'none';
+            tab1.classList.remove('active-tab');
+            tab2.classList.remove('active-tab');
+            tab3.classList.remove('active-tab');
+
+            if(screenNum === 1) {
+                sheetMap.style.display = 'flex';
+                tab1.classList.add('active-tab');
+                setTimeout(()=>{ map.invalidateSize(); }, 200);
+            } else if(screenNum === 2) {
+                sheetAsset.style.display = 'flex';
+                tab2.classList.add('active-tab');
+            } else if(screenNum === 3) {
+                sheetOps.style.display = 'flex';
+                tab3.classList.add('active-tab');
             }
         }
 
         function connectAgencyChannel() {
-            var channelCode = document.getElementById('networkCodeInput').value.trim();
-            if(channelCode === "") return;
+            var code = document.getElementById('networkCodeInput').value.trim();
+            if(code === "") return;
             
-            var banner = document.getElementById('networkStatusBanner');
-            banner.innerText = `MULTI-AGENCY CRYPTO CHANNEL ACTIVE: [${channelCode.toUpperCase()}]`;
+            var banner = document.getElementById('networkBanner');
+            banner.innerText = `SECURE CRYPTO CHANNEL ATTACHED: [${code.toUpperCase()}]`;
             banner.style.display = 'block';
 
-            logEventToRobot(`SECURE INTER-AGENCY MULTI-STREAM LINK LOCKED ON TO CHANNEL: [${channelCode.toUpperCase()}]`);
+            logToSystemRobot(`MULTI-AGENCY COORDINATION LINK RE-ALIGNED TO CHANNEL: [${code.toUpperCase()}]`);
         }
 
         async function searchAddress(){
@@ -353,7 +347,7 @@
                 operationalLat = parseFloat(data[0].lat);
                 operationalLng = parseFloat(data[0].lon);
 
-                map.setView([operationalLat, operationalLng], 18); // Zooms target tightly to building structure scale
+                map.setView([operationalLat, operationalLng], 18);
 
                 if(perimeter){ map.removeLayer(perimeter); }
                 if(targetHousePin){ map.removeLayer(targetHousePin); }
@@ -365,19 +359,15 @@
                     radius: 804
                 }).addTo(map);
 
-                // DEPLOY PULSING TARGET PIN INTERFACE LAYER
-                var targetIcon = L.divIcon({
-                    className: 'target-pulsing-icon',
-                    iconSize: [22, 22]
-                });
+                var targetIcon = L.divIcon({ className: 'target-pulsing-icon', iconSize: [22, 22] });
                 targetHousePin = L.marker([operationalLat, operationalLng], {icon: targetIcon}).addTo(map)
-                    .bindPopup(`<b>TARGET RESIDENCE INTERCEPT CAPTURE</b><br>${address.toUpperCase()}`).openPopup();
+                    .bindPopup(`<b>TARGET STRUCTURE TARGET LOCK</b><br>${address.toUpperCase()}`).openPopup();
 
-                logEventToRobot(`TARGET ADDRESS LOCATION SECURED AND PINNED -> ${address.toUpperCase()}`);
+                logToSystemRobot(`COMMAND TARGET ACQUIRED OVER RADAR: ${address.toUpperCase()}`);
                 map.invalidateSize();
 
             } catch(e) {
-                alert('NETWORK SEARCH LINK TIMEOUT');
+                alert('NETWORK SEARCH TIMEOUT');
             }
         }
 
@@ -385,32 +375,25 @@
             currentPlacementType = type;
             isPlacementActive = true;
             
+            // JUMP TO MAP SHEET SO THE USER CAN SEE WHERE THEY ARE TAPPING
+            toggleSystemScreen(1);
+            
             var statusHUD = document.getElementById('placementStatus');
-            statusHUD.innerText = "TAP MAP SECTOR TO POSITION " + type.toUpperCase();
+            statusHUD.innerText = "TAP MAP FIELD AREA TO DEPLOY " + type.toUpperCase();
             statusHUD.style.display = "block";
         }
 
         function executeManualPlacement(lat, lng) {
-            var colors = { 
-                leo: '#1d7dff', 
-                k9: '#66d9ff', 
-                sar: '#ff3030', 
-                civilian: '#28d96f',
-                poi: '#bf66ff'
-            };
+            var colors = { leo: '#1d7dff', k9: '#66d9ff', sar: '#ff3030', civilian: '#28d96f', poi: '#bf66ff' };
 
             var marker = L.circleMarker([lat, lng], {
-                radius: 11,
-                color: '#fff',
-                fillColor: colors[currentPlacementType],
-                fillOpacity: 1,
-                weight: 2.5
-            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} SEARCHER UNIT</b><br>Track Log Positioned`);
+                radius: 11, color: '#fff', fillColor: colors[currentPlacementType], fillOpacity: 1, weight: 2.5
+            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} FIELD ASSET</b><br>Track Node Saved`);
 
             deployedMarkersArray.push(marker);
             deployedUnitsLog.push({ type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
             
-            logEventToRobot(`DEPLOYED MANUAL ASSET INDICATOR -> MARKER TYPE: ${currentPlacementType.toUpperCase()} | LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}`);
+            logToSystemRobot(`DEPLOYED INDEPENDENT TRACK ASSET -> ${currentPlacementType.toUpperCase()} [LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}]`);
 
             isPlacementActive = false;
             currentPlacementType = null;
@@ -418,92 +401,60 @@
         }
 
         function resetTrackingGrid() {
-            if(!confirm("CONFIRM FULL SECTOR CLEAN: Clear assets and reset logs?")) return;
-            
+            if(!confirm("CONFIRM FULL RESET: Clear tracking parameters?")) return;
             deployedMarkersArray.forEach(m => map.removeLayer(m));
             deployedMarkersArray = [];
             deployedUnitsLog = [];
-            
             if(targetHousePin) { map.removeLayer(targetHousePin); targetHousePin = null; }
             document.getElementById('notesBox').value = "";
             document.getElementById('liveEventTicker').innerHTML = "";
             reportTrackingHistory = [];
-            
-            logEventToRobot('MASTER SYSTEM COMMAND DECK FULL RESET INITIALIZED. BOARD CLEAR.');
-            alert("GRID CLEAR: System parameters reset.");
+            logToSystemRobot('CORE SYSTEMS FLUSH COMPLETE. COLD OPERATIONAL INITIALIZATION RESET.');
+            alert("BOARD RESET COMPLETE.");
         }
 
-        function killVoiceTransmission(){
-            if(synth) { synth.cancel(); }
-        }
+        function killVoiceTransmission(){ if(synth) { synth.cancel(); } }
 
         function speakMedicalProtocol(type){
             if(!synth) return;
             synth.cancel();
             var msg = '';
-
-            if(type==='cpr'){
-                msg = 'Executing canine CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.';
-            }
-            if(type==='gunshot'){
-                msg = 'Executing canine Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.';
-            }
-            if(type==='heatstroke'){
-                msg = 'Executing canine Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads.';
-            }
-            if(type==='snakebite'){
-                msg = 'Executing canine Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.';
-            }
-            if(type==='vet'){
-                msg = 'Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.';
-            }
-            if(type==='rally'){
-                msg = 'Command directive issued: All perimeter units collapse cordon formations and rally coordinates back inward on target lead asset position, Wood Canine One.';
-            }
+            if(type==='cpr') msg = 'Executing canine CPR instructions. Lay the dog on its right side. Verify airway is clear. Deliver thirty chest compressions behind the elbow, then deliver two breaths into the nostrils. Repeat.';
+            if(type==='gunshot') msg = 'Executing gunshot trauma response. Pack entry site tightly with hemostatic gauze. Apply heavy, steady manual direct pressure for three minutes minimum.';
+            if(type==='heatstroke') msg = 'Executing canine Heat Stroke protocol. Cease tracking. Relocate canine to shaded terrain or air-conditioned fleet unit. Apply room-temperature running water over stomach and paw pads.';
+            if(type==='snakebite') msg = 'Executing canine Snake Bite procedure. Restrain canine to restrict movement and slow venom spread. Keep bite below heart level. Cleanse area gently.';
+            if(type==='vet') msg = 'Sourcing regional police veterinary dispatch line to stand by for emergency priority medical intake.';
+            if(type==='rally') msg = 'All cordon units cease search patterns and collapse positions back inward on lead K9 asset, Wood Canine One.';
 
             var speech = new SpeechSynthesisUtterance(msg);
-            speech.lang = 'en-US';
-            speech.rate = 1.0; 
             synth.speak(speech);
-            
-            logEventToRobot(`EMERGENCY VOICE MEDICAL BROADCAST ENGAGED: [${type.toUpperCase()}]`);
+            logToSystemRobot(`EMERGENCY AUDIO BROADCAST TRANSMITTED: [${type.toUpperCase()}]`);
         }
 
-        // FULLY INTEGRATED CERTIFIED COURTROOM RECORD COMPILING MODULE
         function generateCourtPDF() {
             try {
                 var { jsPDF } = window.jspdf;
                 var doc = new jsPDF();
                 var userNotes = document.getElementById('notesBox').value;
-                var channelCode = document.getElementById('networkCodeInput').value.trim();
-
+                var code = document.getElementById('networkCodeInput').value.trim();
                 var currentY = 25;
                 
-                // TOP LAW ENFORCEMENT OFFICIAL CASE HEADER DECK BLOCK
                 doc.setFillColor(15, 30, 15);
                 doc.rect(15, 12, 180, 22, 'F');
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(14);
-                doc.setTextColor(255, 204, 0); 
+                doc.setFont('Helvetica', 'bold').setFontSize(14).setTextColor(255, 204, 0);
                 doc.text('TACTICAL COMMAND SEARCH OPERATIONS INCIDENT LOG REPORT', 18, 24);
-                
-                doc.setFontSize(9.5);
-                doc.setTextColor(200, 255, 200);
-                doc.text(`MULTI-AGENCY SECURE DATA CHANNEL NETWORK SYNC CODE: ${channelCode ? channelCode.toUpperCase() : 'STANDALONE OPERATIONAL CHANNEL'}`, 18, 30);
+                doc.setFontSize(9.5).setTextColor(200, 255, 200);
+                doc.text(`MULTI-AGENCY SECURE NETWORK SYNC CHANNEL CODE: ${code ? code.toUpperCase() : 'STANDALONE OPERATIONAL CHANNEL'}`, 18, 30);
                 
                 currentY = 46;
-                doc.setTextColor(0,0,0);
-                doc.setFontSize(10);
-                doc.setFont('Helvetica', 'normal');
+                doc.setTextColor(0,0,0).setFontSize(10).setFont('Helvetica', 'normal');
                 doc.text('PRODUCED VIA TACNET SEARCH DEPLOYMENT OPERATIONAL CORE INFRASTRUCTURE', 20, currentY);
                 
                 currentY += 14;
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.text('I. AUTOMATIC SYSTEM TRACKER LOG CHRONOLOGY TIMELINE (ROBOT MATRIX):', 20, currentY);
+                doc.setFont('Helvetica', 'bold').setFontSize(11);
+                doc.text('I. AUTOMATIC INCIDENT TELEMETRY TIMELINE CHRONOLOGY (ROBOT LOGS):', 20, currentY);
                 currentY += 8;
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(9);
+                doc.setFont('Helvetica', 'normal').setFontSize(9);
 
                 reportTrackingHistory.forEach(function(logLine) {
                     if(currentY > 265) { doc.addPage(); currentY = 25; }
@@ -513,20 +464,18 @@
 
                 currentY += 10;
                 if(currentY > 250) { doc.addPage(); currentY = 25; }
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.text('II. CERTIFIED ASSET TELEMETRY TRACK POSITION INDICATORS MATRIX:', 20, currentY);
+                doc.setFont('Helvetica', 'bold').setFontSize(11);
+                doc.text('II. CERTIFIED POSITION MATRIX FOR ACTIVE ASSETS:', 20, currentY);
                 currentY += 8;
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(9);
+                doc.setFont('Helvetica', 'normal').setFontSize(9);
 
                 if(deployedUnitsLog.length === 0) {
-                    doc.text('No active markers logged during this execution timeline session.', 25, currentY);
+                    doc.text('No assets logged during this execution timeline session.', 25, currentY);
                     currentY += 7;
                 } else {
                     deployedUnitsLog.forEach(function(unit) {
                         if(currentY > 265) { doc.addPage(); currentY = 25; }
-                        doc.text(`[TRACK LOG POINT] Type: ${unit.type}  |  Telemetry Target Grid: Latitude ${unit.lat}, Longitude ${unit.lng}`, 25, currentY);
+                        doc.text(`[TRACK LOG] Type: ${unit.type}  |  Coordinates: Lat ${unit.lat}, Lng ${unit.lng}`, 25, currentY);
                         currentY += 7;
                     });
                 }
@@ -534,42 +483,32 @@
                 if(userNotes.trim() !== "") {
                     currentY += 10;
                     if(currentY > 240) { doc.addPage(); currentY = 25; }
-                    doc.setFont('Helvetica', 'bold');
-                    doc.setFontSize(11);
-                    doc.text('III. CASE COURT LAW RECORD INVESTIGATIVE CERTIFIED SUMMARY DISPOSITION NOTES:', 20, currentY);
+                    doc.setFont('Helvetica', 'bold').setFontSize(11);
+                    doc.text('III. COURT RECORD INVESTIGATIVE CERTIFIED SUMMARY DISPOSITION NOTES:', 20, currentY);
                     currentY += 8;
-                    doc.setFont('Helvetica', 'normal');
-                    doc.setFontSize(9);
-                    var multiLineNotes = doc.splitTextToSize(userNotes, 170);
-                    doc.text(multiLineNotes, 20, currentY);
-                    currentY += (multiLineNotes.length * 6);
+                    doc.setFont('Helvetica', 'normal').setFontSize(9);
+                    var lines = doc.splitTextToSize(userNotes, 170);
+                    doc.text(lines, 20, currentY);
+                    currentY += (lines.length * 6);
                 }
 
-                // CERTIFICATION FOOTER SEAL
                 currentY += 20;
                 if(currentY > 255) { doc.addPage(); currentY = 30; }
-                doc.setLineWidth(0.5);
-                doc.setDrawColor(100, 100, 100);
+                doc.setLineWidth(0.5).setDrawColor(100, 100, 100);
                 doc.line(20, currentY, 190, currentY);
-                
                 currentY += 8;
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(9.5);
+                doc.setFont('Helvetica', 'bold').setFontSize(9.5);
                 doc.text('TACNET COMMAND SYSTEMS EVIDENCE COMPLIANCE RECORD CERTIFICATE', 20, currentY);
                 currentY += 5;
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(9);
+                doc.setFont('Helvetica', 'normal').setFontSize(9);
                 doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
 
-                // TRIGGER SYSTEM SAVE EXPORT SYSTEM FILE
                 doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
-                
-                // FORCE NAV INTERFACE SMOOTHL BACK TO MAIN MONITORING SHEET
-                switchDeckPage(1);
-                logEventToRobot('OFFICIAL DISPOSITION CASE LOG PDF EXPORT GENERATED.');
+                toggleSystemScreen(1);
+                logToSystemRobot('OFFICIAL DISPOSITION RECON RECORD PRINTED TO COMPLETED PDF FILE.');
 
             } catch(err) {
-                alert("PDF COMPILING EXCEPTION ACCESSED: " + err.message);
+                alert("PDF ERROR: " + err.message);
             }
         }
     </script>
