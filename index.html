@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - OPERATIONAL COMMAND BUILD</title>
+    <title>TACNET - SEPARATED LAYER CORE</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -100,23 +100,22 @@
         .search-header h2 { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 1.3rem; }
         .return-home-btn { background: transparent; border: 1px solid var(--gold-primary); color: var(--gold-primary); font-family: 'Share Tech Mono', monospace; padding: 2px 8px; font-size: 0.8rem; border-radius: 3px; }
 
-        /* ENTRY SYSTEM */
+        /* ENTRY SYSTEM - MERGED SINGLE-ROW ACTION RACK */
         .input-system-rack {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             background: var(--dark-gray);
-            padding: 5px;
+            padding: 6px;
             border: 1px solid var(--gold-primary);
             border-radius: 6px;
             margin-bottom: 6px;
+            align-items: center;
         }
-        .input-row { display: flex; gap: 6px; }
-        .mic-trigger { background: var(--alert-red); color: #fff; border: none; font-family: 'Black Ops One', sans-serif; padding: 0 12px; border-radius: 4px; }
-        .voice-text-box { flex-grow: 1; background: #000; border: 1px solid var(--neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 8px; font-size: 1rem; border-radius: 4px; -webkit-user-select: text; user-select: text; }
-        .manual-go-btn { background: var(--neon-green); color: #000; border: none; font-family: 'Black Ops One', sans-serif; padding: 8px; border-radius: 4px; font-weight: bold; }
+        .mic-trigger { background: var(--alert-red); color: #fff; border: none; font-family: 'Black Ops One', sans-serif; padding: 10px 14px; border-radius: 4px; height: 42px; font-size: 0.9rem; }
+        .voice-text-box { flex-grow: 1; background: #000; border: 1px solid var(--neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 8px; font-size: 1rem; border-radius: 4px; height: 42px; -webkit-user-select: text; user-select: text; }
+        .manual-go-btn { background: var(--neon-green); color: #000; border: none; font-family: 'Black Ops One', sans-serif; padding: 0 16px; border-radius: 4px; font-weight: bold; height: 42px; font-size: 1rem; white-space: nowrap; }
 
-        /* HIGH-VISIBILITY RADAR VIEWPORT FRAME */
+        /* RADAR VIEWPORT FRAME */
         .radar-viewport-frame {
             height: 35vh;
             width: 100%;
@@ -185,8 +184,8 @@
         <div class="credential-gate-panel">
             <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
-            <div class="gate-status-line"><span>RADAR CONFIG:</span> <span style="color:var(--gold-primary);">VERIFIED HIGH-VISIBILITY</span></div>
-            <div class="gate-status-line"><span>DRAG SPEED:</span> <span style="color:var(--neon-green);">ZERO-LAG LOCKED IN</span></div>
+            <div class="gate-status-line"><span>RADAR CONFIG:</span> <span style="color:var(--gold-primary);">SEPARATED SECTOR LAYERS</span></div>
+            <div class="gate-status-line"><span>UNIT TRACKING:</span> <span style="color:var(--neon-green);">INDEPENDENT DOT DRIVE</span></div>
         </div>
     </div>
 
@@ -197,11 +196,9 @@
         </div>
 
         <div class="input-system-rack">
-            <div class="input-row">
-                <button class="mic-trigger" onclick="runVoiceParser()" id="mic-label">🎙️ MIC</button>
-                <input type="text" class="voice-text-box" id="voice-display" placeholder="Enter Address or Voice Tag...">
-            </div>
-            <button class="manual-go-btn" onclick="triggerManualAddressOverride()">📍 GO: LOCK SEARCH PERIMETER</button>
+            <button class="mic-trigger" onclick="runVoiceParser()" id="mic-label">🎙️ MIC</button>
+            <input type="text" class="voice-text-box" id="voice-display" placeholder="Enter target or address...">
+            <button class="manual-go-btn" onclick="triggerManualAddressOverride()">GO</button>
         </div>
 
         <div class="radar-viewport-frame">
@@ -211,7 +208,7 @@
         <div class="medical-intel-readout">
             <div class="intel-header-title" id="intel-title">INCIDENT LOG DECK</div>
             <div class="intel-body-text" id="intel-body">
-                Local Hardware Radar Online. Target lines and crosshairs are boosted to maximum contrast. Put down your thumb and drag to sweep the units through the grid!
+                Independent Tracking Matrix Online. The background lines and target rings are locked. Drag your thumb to slide and position the units independently across the grid.
             </div>
         </div>
 
@@ -229,6 +226,7 @@
         let canvas = null;
         let ctx = null;
 
+        // Vector tracking coordinates (Offsets separate from screen canvas center)
         let offsetX = 0;
         let offsetY = 0;
         let isDragging = false;
@@ -238,10 +236,11 @@
         let cordonActive = false;
         let cordonText = "";
 
+        // Independent Unit Layer Points
         const trackUnits = [
-            { id: "1", label: "WOOD-K91", x: 0, y: -20 },
-            { id: "2", label: "SMITH-104", x: 60, y: 40 },
-            { id: "3", label: "VSP-212", x: -50, y: -60 }
+            { id: "1", label: "WOOD-K91", baseX: 0, baseY: -20 },
+            { id: "2", label: "SMITH-104", baseX: 60, baseY: 40 },
+            { id: "3", label: "VSP-212", baseX: -50, baseY: -60 }
         ];
 
         const emergencyProtocols = {
@@ -285,58 +284,70 @@
         function drawRadarScreen() {
             if (!ctx) return;
             
+            // Wipe Field
             ctx.fillStyle = "#0a130a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            let centerX = (canvas.width / 2) + offsetX;
-            let centerY = (canvas.height / 2) + offsetY;
+            // FIX: Anchor Grid Center directly to the visual frame midpoints (Absolute Zero Motion)
+            let gridCenterX = canvas.width / 2;
+            let gridCenterY = canvas.height / 2;
 
-            ctx.strokeStyle = "rgba(0, 255, 51, 0.4)"; 
+            // Draw Static High-Visibility Concentric Tactical Target Rings
+            ctx.strokeStyle = "rgba(0, 255, 51, 0.35)"; 
             ctx.lineWidth = 1.5;
             for (let r = 45; r < Math.max(canvas.width, canvas.height); r += 45) {
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
+                ctx.arc(gridCenterX, gridCenterY, r, 0, 2 * Math.PI);
                 ctx.stroke();
             }
 
-            ctx.strokeStyle = "rgba(0, 255, 51, 0.6)"; 
+            // Draw Static Command Crosshair Baseline
+            ctx.strokeStyle = "rgba(0, 255, 51, 0.5)"; 
             ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(centerX - canvas.width, centerY); ctx.lineTo(centerX + canvas.width, centerY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(centerX, centerY - canvas.height); ctx.lineTo(centerX, centerY + canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, gridCenterY); ctx.lineTo(canvas.width, gridCenterY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(gridCenterX, 0); ctx.lineTo(gridCenterX, canvas.height); ctx.stroke();
 
+            // Draw Active Perimeter Cordon (Tethered to the moving unit coordinates)
             if (cordonActive) {
                 ctx.strokeStyle = "#00ff33";
                 ctx.lineWidth = 2.5;
                 ctx.fillStyle = "rgba(0, 255, 51, 0.12)";
                 
+                let cordonX = gridCenterX + offsetX + 30;
+                let cordonY = gridCenterY + offsetY - 40;
+
                 ctx.beginPath();
-                ctx.arc(centerX + 30, centerY - 40, 75, 0, 2 * Math.PI);
+                ctx.arc(cordonX, cordonY, 75, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 13px monospace";
-                ctx.fillText(`CORDON ACTIVE: 1/2 MILE PERIMETER`, centerX + 115, centerY - 45);
+                ctx.fillText(`PERIMETER LOCKED`, cordonX + 85, cordonY + 4);
             }
 
+            // Render Detached Moving Unit Points (Responsive directly to user's finger offsets)
             trackUnits.forEach(unit => {
-                let unitX = centerX + unit.x;
-                let unitY = centerY + unit.y;
+                let unitX = gridCenterX + unit.baseX + offsetX;
+                let unitY = gridCenterY + unit.baseY + offsetY;
 
+                // Blue/White Outer Border Core Ring
                 ctx.fillStyle = "#0044ff";
                 ctx.beginPath();
                 ctx.arc(unitX, unitY, 14, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
 
+                // Unit Identifier Text Center Spot
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 12px sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText(unit.id, unitX, unitY);
 
+                // Gold Call-sign Tag Text Label
                 ctx.fillStyle = "#dfb720";
                 ctx.font = "bold 12px 'Share Tech Mono', monospace";
                 ctx.textAlign = "left";
@@ -344,6 +355,7 @@
             });
         }
 
+        // SEPARATE LAYER DRAG CONTROLLERS
         function dragStart(e) {
             isDragging = true;
             startX = e.clientX;
@@ -355,6 +367,7 @@
             let dx = e.clientX - startX;
             let dy = e.clientY - startY;
             
+            // Adjust only the movable coordinates layer
             offsetX += dx;
             offsetY += dy;
             
@@ -371,7 +384,7 @@
             offsetY = 0;
             drawRadarScreen();
             document.getElementById('intel-title').innerText = "🎯 SYSTEM FOCUS RESET";
-            document.getElementById('intel-body').innerText = "Radar sweep re-centered on Unit Baseline 1 (WOOD-K91). Complete grid drag stability recovered.";
+            document.getElementById('intel-body').innerText = "Radar layer reset. Teams shifted cleanly back to command zero-points.";
         }
 
         function triggerManualAddressOverride() {
@@ -381,14 +394,12 @@
 
         function processCordonStrike(targetText) {
             cordonActive = true;
-            cordonText = targetText;
-            
             offsetX = -30;
             offsetY = 40;
             drawRadarScreen();
 
             document.getElementById('intel-title').innerText = "📍 PERIMETER CORDON LOCKED";
-            document.getElementById('intel-body').innerText = `Vector cordon circle drawn on local console layout.\nTarget Area: ${targetText}\n\nSearchers 1, 2, and 3 are mapped and scaled within target radius parameters. Fully active.`;
+            document.getElementById('intel-body').innerText = `Target Grid: ${targetText}\n\nSearchers 1, 2, and 3 scaled within operational parameters.`;
             
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -414,7 +425,7 @@
 
         function runVoiceParser() {
             const SpeechLib = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechLib) { alert("Voice engine offline."); return; }
+            if (!SpeechLib) { alert("Voice link offline."); return; }
             const activeInstance = new SpeechLib();
             activeInstance.continuous = false;
             activeInstance.lang = 'en-US';
