@@ -1,434 +1,310 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET | TACTICAL SEARCH RECON</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>TACNET Tactical Recon</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
-            --dark-bg: #000000;
-            --panel-bg: #111111;
-            --neon-green: #00FF33;
-            --bright-blue: #0066FF;
-            --hot-pink: #FF3366;
-            --gold: #FFCC00;
-            --orange: #FF6600;
-            --teal: #00CCCC;
-            --night-vision-red: rgba(255, 0, 0, 0.45); 
-            --neon-glow-red: rgba(255, 0, 0, 0.9); 
+            --green: #00ff33;
+            --gold: #ffcc00;
+            --blue: #0088ff;
+            --red: #ff2222;
         }
 
-        body, html {
+        html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--dark-bg); color: #FFFFFF;
-            font-family: Arial, Helvetica, sans-serif;
+            overflow: hidden; background: #000;
+            font-family: Arial, Helvetica, sans-serif; color: #fff;
+        }
+
+        /* IOS RED NIGHT VISION SYSTEM OVERLAYS */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 0, 0, .04),
+                rgba(255, 0, 0, .04) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none; z-index: 99999;
+        }
+
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            box-shadow: inset 0 0 200px rgba(255, 0, 0, .45), inset 0 0 100px rgba(255, 0, 0, .35);
+            pointer-events: none; z-index: 99998;
+        }
+
+        /* LANDING PAGE SPLASH CONTROLLER */
+        #landingPage {
+            position: absolute; inset: 0; background: #000;
             display: flex; flex-direction: column;
-            box-sizing: border-box;
-            -webkit-user-select: none; user-select: none;
-            /* HARD-CODED REAL-TIME NIGHT VISION GLOW ACROSS BASELINE INTERFACE */
-            background-image: radial-gradient(circle, var(--night-vision-red) 0%, rgba(100, 0, 0, 0.15) 60%, #000000 100%) !important;
+            align-items: center; justify-content: center; z-index: 5000;
         }
 
-        /* HIGH-VIS AGENCY COMMAND HEADER */
+        #landingImage {
+            width: 100%; max-width: 420px; height: auto;
+            object-fit: contain; box-shadow: 0 0 40px rgba(255, 0, 0, .45);
+        }
+
+        .enter-btn {
+            margin-top: 20px; width: 280px; padding: 18px; border: none;
+            background: #00ff33; color: #000; font-size: 1.2rem;
+            font-weight: 900; letter-spacing: 3px; border-radius: 8px;
+            cursor: pointer; box-shadow: 0 0 20px #00ff33, 0 0 35px rgba(255, 0, 0, .7);
+        }
+
+        .enter-btn:active { transform: scale(.96); }
+
+        /* MAIN APP CONSOLE FRAME */
+        #appPage {
+            display: none; width: 100%; height: 100%; flex-direction: column;
+        }
+
+        /* COMMAND BAR HEADER */
         .top-header {
-            background: linear-gradient(to bottom, #4a4722, #1c1b0a);
+            height: 78px;
+            background: linear-gradient(to bottom, #3f3a15, #151200);
             border-bottom: 3px solid var(--gold);
-            padding: 8px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 70px;
-            box-sizing: border-box;
-            flex-shrink: 0;
-            box-shadow: 0 3px 15px var(--night-vision-red) !important;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 12px; box-shadow: 0 0 18px rgba(255, 0, 0, .55);
         }
 
-        .header-patch-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .agency-logo {
-            height: 52px;
-            width: 52px;
-            object-fit: contain;
-            border-radius: 50%;
-        }
-
-        .badge-star {
-            height: 54px;
-            width: 54px;
-            object-fit: contain;
-        }
-
-        .center-branding {
-            text-align: center;
-            flex-grow: 1;
-        }
-
+        .agency-logo { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; }
+        .badge-star { width: 58px; height: 58px; object-fit: contain; }
+        .center-branding { text-align: center; flex: 1; }
+        
         .header-title {
-            color: var(--gold);
-            font-weight: 900;
-            font-size: 1.8rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin: 0;
-            text-shadow: 2px 2px 2px #000, 0 0 10px var(--neon-glow-red) !important;
+            margin: 0; color: var(--gold); font-size: 2rem;
+            letter-spacing: 5px; font-weight: 900;
+            text-shadow: 0 0 15px rgba(255, 0, 0, .8);
         }
 
-        .header-sub {
-            color: #FFFFFF;
-            font-size: 0.75rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 2px 0 0 0;
-        }
+        .header-sub { margin: 0; font-size: .7rem; letter-spacing: 2px; }
 
-        /* FIXED INTERFACE SCAFFOLDING */
+        /* TECHNICAL OPERATIONAL VIEWPORT */
         .console-container {
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-sizing: border-box;
-            width: 100%;
-            height: calc(100vh - 105px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            padding: 10px; height: calc(100vh - 120px);
+            overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
         }
 
-        /* TELEMETRY TARGET BOX */
+        /* SYSTEM TELEMETRY ADDRESS INPUT BAR */
         .address-bar-frame {
-            display: flex;
-            border: 2px solid var(--neon-green);
-            background-color: #000000;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-            box-shadow: 0 0 12px var(--neon-glow-red) !important; 
+            display: flex; border: 2px solid var(--green); border-radius: 5px;
+            overflow: hidden; background: #000; box-shadow: 0 0 14px rgba(255, 0, 0, .7);
         }
 
-        .mic-indicator {
-            background-color: var(--hot-pink);
-            color: #FFFFFF;
-            padding: 10px 12px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
+        .tactical-ai {
+            width: 95px;
+            background: linear-gradient(to bottom, #ff4444, #550000);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; letter-spacing: 1px; box-shadow: 0 0 15px rgba(255, 0, 0, .8);
         }
 
         .address-input-field {
-            flex-grow: 1;
-            background-color: transparent;
-            border: none;
-            color: #FFFFFF;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 1rem;
-            font-weight: bold;
+            flex: 1; background: #000; border: none; color: #fff;
+            padding: 14px; font-size: 1rem; outline: none;
         }
 
-        /* HIGH-VISIBILITY DEDICATED COMMAND INTERFACE GO BUTTON */
-        .action-trigger-bar {
-            display: block !important;
-            visibility: visible !important;
-            background-color: var(--neon-green) !important;
-            color: #000000 !important;
-            text-align: center;
-            padding: 14px;
-            font-weight: 900;
-            font-size: 1.3rem;
-            letter-spacing: 2px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            box-shadow: 0 0 18px rgba(0, 255, 51, 0.9), 0 0 12px var(--neon-glow-red) !important; 
-            border: 2px solid #FFFFFF;
+        .go-btn {
+            width: 90px; border: none; background: var(--green); color: #000;
+            font-weight: 900; font-size: 1rem; cursor: pointer; letter-spacing: 2px;
+            box-shadow: 0 0 12px var(--green), 0 0 25px rgba(255, 0, 0, .7);
         }
 
-        /* LIVE MAP SCREEN CONTAINER */
+        /* RECON SCREEN MATRIX BOX */
         .radar-screen-container {
-            height: 320px; 
-            background-color: #000000;
-            border: 3px solid #444444;
-            position: relative;
-            border-radius: 6px;
-            flex-shrink: 0;
-            overflow: hidden;
-            box-shadow: inset 0 0 25px var(--night-vision-red), 0 0 15px var(--night-vision-red) !important; 
+            position: relative; height: 340px; border: 3px solid #444;
+            border-radius: 6px; overflow: hidden;
+            box-shadow: inset 0 0 25px rgba(255, 0, 0, .5), 0 0 15px rgba(255, 0, 0, .5);
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
-            background: #000000;
-            z-index: 10;
-        }
+        #map { width: 100%; height: 100%; background: #000; }
 
-        /* HIGH-GLOW CRIMSON NIGHT VISION FILTER OVERLAY */
         .night-vision-glow {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, var(--night-vision-red) 0%, rgba(180, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.3) 100%) !important;
-            box-shadow: inset 0 0 40px var(--night-vision-red) !important;
-            pointer-events: none;
-            z-index: 1000; 
+            position: absolute; inset: 0;
+            background: radial-gradient(circle, rgba(255, 0, 0, .18), rgba(0, 0, 0, .20));
+            pointer-events: none; z-index: 500;
         }
 
-        /* CUSTOM BLIP ASSET SHIELDS */
+        /* RECON BLIP GRAPHICS DESIGN */
         .k9-custom-blip {
-            border: 2px solid var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--neon-green), 0 0 8px var(--neon-glow-red) !important; 
-            object-fit: cover;
-            background-color: #000000;
+            border: 2px solid var(--green); border-radius: 50%;
+            box-shadow: 0 0 10px var(--green), 0 0 8px rgba(255,0,0,0.8);
+            object-fit: cover; background-color: #000000;
         }
 
         .vsp-custom-blip {
-            border: 2px solid var(--bright-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--bright-blue), 0 0 8px var(--neon-glow-red) !important; 
-            object-fit: cover;
-            background-color: #000000;
+            border: 2px solid var(--blue); border-radius: 50%;
+            box-shadow: 0 0 10px var(--blue), 0 0 8px rgba(255,0,0,0.8);
+            object-fit: cover; background-color: #000000;
         }
 
-        /* MAP LAYER CONTROL HOOD BUTTONS */
+        /* LAYER HUD CONTROL TOGGLES */
         .map-layer-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 1100;
+            position: absolute; top: 10px; right: 10px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 1000;
         }
 
         .layer-btn {
-            background-color: rgba(0, 0, 0, 0.95);
-            color: var(--neon-green);
-            border: 2px solid var(--neon-green);
-            padding: 9px 14px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5), 0 0 6px var(--neon-glow-red) !important; 
-        }
-        .layer-btn.active {
-            background-color: var(--neon-green);
-            color: #000000;
-            box-shadow: 0 0 12px var(--neon-green), 0 0 10px var(--neon-glow-red) !important; 
+            background: #000; color: var(--green); border: 2px solid var(--green);
+            padding: 9px 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            text-transform: uppercase; font-size: 0.75rem;
         }
 
-        /* DATA TELEMETRY FEED PANEL */
-        .data-log-panel {
-            border-top: 1px dashed var(--gold);
-            padding-top: 8px;
-            flex-shrink: 0;
-            box-shadow: 0 0 8px var(--night-vision-red) !important; 
-        }
+        .layer-btn.active { background: var(--green); color: #000; }
 
-        .log-status-header {
-            color: var(--gold);
-            font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-        }
+        /* TELEMETRY FEED OUTS */
+        .data-log-panel { border-top: 1px dashed var(--gold); padding-top: 8px; }
+        .log-status-header { color: var(--gold); font-weight: bold; }
+        .log-body-text { font-family: monospace; font-size: .9rem; line-height: 1.5; }
 
-        .log-body-text {
-            color: #E0E0E0;
-            font-family: monospace;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        /* CRISIS VOICE MATRIX CONSOLE */
-        .bottom-action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
+        /* TACTICAL EMERGENCY CALL MATRIX */
+        .bottom-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        
         .action-grid-btn {
-            background-color: #000000;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-transform: uppercase;
-            box-sizing: border-box;
-            box-shadow: 0 0 8px var(--night-vision-red) !important; 
+            padding: 13px; background: #000; border-radius: 5px;
+            text-align: center; font-weight: bold; cursor: pointer; text-transform: uppercase;
         }
 
-        .btn-pink   { border: 2px solid var(--hot-pink); color: var(--hot-pink); }
-        .btn-red    { border: 2px solid #CC3333; color: #CC3333; }
-        .btn-orange { border: 2px solid var(--orange); color: var(--orange); }
-        .btn-teal   { border: 2px solid var(--teal); color: var(--teal); }
-        .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
-        .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
+        .btn-pink { border: 2px solid #ff3366; color: #ff3366; }
+        .btn-red { border: 2px solid #ff3333; color: #ff3333; }
+        .btn-orange { border: 2px solid #ff8800; color: #ff8800; }
+        .btn-teal { border: 2px solid #00cccc; color: #00cccc; }
+        .btn-gold { border: 2px solid var(--gold); color: var(--gold); }
+        .btn-blue { border: 2px solid var(--blue); color: var(--blue); }
 
-        /* EMERGENCY VOICE CANCEL TRANSMISSION INTERRUPT SWITCH */
         .btn-stop-audio {
-            grid-column: span 2;
-            background-color: #2b0000;
-            border: 2px solid #FF3333;
-            color: #FF8888;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-align: center;
-            text-transform: uppercase;
-            box-shadow: 0 0 12px var(--neon-glow-red) !important; 
+            grid-column: span 2; border: 2px solid #ff3333; background: #220000;
+            color: #ff9999; padding: 14px; text-align: center; border-radius: 5px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
         }
 
-        .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
-
-        /* FOOTER BRANDING STRIP */
+        /* FIXED ASSIGNED RECOGNITION CREATOR RUN FOOTER */
         .fixed-creator-footer {
-            background-color: #050505;
-            border-top: 2px solid #222;
-            padding: 10px 0;
-            text-align: center;
-            flex-shrink: 0;
-            box-shadow: 0 -3px 10px var(--night-vision-red) !important; 
+            height: 42px; background: #050505; border-top: 2px solid #222;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .creator-text {
-            color: #FF6666;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin: 0;
-            text-transform: uppercase;
-            text-shadow: 0 0 6px var(--neon-glow-red) !important; 
-        }
+        .creator-text { color: #ff7777; font-size: .8rem; letter-spacing: 2px; font-weight: bold; }
     </style>
 </head>
+
 <body>
 
-    <div class="top-header">
-        <img class="badge-star" src="amherst_badge.png.jpg" alt="Amherst Sheriff Badge" onerror="this.style.display='none'">
-        
-        <div class="center-branding">
-            <h1 class="header-title">TACNET</h1>
-            <p class="header-sub">Nextline Multi-Agency Tactical Task Force</p>
-        </div>
-        
-        <div class="header-patch-box">
-            <img class="agency-logo" src="gshep_2.jpg" alt="K9 Unit" onerror="this.style.display='none'">
-            <img class="agency-logo" src="va.png-modified.jpg" alt="VSP Patch" onerror="this.style.display='none'">
-        </div>
+    <div id="landingPage">
+        <img src="FDD.png" id="landingImage" onerror="this.style.borderColor='red'">
+        <button class="enter-btn" onclick="enterTacnet()">ENTER TACNET</button>
     </div>
 
-    <div class="console-container">
-        
-        <div class="address-bar-frame">
-            <div class="mic-indicator">🎤 MIC</div>
-            <input type="text" class="address-input-field" value="135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA" id="target-address-input">
-        </div>
-
-        <div class="action-trigger-bar" id="master-go-btn" onclick="lockOperationalPerimeter()">
-            📍 GO: LOCK SEARCH PERIMETER
-        </div>
-
-        <div class="radar-screen-container">
-            
-            <div id="map"></div>
-            
-            <div class="night-vision-glow"></div>
-
-            <div class="map-layer-controls">
-                <button class="layer-btn active" id="btn-sat" onclick="switchMapLayer('sat')">Satellite</button>
-                <button class="layer-btn" id="btn-street" onclick="switchMapLayer('street')">Street View</button>
-                <button class="layer-btn" id="btn-terrain" onclick="switchMapLayer('terrain')">Terrain</button>
+    <div id="appPage">
+        <div class="top-header">
+            <img class="badge-star" src="amherst_badge.png.jpg">
+            <div class="center-branding">
+                <h1 class="header-title">TACNET</h1>
+                <p class="header-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <img class="agency-logo" src="gshep_2.jpg">
+                <img class="agency-logo" src="va.png-modified.jpg">
             </div>
         </div>
 
-        <div class="data-log-panel">
-            <div class="log-status-header">📍 PERIMETER CORDON STATUS</div>
-            <div class="log-body-text">
-                Task Force Satellite grid tracking modules synchronized.<br>
-                Target Sector: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
+        <div class="console-container">
+            <div class="address-bar-frame">
+                <div class="tactical-ai">⚡ TAC-AI</div>
+                <input type="text" class="address-input-field" placeholder="ENTER TARGET ADDRESS" id="target-address-input">
+                <button class="go-btn" onclick="searchAddress()">GO</button>
+            </div>
+
+            <div class="radar-screen-container">
+                <div id="map"></div>
+                <div class="night-vision-glow"></div>
+                <div class="map-layer-controls">
+                    <button class="layer-btn active" id="btn-sat" onclick="switchMapLayer('sat')">Satellite</button>
+                    <button class="layer-btn" id="btn-street" onclick="switchMapLayer('street')">Street</button>
+                    <button class="layer-btn" id="btn-terrain" onclick="switchMapLayer('terrain')">Terrain</button>
+                </div>
+            </div>
+
+            <div class="data-log-panel">
+                <div class="log-status-header">📍 PERIMETER STATUS</div>
+                <div class="log-body-text">
+                    Target Sector: <span id="log-target-address">Awaiting Address...</span>
+                </div>
+            </div>
+
+            <div class="bottom-action-grid">
+                <div class="action-grid-btn btn-pink" onclick="speakMedicalProtocol('cpr')">🐾 K9 CPR</div>
+                <div class="action-grid-btn btn-red" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</div>
+                <div class="action-grid-btn btn-orange" onclick="speakMedicalProtocol('heatstroke')">☀️ HEAT STROKE</div>
+                <div class="action-grid-btn btn-teal" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE BITE</div>
+                <div class="action-grid-btn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</div>
+                <div class="action-grid-btn btn-blue" onclick="speakMedicalProtocol('rally')">🐕 RALLY</div>
+                <div class="btn-stop-audio" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</div>
             </div>
         </div>
 
-        <div class="bottom-action-grid">
-            <div class="action-grid-btn btn-pink" onclick="speakMedicalProtocol('cpr')">🐾 1. K9 CPR</div>
-            <div class="action-grid-btn btn-red" onclick="speakMedicalProtocol('gunshot')">💥 2. GUNSHOT</div>
-            <div class="action-grid-btn btn-orange" onclick="speakMedicalProtocol('heatstroke')">☀️ 3. HEAT STROKE</div>
-            <div class="action-grid-btn btn-teal" onclick="speakMedicalProtocol('snakebite')">🐍 4. SNAKE BITE</div>
-            <div class="action-grid-btn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</div>
-            <div class="action-grid-btn btn-blue" onclick="speakMedicalProtocol('rally')">🐕 RALLY ON K9-1</div>
-            
-            <div class="btn-stop-audio" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</div>
+        <div class="fixed-creator-footer">
+            <p class="creator-text">APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA</p>
         </div>
-
-    </div>
-
-    <div class="fixed-creator-footer">
-        <p class="creator-text">App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        function enterTacnet(){
+            document.getElementById('landingPage').style.display='none';
+            document.getElementById('appPage').style.display='flex';
+            setTimeout(()=>{
+                map.invalidateSize();
+            },400);
+        }
+
         var synth = window.speechSynthesis;
-        var map, activeLayer, searchCircle;
-        
-        // Operational Center Coordinates (Madison Heights, VA)
+        var map;
+        var activeLayer;
+        var searchCircle;
+        var k9Marker, vspMarker1, vspMarker2;
+
+        // Baseline Operational Coordinates
         var defaultLat = 37.4338;
         var defaultLng = -79.1114;
 
-        // HIGH-FIDELITY INDUSTRIAL TILES MAP CHANNELS
+        // FIXED CHANNELS: URL structures flipped from {z}/{x}/{y} to accurate {z}/{y}/{x} parameters
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'ArcGIS Satellite'
+                maxZoom: 20
             }),
             street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', {
-                attribution: 'OpenStreetMap'
+                maxZoom: 20
             }),
             terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{y}/{x}.png', {
-                attribution: 'Topo Terrain'
+                maxZoom: 17
             })
         };
 
-        function initMap() {
-            map = L.map('map', {
-                center: [defaultLat, defaultLng],
-                zoom: 15,
-                zoomControl: false, 
-                attributionControl: false
+        function initMap(){
+            map = L.map('map',{
+                center:[defaultLat, defaultLng],
+                zoom:15,
+                zoomControl:false,
+                attributionControl:false
             });
 
-            // Set satellite map view as default layout
             activeLayer = layers.sat;
             activeLayer.addTo(map);
 
-            // Establish 1/2 Mile Tactical Perimeter Vector Circle Ring Over Map
             searchCircle = L.circle([defaultLat, defaultLng], {
-                color: '#00FF33',
-                fillColor: '#00FF33',
-                fillOpacity: 0.10,
-                radius: 804 
+                color:'#00ff33',
+                fillColor:'#00ff33',
+                fillOpacity:.10,
+                radius:804
             }).addTo(map);
 
-            // Set Up Tactical Custom divIcons using image repository assets
+            // CUSTOM FIELD BLIP DESIGN LAYOUTS
             var k9Icon = L.divIcon({
                 className: 'custom-div-icon',
                 html: '<img class="k9-custom-blip" src="gshep_2.jpg" width="34" height="34">',
@@ -443,79 +319,106 @@
                 iconAnchor: [15, 15]
             });
 
-            // Deploy Assets on Active Map Coordinates
-            L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD)</b>").openPopup();
-            L.marker([37.438, -79.117], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP PERIMETER UNIT</b>"); 
-            L.marker([37.430, -79.106], {icon: vspIcon}).addTo(map).bindPopup("<b>SUPPORT CO-1</b>"); 
+            // FIXED CHANNELS: Standardized tracking assets mounted directly into primary initialization sequence
+            k9Marker = L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD)</b>").openPopup();
+            vspMarker1 = L.marker([37.438, -79.117], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP PERIMETER UNIT</b>"); 
+            vspMarker2 = L.marker([37.430, -79.106], {icon: vspIcon}).addTo(map).bindPopup("<b>SUPPORT CO-1</b>"); 
 
-            // FIX CRITICAL POINT 4: Forces map to fully calculate size to prevent cutting off or layout breakage
-            setTimeout(function() {
+            setTimeout(()=>{
                 map.invalidateSize();
-            }, 300);
+            },300);
         }
 
-        // SWAP MAP TILES MATRIX STREAM (SATELLITE / STREET / TERRAIN)
-        function switchMapLayer(type) {
-            if (!map) return;
+        function switchMapLayer(type){
             map.removeLayer(activeLayer);
             activeLayer = layers[type];
             activeLayer.addTo(map);
 
-            // Synchronize control panel toggles highlighted state
-            document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + type).classList.add('active');
-
-            // Force rendering recalculation to prevent broken or missing map parts
+            document.querySelectorAll('.layer-btn').forEach(btn=>{
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-'+type).classList.add('active');
             map.invalidateSize();
         }
 
-        // ADDRESS SEARCH BAR OPERATION ALIGNMENT
-        function lockOperationalPerimeter() {
-            var inputAddr = document.getElementById('target-address-input').value;
-            document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
-            
-            if (map) {
-                map.setView([defaultLat, defaultLng], 15);
+        async function searchAddress(){
+            const address = document.getElementById('target-address-input').value;
+            if(address.trim()===''){
+                alert('ENTER TARGET ADDRESS');
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+                const data = await response.json();
+
+                if(data.length===0){
+                    alert('ADDRESS NOT FOUND');
+                    return;
+                }
+
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+
+                map.setView([lat,lon],16);
+
+                if(searchCircle){ map.removeLayer(searchCircle); }
+
+                searchCircle = L.circle([lat,lon], {
+                    color:'#00ff33',
+                    fillColor:'#00ff33',
+                    fillOpacity:.10,
+                    radius:804
+                }).addTo(map);
+
+                // Update active tracking units to lock layout focus on new search epicenter
+                k9Marker.setLatLng([lat, lon]);
+                vspMarker1.setLatLng([lat + 0.0042, lon - 0.0056]);
+                vspMarker2.setLatLng([lat - 0.0038, lon + 0.0054]);
+
+                document.getElementById('log-target-address').innerText = address.toUpperCase();
                 map.invalidateSize();
-            }
-            alert("TACTICAL UPDATE: Tracking map vector synchronized on target coordinates.");
-        }
 
-        // EMERGENCY AUDIO DISCONNECT SWITCH
-        function killVoiceTransmission() {
-            if (synth) {
-                synth.cancel();
+            } catch(err) {
+                alert('MAP SEARCH ERROR');
+                console.log(err);
             }
         }
 
-        // FIX CRITICAL POINT 3: Direct Native Hardware Driver Dispatch (PURGED ROBOT TRAITS)
-        function speakMedicalProtocol(actionType) {
-            if (!synth) return;
-            synth.cancel(); 
-            
-            let message = "";
+        function killVoiceTransmission(){
+            if(synth) { synth.cancel(); }
+        }
 
-            if (actionType === 'cpr') {
-                message = "Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.";
-            } else if (actionType === 'gunshot') {
-                message = "Executing K9 Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.";
-            } else if (actionType === 'heatstroke') {
-                message = "Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.";
-            } else if (actionType === 'snakebite') {
-                message = "Executing K9 Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.";
-            } else if (actionType === 'vet') {
-                message = "Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.";
-            } else if (actionType === 'rally') {
-                message = "Command directive issued: All perimeter units collapse cordon formations and rally coordinates back inward on target lead asset position, Wood Canine One.";
+        // FIXED CHANNELS: Full tactical instruction sets re-fused directly into hardware transmission pipeline
+        function speakMedicalProtocol(type){
+            if(!synth) return;
+            synth.cancel();
+            let msg='';
+
+            if(type==='cpr'){
+                msg='Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.';
+            }
+            if(type==='gunshot'){
+                msg='Executing K9 Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.';
+            }
+            if(type==='heatstroke'){
+                msg='Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.';
+            }
+            if(type==='snakebite'){
+                msg='Executing K9 Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.';
+            }
+            if(type==='vet'){
+                msg='Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.';
+            }
+            if(type==='rally'){
+                msg='Command directive issued: All perimeter units collapse cordon formations and rally coordinates back inward on target lead asset position, Wood Canine One.';
             }
 
-            var transmission = new SpeechSynthesisUtterance(message);
-            
-            transmission.lang = 'en-US';
-            transmission.rate = 1.0; 
-            transmission.pitch = 1.0; 
-            
-            synth.speak(transmission);
+            let speech = new SpeechSynthesisUtterance(msg);
+            speech.lang='en-US';
+            speech.rate = 1.0; 
+            speech.pitch = 1.0; 
+            synth.speak(speech);
         }
 
         window.onload = initMap;
