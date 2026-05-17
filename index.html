@@ -1,760 +1,267 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - OPERATIONAL MAP INTEGRATION BUILD</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TACNET | MULTI-AGENCY TACTICAL TASK FORCE</title>
     <style>
         :root {
-            --pure-black: #000000;
-            --neon-green: #00ff33;
-            --gold-primary: #dfb720;
-            --alert-red: #ff0033;
-            --dark-gray: #1b1b1b;
-            --police-blue: #0044ff;
-            --ui-glow: #00ff33;
-            --ui-text: #ffffff;
-            --ui-border: #dfb720;
-            --unit-core: #0044ff;
-            --unit-border: #ffffff;
-            --map-grid: rgba(0, 255, 51, 0.08);
-            --map-road: rgba(255, 255, 255, 0.07);
+            --hunter-green: #1B3022;
+            --neon-green: #39FF14;
+            --gold: #D4AF37;
+            --sos-red: #B22222;
+            --glass: rgba(20, 35, 25, 0.9);
+            --panel-bg: #2b2b2b;
         }
 
-        /* HARD Night Vision Override */
-        body.nvg-mode {
-            --neon-green: #ff0000;
-            --gold-primary: #aa0000;
-            --alert-red: #550000;
-            --dark-gray: #0b0000;
-            --police-blue: #ff0000;
-            --ui-glow: #ff0000;
-            --ui-text: #ff3333;
-            --ui-border: #ff0000;
-            --unit-core: #550000;
-            --unit-border: #ff0000;
-            --map-grid: rgba(255, 0, 0, 0.05);
-            --map-road: rgba(255, 0, 0, 0.12);
-            color: #ff0000;
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: #111; color: var(--gold);
+            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        body, html { 
-            background-color: var(--pure-black); 
-            color: var(--neon-green); 
-            font-family: 'Share Tech Mono', monospace; 
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed; 
-        }
-
-        .app-page {
-            display: none; 
-            width: 100%;
-            height: 100%;
-            padding: 12px;
-            padding-top: calc(12px + env(safe-area-inset-top));
-            padding-bottom: calc(12px + env(safe-area-inset-bottom));
-            flex-direction: column;
-        }
-        .active-page { display: flex !important; }
-
-        /* SCREEN 1: HUB FRONT GATE */
-        .home-logo-hub {
-            text-align: center;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border: 2px double var(--neon-green);
-            padding: 12px;
-            background: var(--dark-gray);
-            border-radius: 8px;
-        }
-        .home-logo-hub h1 { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 2.2rem; }
-        .home-logo-hub p { color: var(--ui-text); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-        
-        .prestage-panel {
-            background: var(--dark-gray);
-            border: 1px solid var(--gold-primary);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 12px;
+        /* MASTER TACTICAL BANNER FRAME */
+        .master-banner {
+            background: linear-gradient(180deg, #4a3f1a 0%, #1a1505 100%);
+            border: 4px solid #5a5a5a;
+            padding: 10px 20px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-        }
-        .prestage-label { font-size: 0.95rem; color: #fff; font-weight: bold; }
-        .toggle-switch-btn {
-            background: #222;
-            color: var(--alert-red);
-            border: 2px solid var(--alert-red);
-            font-family: 'Black Ops One', sans-serif;
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .toggle-switch-btn.active-toggle {
-            background: rgba(0, 255, 51, 0.15);
-            color: var(--neon-green);
-            border-color: var(--neon-green);
+            box-shadow: inset 0 0 20px #000;
         }
 
-        .big-launch-command-btn {
-            background: var(--neon-green);
-            color: var(--pure-black);
-            font-family: 'Black Ops One', sans-serif;
-            font-size: 1.25rem;
-            padding: 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        .banner-seal {
+            height: 90px;
+            width: auto;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .banner-center-text {
             text-align: center;
-            box-shadow: 0 0 12px var(--ui-glow);
-            font-weight: bold;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-        .patent-shield-box {
-            background: rgba(223, 183, 32, 0.08);
-            border: 1px solid var(--gold-primary);
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--ui-text);
-            margin-bottom: 12px;
-        }
-        .credential-gate-panel { background: var(--dark-gray); border: 1px solid var(--neon-green); padding: 10px; border-radius: 6px; }
-        .gate-title { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 1rem; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed var(--neon-green); padding-bottom: 4px; }
-        .gate-status-line { color: var(--ui-text); font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; }
-
-        /* SCREEN 2: ACTIVE RECON HUD */
-        .search-header {
-            border-bottom: 2px solid var(--neon-green);
-            padding-bottom: 4px;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .search-header h2 { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 1.1rem; }
-        
-        .header-btn-rack { display: flex; gap: 6px; }
-        .nvg-toggle-btn { background: #550000; border: 1px solid #ff0000; color: #ff0000; font-family: 'Black Ops One', sans-serif; padding: 2px 8px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; }
-        body.nvg-mode .nvg-toggle-btn { background: #004411; border: 1px solid #00ff33; color: #00ff33; }
-        .return-home-btn { background: transparent; border: 1px solid var(--gold-primary); color: var(--gold-primary); font-family: 'Share Tech Mono', monospace; padding: 2px 8px; font-size: 0.8rem; border-radius: 3px; cursor: pointer; }
-
-        /* INPUT BLOCK */
-        .input-system-rack {
-            display: flex;
-            gap: 6px;
-            background: var(--dark-gray);
-            padding: 6px;
-            border: 1px solid var(--gold-primary);
-            border-radius: 6px;
-            margin-bottom: 4px;
-            align-items: center;
-        }
-        .mic-trigger { background: var(--alert-red); color: #fff; border: none; font-family: 'Black Ops One', sans-serif; padding: 10px 14px; border-radius: 4px; height: 40px; font-size: 0.9rem; }
-        .voice-text-box { flex-grow: 1; background: #000; border: 1px solid var(--neon-green); color: var(--ui-text); font-family: 'Share Tech Mono', monospace; padding: 8px; font-size: 1rem; border-radius: 4px; height: 40px; -webkit-user-select: text; user-select: text; }
-        .manual-go-btn { background: var(--neon-green); color: #000; border: none; font-family: 'Black Ops One', sans-serif; padding: 0 16px; border-radius: 4px; font-weight: bold; height: 40px; font-size: 1rem; white-space: nowrap; }
-
-        /* TACTICAL PERIMETER SLIDER */
-        .cordon-control-rack {
-            background: rgba(27, 27, 27, 0.9);
-            border: 1px solid var(--neon-green);
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-bottom: 4px;
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .slider-meta-line { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; color: var(--gold-primary); }
-        .tactical-range-slider {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #222;
-            height: 10px;
-            border-radius: 4px;
-            outline: none;
-            border: 1px solid var(--neon-green);
-        }
-        .tactical-range-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
-            background: var(--neon-green);
-            cursor: pointer;
-            border: 1px solid #fff;
-        }
-
-        /* LIVE MAP RADAR VIEWPORT WINDOW */
-        .radar-viewport-frame {
-            height: 32vh;
-            width: 100%;
-            border: 2px solid var(--neon-green);
-            border-radius: 6px;
-            background: #040904;
-            margin-bottom: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-        body.nvg-mode .radar-viewport-frame { background: #050000; }
-        #tactical-radar { width: 100%; height: 100%; display: block; cursor: move; }
-
-        /* CONSOLE LOG FEED */
-        .medical-intel-readout {
-            background: var(--dark-gray);
-            border: 1px solid var(--neon-green);
-            padding: 8px;
-            border-radius: 6px;
             flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
         }
-        .intel-header-title { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 0.95rem; border-bottom: 1px dashed var(--neon-green); padding-bottom: 2px; margin-bottom: 4px; }
-        .intel-body-text { color: var(--ui-text); font-size: 0.95rem; line-height: 1.35; white-space: pre-line; }
-        
-        /* FLANK OFFICER HOT DROPS */
-        .evidence-hot-rack {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            margin-bottom: 4px;
-            background: #000;
-            padding: 4px;
-            border: 1px solid var(--gold-primary);
-            border-radius: 6px;
-        }
-        .evidence-btn {
-            background: #111;
-            border: 1px dashed var(--gold-primary);
-            color: #fff;
-            font-size: 0.75rem;
-            padding: 6px 2px;
-            font-family: 'Share Tech Mono', monospace;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-        }
-        .evidence-btn:active { background: var(--gold-primary); color: #000; }
 
-        /* COMMAND INTERFACE ACTION BUTTONS */
-        .button-tactical-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
+        .banner-title {
+            font-size: 3.2rem;
+            font-weight: bold;
+            letter-spacing: 6px;
+            margin: 0;
+            color: var(--gold);
+            text-shadow: 3px 3px 0px #000;
         }
-        .action-click-btn {
-            background: rgba(255, 0, 51, 0.05);
-            border: 2px solid var(--alert-red);
-            color: var(--ui-text);
-            padding: 8px 1px;
-            font-family: 'Black Ops One', sans-serif;
+
+        .banner-subtext {
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* CONSOLE WORKSPACE */
+        .console-body {
+            display: flex;
+            flex-grow: 1;
+            padding: 15px;
+            gap: 15px;
+            background: #222;
+            border-bottom: 4px solid #5a5a5a;
+        }
+
+        /* LIVE SCREEN AREA */
+        .screen-container {
+            flex-grow: 1;
+            position: relative;
+            border: 5px solid #444;
+            background-color: #000;
+            box-shadow: 0 0 15px #000;
+            overflow: hidden;
+        }
+
+        #live-map {
+            width: 100%; height: 100%;
+            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1000x800&maptype=satellite');
+            background-size: cover; background-position: center;
+        }
+
+        /* MULTI-SHAPE TACTICAL MARKERS */
+        .marker {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
             font-size: 0.75rem;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
+            box-shadow: 0 0 8px #000;
         }
-        .action-click-btn:active { background: var(--alert-red); color: #fff; }
+
+        /* Shape 1: Standard Blue Circles (LEO) */
+        .marker-circle {
+            width: 40px; height: 40px;
+            background: rgba(30, 144, 255, 0.85);
+            border: 2px solid #00bfff;
+            border-radius: 50%;
+        }
+
+        /* Shape 2: Amber Hexagon (K9 Master Head) */
+        .marker-hex {
+            width: 50px; height: 50px;
+            background: rgba(218, 165, 32, 0.9);
+            border: 2px solid var(--gold);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            font-size: 0.9rem;
+        }
+
+        /* Shape 3: Red Diamond (LEO Perimeter Lead) */
+        .marker-diamond {
+            width: 45px; height: 45px;
+            background: rgba(178, 34, 34, 0.9);
+            border: 2px solid #ff4500;
+            transform: rotate(45deg);
+        }
+        .marker-diamond span { transform: rotate(-45deg); }
+
+        /* Shape 4: Green Triangle (LEO-2 Outpost) */
+        .marker-triangle {
+            width: 45px; height: 45px;
+            background: rgba(34, 139, 34, 0.9);
+            border: 2px solid var(--neon-green);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            padding-top: 12px; box-sizing: border-box;
+        }
+
+        /* Shape 5: Purple Square (LEO Support) */
+        .marker-square {
+            width: 40px; height: 40px;
+            background: rgba(138, 43, 226, 0.85);
+            border: 2px solid #da70d6;
+        }
+
+        /* HARDWARE CONTROL PANEL */
+        .control-panel {
+            width: 260px;
+            background: #333;
+            border: 3px solid #5a5a5a;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .panel-heading {
+            background: #222;
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid var(--gold);
+            font-size: 0.85rem;
+        }
+
+        /* TACTICAL RUGGED BUTTONS */
+        .hw-btn {
+            background: linear-gradient(180deg, #555 0%, #222 100%);
+            border: 2px solid #666; color: var(--gold);
+            padding: 12px; font-weight: bold; font-family: monospace;
+            cursor: pointer; text-transform: uppercase; border-radius: 4px;
+            box-shadow: 0 3px 0 #111; text-align: center;
+        }
+        .hw-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #111; }
+        .hw-btn-gold { border-color: var(--gold); background: linear-gradient(180deg, #6b561b 0%, #221a05 100%); }
+
+        .btn-sos-hardware {
+            background: linear-gradient(180deg, var(--sos-red) 0%, #500 100%);
+            border: 2px solid #ff4500; color: #fff;
+            padding: 15px; font-size: 1rem; animation: panel-pulse 2s infinite;
+        }
+
+        @keyframes panel-pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+
+        /* CREATOR LOWER BANNER */
+        .creator-footer {
+            background: #000;
+            color: #ff6347;
+            text-align: center;
+            padding: 12px 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-top: 2px solid #333;
+        }
+
+        /* NIGHT VISION OVERLAY */
+        .nvg-active {
+            filter: brightness(0.7) contrast(1.3) sepia(100%) hue-rotate(85deg) !important;
+        }
     </style>
 </head>
-<body>
+<body id="master-console">
 
-    <div class="app-page active-page" id="page-1-node">
-        <div class="home-logo-hub">
-            <h1>TACNET</h1>
-            <p>Task Force Search & Recovery Link</p>
+    <div class="master-banner">
+        <img src="amherst_badge.png.jpg" alt="Sheriff Star" class="banner-seal" onerror="this.style.display='none'">
+        <div class="banner-center-text">
+            <div class="banner-title">TACNET</div>
+            <div class="banner-subtext">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
+        </div>
+        <img src="gshep_2.jpg" alt="K9 Medallion" class="banner-seal" style="margin-right: 15px;" onerror="this.style.display='none'">
+        <img src="va.png-modified.jpg" alt="VSP Patch" class="banner-seal" onerror="this.style.display='none'">
+    </div>
+
+    <div class="console-body">
+        
+        <div class="screen-container">
+            <div id="live-map"></div>
+
+            <div class="marker marker-circle" style="top: 20%; left: 40%;">LEO</div>
+            <div class="marker marker-circle" style="top: 55%; left: 30%;">LEO</div>
+            <div class="marker marker-circle" style="top: 65%; left: 45%;">LEO</div>
+            
+            <div class="marker marker-hex" style="top: 35%; left: 25%;">K9</div>
+            
+            <div class="marker marker-diamond" style="top: 25%; left: 15%;"><span>LEO</span></div>
+            
+            <div class="marker marker-triangle" style="top: 25%; left: 75%;">LEO-2</div>
+            
+            <div class="marker marker-square" style="top: 45%; left: 78%;">LEO</div>
         </div>
 
-        <div class="prestage-panel">
-            <span class="prestage-label">O/S AGENCY FRONT LAUNCH:</span>
-            <button class="toggle-switch-btn" id="prestage-toggle" onclick="togglePrestageSetup()">OFFLINE</button>
-        </div>
-
-        <button class="big-launch-command-btn" onclick="launchOperationalHUD()">📡 INITIALIZE TASK FORCE SEARCH</button>
-
-        <div class="patent-shield-box">
-            🔒 LAW ENFORCEMENT INTERFACE DESIGN SPECCED BY:<br>
-            <strong style="color:var(--gold-primary);">DEPUTY SHERIFF EARL A. WOOD (RET) &bull; VA</strong>
-        </div>
-
-        <div class="credential-gate-panel">
-            <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
-            <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
-            <div class="gate-status-line"><span>O/S ROUTING PORT:</span> <span id="gate-port-status" style="color:var(--gold-primary);">MANUALLY DEFERRED</span></div>
-            <div class="gate-status-line"><span>MAP GRAPHICS ENG:</span> <span style="color:var(--neon-green);">VECTOR OVERLAY LIVE</span></div>
+        <div class="control-panel">
+            <div class="panel-heading">SYSTEM EXECUTION</div>
+            <button class="hw-btn hw-btn-gold" onclick="alert('Tactical Search Operations Started.')">START SEARCH</button>
+            <button class="hw-btn hw-btn-gold" onclick="startK9Voice()">K9 DEPLOY</button>
+            
+            <div class="panel-heading" style="margin-top: 10px;">SAFETY SYSTEM</div>
+            <button class="hw-btn btn-sos-hardware" onclick="triggerSOS()">OFFICER SOS</button>
+            
+            <button class="hw-btn" style="margin-top: auto; border-color: var(--neon-green);" onclick="toggleNVG()">NIGHT VISION</button>
         </div>
     </div>
 
-    <div class="app-page" id="page-2-node">
-        <div class="search-header">
-            <h2>TACTICAL SEARCH RECON</h2>
-            <div class="header-btn-rack">
-                <button class="nvg-toggle-btn" onclick="toggleNightVisionMode()" id="nvg-btn-label">🕶️ IR MODE</button>
-                <button class="return-home-btn" onclick="returnToFrontGate()" style="border-color:var(--alert-red); color:var(--alert-red);">⬅️ BACK (RESET)</button>
-            </div>
-        </div>
-
-        <div class="input-system-rack">
-            <button class="mic-trigger" onclick="runVoiceParser()" id="mic-label">🎙️ MIC</button>
-            <input type="text" class="voice-text-box" id="voice-display" placeholder="Enter last known POI address...">
-            <button class="manual-go-btn" onclick="triggerManualAddressOverride()">GO</button>
-        </div>
-
-        <div class="cordon-control-rack" id="slider-bay">
-            <div class="slider-meta-line">
-                <span>CORDON RADIUS ADJUSTMENT</span>
-                <span id="radius-readout">0.50 MILES</span>
-            </div>
-            <input type="range" min="30" max="220" value="80" class="tactical-range-slider" id="radius-slider" oninput="adjustPerimeterScale(this.value)">
-        </div>
-
-        <div class="radar-viewport-frame">
-            <canvas id="tactical-radar"></canvas>
-        </div>
-
-        <div class="evidence-hot-rack">
-            <button class="evidence-btn" onclick="dropEvidenceMarker('👣 FOOTPRINTS')">👣 DROP FOOTPRINT</button>
-            <button class="evidence-btn" onclick="dropEvidenceMarker('🩸 BLOOD SIGN')">🩸 DROP BLOOD</button>
-            <button class="evidence-btn" onclick="dropEvidenceMarker('🔫 WEAPON FOUND')">🔫 DROP WEAPON</button>
-        </div>
-
-        <div class="medical-intel-readout">
-            <div class="intel-header-title" id="intel-title">K9 LEAD COMMAND DECK</div>
-            <div class="intel-body-text" id="intel-body">
-                Vector Mapping Running. K9 Team retains tracking command. 
-
-                Perimeter personnel can drag the terrain grid dynamically to track live vectors across streets and intersecting corridors.
-            </div>
-        </div>
-
-        <div class="button-tactical-grid">
-            <button class="action-click-btn" onclick="fireMedicalArray('cpr')">🐾 K9 CPR</button>
-            <button class="action-click-btn" onclick="fireMedicalArray('gunshot')">💥 GUNSHOT</button>
-            <button class="action-click-btn" onclick="fireMedicalArray('heat')">☀️ HEAT</button>
-            <button class="action-click-btn" onclick="fireMedicalArray('snake')">🐍 SNAKE</button>
-            <button class="action-click-btn" onclick="activateOutsideAgencyPort('MANUAL HOTKEY')" style="border-color:var(--gold-primary); color:var(--gold-primary); background:rgba(223,183,32,0.05);" id="os-inject-btn">📡 O/S PORT</button>
-            <button class="action-click-btn" onclick="resetRadarView()" style="border-color:#3366ff; color:#3366ff; background:rgba(0,68,255,0.08);">🎯 RALLY</button>
-        </div>
+    <div class="creator-footer">
+        APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
     </div>
 
     <script>
-        let canvas = null;
-        let ctx = null;
-
-        let offsetX = 0;
-        let offsetY = 0;
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-
-        let cordonActive = false;
-        let cordonRadius = 80;
-        let forcesExpanded = false;
-        let nvgActive = false;
-        let prestageOSForces = false;
-        let targetPoiText = "";
-
-        let trackUnits = [];
-        let trackHistory = {};
-        let evidencePoints = [];
-
-        const emergencyProtocols = {
-            cpr: { title: "🚨 EMERGENCY PROTOCOL: K9 C.P.R.", text: "• POSITION: Place dog on its RIGHT side.\n• AIRWAY: Pull tongue forward, clear fluids.\n• COMPRESSIONS: 30 heavy chest compressions behind elbow line. 2 rescue breaths down muzzle.", audio: "K9 C P R active. Lay dog on right side." },
-            gunshot: { title: "🚨 EMERGENCY PROTOCOL: K9 GUNSHOT / MAJOR BLEED", text: "• PRESSURE: Hold maximum direct pressure immediately.\n• PACKING: Pack cavity deeply with clean hemostatic materials.", audio: "Gunshot wound active. Apply heavy pressure." },
-            heat: { title: "🚨 EMERGENCY PROTOCOL: K9 HEAT EXHAUSTION", text: "• METRICS: Warning line hits at 103F. Critical failure at 106F.\n• TREATMENT: Evacuate to shadow. Wet abdomen pads and skin.", audio: "Heat emergency. Cool groin tissue." },
-            snake: { title: "🚨 EMERGENCY PROTOCOL: K9 SNAKE BITE", text: "• PROCEDURE: Halt search team movement. Carry the dog.\n• PLACEMENT: Keep bite location strictly below heart line level.", audio: "Snake bite active. Immobilize tracking dog." }
-        };
-
-        function togglePrestageSetup() {
-            prestageOSForces = !prestageOSForces;
-            const btn = document.getElementById('prestage-toggle');
-            const statusText = document.getElementById('gate-port-status');
-            
-            if (prestageOSForces) {
-                btn.innerText = "DEPLOYED";
-                btn.classList.add('active-toggle');
-                statusText.innerText = "PRE-STAGED FOR LAUNCH";
-                statusText.style.color = "var(--neon-green)";
-            } else {
-                btn.innerText = "OFFLINE";
-                btn.classList.remove('active-toggle');
-                statusText.innerText = "MANUALLY DEFERRED";
-                statusText.style.color = "var(--gold-primary)";
-            }
+        // CORE TACTICAL COMMAND FUNCTIONS
+        function toggleNVG() {
+            document.getElementById('master-console').classList.toggle('nvg-active');
         }
 
-        function launchOperationalHUD() {
-            if (prestageOSForces) {
-                trackUnits = [
-                    { id: "1", label: "WOOD-K91 (SPEARHEAD)", baseX: 10, baseY: -30 },
-                    { id: "2", label: "SMITH-104 (FLANK)", baseX: 80, baseY: 50 },
-                    { id: "3", label: "O/S-VSP-212", baseX: -70, baseY: -80 },
-                    { id: "4", label: "O/S-AMHERST-12", baseX: -110, baseY: 30 }
-                ];
-                forcesExpanded = true;
-            } else {
-                trackUnits = [
-                    { id: "1", label: "WOOD-K91 (SPEARHEAD)", baseX: 10, baseY: -30 },
-                    { id: "2", label: "SMITH-104 (FLANK)", baseX: 80, baseY: 50 }
-                ];
-                forcesExpanded = false;
-            }
-
-            trackHistory = {};
-            evidencePoints = [];
-            targetPoiText = "";
-            trackUnits.forEach(u => { trackHistory[u.id] = []; });
-            cordonActive = false;
-            document.getElementById('slider-bay').style.display = "none";
-
-            navigateToAppPage(2);
-        }
-
-        function adjustPerimeterScale(val) {
-            cordonRadius = parseInt(val);
-            let miles = (cordonRadius / 140).toFixed(2);
-            document.getElementById('radius-readout').innerText = `${miles} MILES`;
-            drawRadarScreen();
-        }
-
-        function dropEvidenceMarker(typeLabel) {
-            let k9Unit = trackUnits.find(u => u.id === "1");
-            if (!k9Unit) return;
-
-            let eX = k9Unit.baseX + offsetX;
-            let eY = k9Unit.baseY + offsetY;
-
-            evidencePoints.push({ label: typeLabel, x: eX, y: eY });
-            drawRadarScreen();
-
-            document.getElementById('intel-title').innerText = "⚠️ SCENE EVIDENCE SECURED";
-            document.getElementById('intel-body').innerText = `${typeLabel} logged directly onto the vector grid matrix.\n\nFlank asset preserves position boundary for investigative processing. K9 tracking sequence remains active.`;
-            
+        function startK9Voice() {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance("Evidence cataloged. K9 tracking forward."));
-            }
-        }
-
-        function toggleNightVisionMode() {
-            nvgActive = !nvgActive;
-            const body = document.body;
-            const btn = document.getElementById('nvg-btn-label');
-            
-            if (nvgActive) {
-                body.classList.add('nvg-mode');
-                btn.innerText = "☀️ DAY MODE";
+                const speech = new SpeechSynthesisUtterance("TACNET K9 Deployment Framework initialized. Hands-free voice logs active.");
+                window.speechSynthesis.speak(speech);
             } else {
-                body.classList.remove('nvg-mode');
-                btn.innerText = "🕶️ IR MODE";
-            }
-            drawRadarScreen();
-        }
-
-        function navigateToAppPage(pageID) {
-            document.getElementById('page-1-node').classList.remove('active-page');
-            document.getElementById('page-2-node').classList.remove('active-page');
-            document.getElementById(`page-${pageID}-node`).classList.add('active-page');
-
-            if (pageID === 2) {
-                setTimeout(() => { initRadarEngine(); }, 150);
+                alert("K9 Deploy Active (Speech Engine not supported by browser).");
             }
         }
 
-        function initRadarEngine() {
-            canvas = document.getElementById('tactical-radar');
-            ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-
-            logCurrentPositions();
-            drawRadarScreen();
-
-            canvas.addEventListener('mousedown', dragStart);
-            canvas.addEventListener('mousemove', dragMove);
-            canvas.addEventListener('mouseup', dragEnd);
-            canvas.addEventListener('touchstart', (e) => { dragStart(e.touches[0]); }, { passive: true });
-            canvas.addEventListener('touchmove', (e) => { dragMove(e.touches[0]); }, { passive: true });
-            canvas.addEventListener('touchend', dragEnd);
-        }
-
-        function logCurrentPositions() {
-            trackUnits.forEach(unit => {
-                if (!trackHistory[unit.id]) { trackHistory[unit.id] = []; }
-                trackHistory[unit.id].push({ x: unit.baseX + offsetX, y: unit.baseY + offsetY });
-            });
-        }
-
-        // VECTOR MAP ENGINE & OBJECT RENDERER
-        function drawRadarScreen() {
-            if (!ctx) return;
-            
-            // Set base sky map color
-            ctx.fillStyle = nvgActive ? "#090000" : "#030a03"; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            let gridCenterX = canvas.width / 2;
-            let gridCenterY = canvas.height / 2;
-
-            // Get dynamic palette configuration values
-            let gridLineColor = nvgActive ? "rgba(255, 0, 0, 0.06)" : "rgba(0, 255, 51, 0.08)";
-            let roadLineColor = nvgActive ? "rgba(255, 0, 0, 0.22)" : "rgba(255, 255, 255, 0.08)";
-            let ringColor = nvgActive ? "rgba(255, 0, 0, 0.2)" : "rgba(0, 255, 51, 0.25)";
-            let axisColor = nvgActive ? "rgba(255, 0, 0, 0.35)" : "rgba(0, 255, 51, 0.4)";
-            let trailColor = nvgActive ? "rgba(255, 0, 0, 0.7)" : "rgba(0, 102, 255, 0.8)";
-            let dotCoreColor = nvgActive ? "#2b0000" : "#0044ff";
-            let dotBorderColor = nvgActive ? "#ff0000" : "#ffffff";
-            let textLabelColor = nvgActive ? "#ff3333" : "#dfb720";
-
-            // 1. GENERATE TOPOLOGICAL MAP GRID WITH POSITION OFFSET
-            ctx.strokeStyle = gridLineColor;
-            ctx.lineWidth = 1;
-            let step = 40;
-            let startGridX = (offsetX % step);
-            let startGridY = (offsetY % step);
-            
-            for (let x = startGridX; x < canvas.width; x += step) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = startGridY; y < canvas.height; y += step) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            // 2. GENERATE LIGHTWEIGHT VECTOR THOROUGHFARES (STREET CHANNELS)
-            ctx.strokeStyle = roadLineColor;
-            ctx.lineWidth = 14;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            
-            // Vector Corridor Road 1 (Main Arterial Line)
-            ctx.beginPath();
-            ctx.moveTo(0 + offsetX, gridCenterY - 40 + offsetY);
-            ctx.lineTo(canvas.width + offsetX, gridCenterY + 60 + offsetY);
-            ctx.stroke();
-
-            // Vector Corridor Road 2 (Cross Intersecting Lane)
-            ctx.lineWidth = 10;
-            ctx.beginPath();
-            ctx.moveTo(gridCenterX - 80 + offsetX, 0 + offsetY);
-            ctx.lineTo(gridCenterX + 40 + offsetX, canvas.height + offsetY);
-            ctx.stroke();
-
-            // Vector Road Labels
-            ctx.fillStyle = nvgActive ? "rgba(255,0,0,0.4)" : "rgba(255,255,255,0.2)";
-            ctx.font = "bold 9px 'Share Tech Mono', monospace";
-            ctx.fillText("ROUTE VECTOR CORRIDOR Alpha", 50 + offsetX, gridCenterY - 20 + offsetY);
-            ctx.fillText("INTERSECT SECTOR TACTICAL", gridCenterX - 70 + offsetX, 30 + offsetY);
-
-            // 3. GENERATE RADIAL RADAR SCOPING BOUNDS
-            ctx.strokeStyle = ringColor; 
-            ctx.lineWidth = 1;
-            for (let r = 50; r < Math.max(canvas.width, canvas.height); r += 50) {
-                ctx.beginPath(); ctx.arc(gridCenterX, gridCenterY, r, 0, 2 * Math.PI); ctx.stroke();
-            }
-
-            // Crosshair Aligners
-            ctx.strokeStyle = axisColor;
-            ctx.beginPath(); ctx.moveTo(0, gridCenterY); ctx.lineTo(canvas.width, gridCenterY); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(gridCenterX, 0); ctx.lineTo(gridCenterX, canvas.height); ctx.stroke();
-
-            // 4. RENDER LIVE L.K.P. POI MARKER PIN
-            if (targetPoiText !== "") {
-                let poiX = gridCenterX + offsetX;
-                let poiY = gridCenterY + offsetY;
-                
-                ctx.fillStyle = nvgActive ? "#ff0000" : "#ff0033";
-                ctx.beginPath(); ctx.arc(poiX, poiY, 6, 0, 2 * Math.PI); ctx.fill();
-                
-                ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.arc(poiX, poiY, 12, 0, 2 * Math.PI); ctx.stroke();
-
-                ctx.fillStyle = nvgActive ? "#ff3333" : "#ffffff";
-                ctx.font = "bold 11px 'Share Tech Mono', monospace";
-                ctx.textAlign = "center";
-                ctx.fillText(`🔴 POI: ${targetPoiText.toUpperCase()}`, poiX, poiY - 18);
-            }
-
-            // 5. RENDER ACTIVE BLUE LINES (BREADCRUMB TRACKS)
-            trackUnits.forEach(unit => {
-                let history = trackHistory[unit.id];
-                if (history && history.length > 1) {
-                    ctx.strokeStyle = trailColor; 
-                    ctx.lineWidth = 2.5;
-                    ctx.setLineDash([4, 4]); 
-                    ctx.beginPath();
-                    ctx.moveTo(gridCenterX + history[0].x, gridCenterY + history[0].y);
-                    for (let i = 1; i < history.length; i++) {
-                        ctx.lineTo(gridCenterX + history[i].x, gridCenterY + history[i].y);
-                    }
-                    ctx.stroke();
-                    ctx.setLineDash([]); 
-                }
-            });
-
-            // 6. RENDER INDEPENDENT FIELD EVIDENCE PLOTS
-            evidencePoints.forEach(pt => {
-                ctx.fillStyle = nvgActive ? "#ff0000" : "#dfb720";
-                ctx.font = "14px sans-serif";
-                ctx.textAlign = "center";
-                ctx.fillText("⚠️", gridCenterX + pt.x, gridCenterY + pt.y - 12);
-                
-                ctx.font = "bold 10px 'Share Tech Mono', monospace";
-                ctx.fillText(pt.label, gridCenterX + pt.x, gridCenterY + pt.y + 12);
-            });
-
-            // 7. RENDER CONTAINMENT CORDON RING VIA THUMB SLIDER SIZE
-            if (cordonActive) {
-                ctx.strokeStyle = nvgActive ? "#ff0000" : "#00ff33";
-                ctx.lineWidth = 3;
-                ctx.fillStyle = nvgActive ? "rgba(255, 0, 0, 0.04)" : "rgba(0, 255, 51, 0.06)";
-                
-                let cordonX = gridCenterX + offsetX;
-                let cordonY = gridCenterY + offsetY;
-                
-                ctx.beginPath(); 
-                ctx.arc(cordonX, cordonY, cordonRadius, 0, 2 * Math.PI); 
-                ctx.fill(); 
-                ctx.stroke();
-
-                ctx.fillStyle = nvgActive ? "#ff3333" : "#ffffff";
-                ctx.font = "bold 12px 'Share Tech Mono', monospace";
-                ctx.textAlign = "center";
-                ctx.fillText(`CONTAINMENT NET BOUNDARY`, cordonX, cordonY - cordonRadius - 6);
-            }
-
-            // 8. RENDER ACTIVE PERSONNEL UNITS
-            trackUnits.forEach(unit => {
-                let unitX = gridCenterX + unit.baseX + offsetX;
-                let unitY = gridCenterY + unit.baseY + offsetY;
-
-                ctx.fillStyle = (unit.id === "1") ? (nvgActive ? "#880000" : "#00ff33") : dotCoreColor;
-                ctx.beginPath(); ctx.arc(unitX, unitY, 13, 0, 2 * Math.PI); ctx.fill();
-                ctx.strokeStyle = dotBorderColor; ctx.lineWidth = 2; ctx.stroke();
-
-                ctx.fillStyle = (unit.id === "1" && !nvgActive) ? "#000000" : "#ffffff";
-                ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(unit.id, unitX, unitY);
-
-                ctx.fillStyle = textLabelColor;
-                ctx.font = "bold 11px 'Share Tech Mono', monospace"; ctx.textAlign = "left";
-                ctx.fillText(unit.label, unitX + 16, unitY + 3);
-            });
-        }
-
-        function dragStart(e) { isDragging = true; startX = e.clientX; startY = e.clientY; }
-        function dragMove(e) {
-            if (!isDragging) return;
-            let dx = e.clientX - startX; let dy = e.clientY - startY;
-            offsetX += dx; offsetY += dy;
-            startX = e.clientX; startY = e.clientY;
-            logCurrentPositions(); drawRadarScreen();
-        }
-        function dragEnd() { isDragging = false; }
-
-        function resetRadarView() {
-            offsetX = 0; offsetY = 0; evidencePoints = []; targetPoiText = "";
-            trackUnits.forEach(u => { trackHistory[u.id] = []; });
-            logCurrentPositions(); drawRadarScreen();
-            document.getElementById('intel-title').innerText = "🎯 MATRIX RESET";
-            document.getElementById('intel-body').innerText = "Tactical tracking trails and active scene evidence cleared from the field map projection.";
-        }
-
-        function activateOutsideAgencyPort(sourceMethod) {
-            if (forcesExpanded) return;
-            forcesExpanded = true;
-            trackUnits.push(
-                { id: "3", label: "O/S-VSP-212", baseX: -70, baseY: -80 },
-                { id: "4", label: "O/S-AMHERST-12", baseX: -110, baseY: 30 }
-            );
-            trackUnits.forEach(u => { if (!trackHistory[u.id]) trackHistory[u.id] = []; });
-            logCurrentPositions(); drawRadarScreen();
-            document.getElementById('os-inject-btn').style.display = "none";
-            document.getElementById('intel-title').innerText = "📡 MULTI-AGENCY STAGING LINKED";
-            document.getElementById('intel-body').innerText = "Outside tactical personnel aligned on sector grids. Cross-fire monitoring channels locked.";
-        }
-
-        function returnToFrontGate() {
-            offsetX = 0; offsetY = 0; cordonActive = false; evidencePoints = []; targetPoiText = "";
-            navigateToAppPage(1);
-        }
-
-        function triggerManualAddressOverride() {
-            let value = document.getElementById('voice-display').value.trim();
-            if (!value) return;
-            if (value.toLowerCase().includes("scaled forces") || value.toLowerCase().includes("forces") || value.toLowerCase().includes("inject")) {
-                activateOutsideAgencyPort("TEXT BOX");
-            } else if (value.toLowerCase().includes("night") || value.toLowerCase().includes("vision")) {
-                toggleNightVisionMode();
-            } else {
-                processCordonStrike(value);
-            }
-        }
-
-        function processCordonStrike(targetText) {
-            targetPoiText = targetText;
-            cordonActive = true; 
-            document.getElementById('slider-bay').style.display = "flex";
-            offsetX = -10; offsetY = 20;
-            logCurrentPositions(); drawRadarScreen();
-            document.getElementById('intel-title').innerText = "📍 MAP GRID ENTRY: COORDINATE LOCKED";
-            document.getElementById('intel-body').innerText = `Target POI Location Locked: ${targetText.toUpperCase()}\n\nPersonnel tracking forward along thoroughfares. Adjust containment loop size on the thumb control to match structural block perimeters.`;
-        }
-
-        function fireMedicalArray(type) {
-            const data = emergencyProtocols[type];
-            document.getElementById('intel-title').innerText = data.title;
-            document.getElementById('intel-body').innerText = data.text;
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.audio));
-            }
-        }
-
-        function runVoiceParser() {
-            const SpeechLib = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechLib) { alert("Voice link offline."); return; }
-            const activeInstance = new SpeechLib();
-            activeInstance.continuous = false; activeInstance.lang = 'en-US';
-
-            activeInstance.onstart = function() {
-                document.getElementById('mic-label').innerText = "🔊 OPEN";
-                document.getElementById('mic-label').style.background = "#dfb720";
-            };
-            activeInstance.onend = function() {
-                document.getElementById('mic-label').innerText = "🎙️ MIC";
-                document.getElementById('mic-label').style.background = "var(--alert-red)";
-            };
-            activeInstance.onresult = function(event) {
-                let textResult = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('voice-display').value = textResult;
-                
-                if (textResult.includes("cpr")) { fireMedicalArray('cpr'); }
-                else if (textResult.includes("gunshot") || textResult.includes("bleed")) { fireMedicalArray('gunshot'); }
-                else if (textResult.includes("heat")) { fireMedicalArray('heat'); }
-                else if (textResult.includes("snake")) { fireMedicalArray('snake'); }
-                else if (textResult.includes("scaled forces") || textResult.includes("forces")) { activateOutsideAgencyPort("VOICE"); }
-                else if (textResult.includes("night vision") || textResult.includes("vision")) { toggleNightVisionMode(); }
-                else { processCordonStrike(textResult); }
-            };
-            activeInstance.start();
+        function triggerSOS() {
+            alert("CRITICAL EMERGENCY: SOS Broadcasted to Amherst Dispatch and all Field Units.");
         }
     </script>
 </body>
