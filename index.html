@@ -87,7 +87,7 @@
             flex-grow: 1;
             box-sizing: border-box;
             overflow-y: auto;
-            padding-bottom: 45px; /* Clear space for fixed footer signature */
+            padding-bottom: 45px;
         }
 
         /* VOICE INPUT ADDRESS REGISTRATION FRAME */
@@ -136,7 +136,7 @@
             text-transform: uppercase;
         }
 
-        /* RADAR SCOPE TERMINAL SCREEN */
+        /* RADAR MAP MONITORING TERMINAL */
         .radar-screen-container {
             height: 280px;
             background-color: #000000;
@@ -146,24 +146,38 @@
             border-radius: 4px;
         }
 
+        /* Live Tactical Grid Underlay Map (OpenStreetMap View of Madison Heights Area) */
+        .tactical-map-underlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://b.tile.openstreetmap.org/14/4589/6182.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.45; /* Blends map lines perfectly with tactical radar layout */
+            filter: brightness(0.6) contrast(1.2) sepia(1) hue-rotate(85deg); /* Generates custom night-vision green overlay */
+            pointer-events: none;
+        }
+
         .radar-grid {
             position: absolute;
             width: 200%; height: 200%;
             top: -50%; left: -50%;
             background-image: 
-                linear-gradient(rgba(0, 255, 51, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 51, 0.05) 1px, transparent 1px);
+                linear-gradient(rgba(0, 255, 51, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 51, 0.08) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
+            z-index: 2;
         }
 
         .radar-ring {
             position: absolute;
             top: 50%; left: 50%;
-            border: 1px solid rgba(0, 255, 51, 0.15);
+            border: 1px solid rgba(0, 255, 51, 0.2);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
+            z-index: 2;
         }
 
         .vector-cordon-circle {
@@ -174,6 +188,7 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
+            z-index: 3;
         }
 
         .cordon-label {
@@ -181,6 +196,8 @@
             left: 110%; top: 40%;
             color: #FFFFFF; font-size: 0.75rem; font-family: monospace;
             white-space: nowrap;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
         }
 
         .tracker-blip {
@@ -196,13 +213,15 @@
             font-weight: bold;
             color: #FFFFFF;
             box-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
+            z-index: 4;
         }
 
         .blip-label {
             position: absolute;
-            left: 30px; color: #888888;
-            font-size: 0.7rem; font-family: monospace;
+            left: 30px; color: #FFFFFF;
+            font-size: 0.75rem; font-family: monospace;
             white-space: nowrap;
+            text-shadow: 1px 1px 2px #000;
         }
 
         /* DATA LOG INTERFACE */
@@ -254,7 +273,24 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        .action-grid-btn:active { background-color: #FFFFFF; color: #000000; }
+        /* STOP SPEECH COMMAND STRIP */
+        .btn-stop-audio {
+            grid-column: span 2;
+            background-color: #330000;
+            border: 2px solid #FF3333;
+            color: #FF8888;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
 
         /* FIXED BOTTOM SIGNATURE TRACK ROW */
         .fixed-creator-footer {
@@ -306,6 +342,7 @@
         </div>
 
         <div class="radar-screen-container">
+            <div class="tactical-map-underlay"></div>
             <div class="radar-grid"></div>
             
             <div class="radar-ring" style="width: 100px; height: 100px;"></div>
@@ -348,6 +385,8 @@
             <div class="action-grid-btn btn-teal" onclick="speakMedicalProtocol('snakebite')">🐍 4. SNAKE BITE</div>
             <div class="action-grid-btn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</div>
             <div class="action-grid-btn btn-blue" onclick="speakMedicalProtocol('rally')">🐕 RALLY ON K9-1</div>
+            
+            <div class="btn-stop-audio" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</div>
         </div>
 
     </div>
@@ -365,39 +404,38 @@
             alert("TACTICAL UPDATE: Cordon Vector locked dynamically onto target location.");
         }
 
-        // FAILSAFE VOICE SELECTION MECHANISM
-        function getBestTacticalVoice() {
-            if (!synth) return null;
-            var voices = synth.getVoices();
-            if (voices.length === 0) return null;
-
-            // Priority 1: Clear local system male voices (Microsoft David, Google US Male, premium options)
-            var optimalMale = voices.find(function(v) {
-                return (v.lang.startsWith('en-US') || v.lang.startsWith('en-GB')) && 
-                       (v.name.includes('David') || v.name.includes('Male') || v.name.includes('Natural'));
+        // FORCE COMMAND TO DEPLOY STABLE NATURAL-SPEED SYSTEMS ONLY
+        function assignVoiceProfile(utterance) {
+            if (!synth) return;
+            var voiceLibrary = synth.getVoices();
+            
+            // Filters directly for localized modern configurations, discarding sluggish synthetic legacy modes
+            var primeMatch = voiceLibrary.find(function(v) {
+                return v.lang.startsWith('en') && 
+                       (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Apple'));
             });
-            if (optimalMale) return optimalMale;
 
-            // Priority 2: Fall back to any English voice to prevent failure
-            var englishFallback = voices.find(function(v) { return v.lang.startsWith('en'); });
-            if (englishFallback) return englishFallback;
+            if (primeMatch) {
+                utterance.voice = primeMatch;
+            }
+        }
 
-            // Priority 3: Ultimate system default fallback
-            return voices[0];
+        function killVoiceTransmission() {
+            if (synth) {
+                synth.cancel();
+            }
         }
 
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
-            
-            // Instantly cut off any running transmissions
-            synth.cancel(); 
+            synth.cancel(); // Force stop any running speech track instantly
             
             let message = "";
 
             if (actionType === 'cpr') {
                 message = "Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.";
             } else if (actionType === 'gunshot') {
-                message = "Executing K9 Gunshot trauma response. Immediately packed the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.";
+                message = "Executing K9 Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.";
             } else if (actionType === 'heatstroke') {
                 message = "Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.";
             } else if (actionType === 'snakebite') {
@@ -409,22 +447,17 @@
             }
 
             var transmission = new SpeechSynthesisUtterance(message);
+            assignVoiceProfile(transmission);
             
-            // Lock in the best voice profile instantly at runtime
-            var selectedVoice = getBestTacticalVoice();
-            if (selectedVoice) {
-                transmission.voice = selectedVoice;
-            }
-            
-            transmission.rate = 0.92; // Deliberate tactical speed for emergency situations
+            transmission.rate = 1.05;  // Adjusted pace up to standard operational human delivery speed
             transmission.pitch = 1.0; 
             
             synth.speak(transmission);
         }
 
-        // Failsafe event loop to pre-warm voice engines on mobile/desktop browsers
+        // Pre-warms cache to ensure immediate response on system deployment
         if (synth && 'onvoiceschanged' in synth) {
-            synth.onvoiceschanged = function() { getBestTacticalVoice(); };
+            synth.onvoiceschanged = function() { synth.getVoices(); };
         }
     </script>
 </body>
