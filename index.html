@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,9 +16,8 @@
             --gold: #FFCC00;
             --orange: #FF6600;
             --teal: #00CCCC;
-            /* CRITICAL ADDITION: NEON RED GLOW FOR NIGHT VISION */
-            --night-vision-red: rgba(255, 0, 33, 0.4); 
-            --neon-glow-red: rgba(255, 0, 0, 0.85); 
+            --night-vision-red: rgba(255, 0, 0, 0.45); 
+            --neon-glow-red: rgba(255, 0, 0, 0.9); 
         }
 
         body, html {
@@ -27,8 +27,8 @@
             display: flex; flex-direction: column;
             box-sizing: border-box;
             -webkit-user-select: none; user-select: none;
-            /* Apply Red Night Vision Glow to Entire Body background */
-            background-image: radial-gradient(circle, var(--night-vision-red) 0%, rgba(150, 0, 0, 0.1) 50%, #000 100%) !important;
+            /* HARD-CODED REAL-TIME NIGHT VISION GLOW ACROSS BASELINE INTERFACE */
+            background-image: radial-gradient(circle, var(--night-vision-red) 0%, rgba(100, 0, 0, 0.15) 60%, #000000 100%) !important;
         }
 
         /* HIGH-VIS AGENCY COMMAND HEADER */
@@ -42,7 +42,7 @@
             height: 70px;
             box-sizing: border-box;
             flex-shrink: 0;
-            box-shadow: 0 0 12px var(--night-vision-red) !important;
+            box-shadow: 0 3px 15px var(--night-vision-red) !important;
         }
 
         .header-patch-box {
@@ -76,7 +76,7 @@
             letter-spacing: 4px;
             text-transform: uppercase;
             margin: 0;
-            text-shadow: 2px 2px 2px #000, 0 0 8px var(--neon-glow-red) !important;
+            text-shadow: 2px 2px 2px #000, 0 0 10px var(--neon-glow-red) !important;
         }
 
         .header-sub {
@@ -109,7 +109,7 @@
             border-radius: 4px;
             overflow: hidden;
             flex-shrink: 0;
-            box-shadow: 0 0 10px var(--neon-glow-red) !important; /* Night Vision Shadow */
+            box-shadow: 0 0 12px var(--neon-glow-red) !important; 
         }
 
         .mic-indicator {
@@ -133,33 +133,35 @@
             font-weight: bold;
         }
 
-        /* GUARANTEED HIGH-VISIBILITY DEDICATED GO BUTTON */
+        /* HIGH-VISIBILITY DEDICATED COMMAND INTERFACE GO BUTTON */
         .action-trigger-bar {
+            display: block !important;
+            visibility: visible !important;
             background-color: var(--neon-green) !important;
             color: #000000 !important;
             text-align: center;
             padding: 14px;
             font-weight: 900;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             letter-spacing: 2px;
             cursor: pointer;
             border-radius: 4px;
             text-transform: uppercase;
             flex-shrink: 0;
-            box-shadow: 0 0 15px rgba(0, 255, 51, 0.8), 0 0 10px var(--neon-glow-red) !important; /* Blended Green+Red Glow */
+            box-shadow: 0 0 18px rgba(0, 255, 51, 0.9), 0 0 12px var(--neon-glow-red) !important; 
             border: 2px solid #FFFFFF;
         }
 
         /* LIVE MAP SCREEN CONTAINER */
         .radar-screen-container {
-            height: 300px; 
+            height: 320px; 
             background-color: #000000;
             border: 3px solid #444444;
             position: relative;
             border-radius: 6px;
             flex-shrink: 0;
             overflow: hidden;
-            box-shadow: inset 0 0 20px var(--night-vision-red), 0 0 12px var(--night-vision-red) !important; /* Int&Ext Red Shadow */
+            box-shadow: inset 0 0 25px var(--night-vision-red), 0 0 15px var(--night-vision-red) !important; 
         }
 
         #map {
@@ -169,21 +171,21 @@
             z-index: 10;
         }
 
-        /* NIGHT VISION RED FILTER (Interactive layer) */
+        /* HIGH-GLOW CRIMSON NIGHT VISION FILTER OVERLAY */
         .night-vision-glow {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, var(--night-vision-red) 0%, rgba(150, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.4) 100%) !important;
-            box-shadow: inset 0 0 30px var(--night-vision-red) !important;
+            background: radial-gradient(circle, var(--night-vision-red) 0%, rgba(180, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.3) 100%) !important;
+            box-shadow: inset 0 0 40px var(--night-vision-red) !important;
             pointer-events: none;
             z-index: 1000; 
         }
 
-        /* CUSTOM ASSET MARKER GRAPHICS */
+        /* CUSTOM BLIP ASSET SHIELDS */
         .k9-custom-blip {
             border: 2px solid var(--neon-green);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--neon-green), 0 0 8px var(--neon-glow-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 10px var(--neon-green), 0 0 8px var(--neon-glow-red) !important; 
             object-fit: cover;
             background-color: #000000;
         }
@@ -191,12 +193,12 @@
         .vsp-custom-blip {
             border: 2px solid var(--bright-blue);
             border-radius: 50%;
-            box-shadow: 0 0 10px var(--bright-blue), 0 0 8px var(--neon-glow-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 10px var(--bright-blue), 0 0 8px var(--neon-glow-red) !important; 
             object-fit: cover;
             background-color: #000000;
         }
 
-        /* MAP VIEW SELECT PANEL BUTTONS */
+        /* MAP LAYER CONTROL HOOD BUTTONS */
         .map-layer-controls {
             position: absolute;
             top: 10px;
@@ -208,29 +210,29 @@
         }
 
         .layer-btn {
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
             color: var(--neon-green);
             border: 2px solid var(--neon-green);
-            padding: 8px 12px;
-            font-size: 0.8rem;
+            padding: 9px 14px;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
             border-radius: 4px;
             text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5), 0 0 6px var(--neon-glow-red) !important; /* Night Vision red shadow */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5), 0 0 6px var(--neon-glow-red) !important; 
         }
         .layer-btn.active {
             background-color: var(--neon-green);
             color: #000000;
-            box-shadow: 0 0 10px var(--neon-green), 0 0 8px var(--neon-glow-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 12px var(--neon-green), 0 0 10px var(--neon-glow-red) !important; 
         }
 
-        /* TELEMETRY READOUTS */
+        /* DATA TELEMETRY FEED PANEL */
         .data-log-panel {
             border-top: 1px dashed var(--gold);
             padding-top: 8px;
             flex-shrink: 0;
-            box-shadow: 0 0 8px var(--night-vision-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 8px var(--night-vision-red) !important; 
         }
 
         .log-status-header {
@@ -247,7 +249,7 @@
             line-height: 1.4;
         }
 
-        /* CRISIS PROTOCOLS TERMINAL MATRIX */
+        /* CRISIS VOICE MATRIX CONSOLE */
         .bottom-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -268,7 +270,7 @@
             gap: 6px;
             text-transform: uppercase;
             box-sizing: border-box;
-            box-shadow: 0 0 8px var(--night-vision-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 8px var(--night-vision-red) !important; 
         }
 
         .btn-pink   { border: 2px solid var(--hot-pink); color: var(--hot-pink); }
@@ -278,7 +280,7 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        /* COMMAND FEED INTERRUPT SWITCH */
+        /* EMERGENCY VOICE CANCEL TRANSMISSION INTERRUPT SWITCH */
         .btn-stop-audio {
             grid-column: span 2;
             background-color: #2b0000;
@@ -292,7 +294,7 @@
             border-radius: 4px;
             text-align: center;
             text-transform: uppercase;
-            box-shadow: 0 0 10px var(--neon-glow-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 0 12px var(--neon-glow-red) !important; 
         }
 
         .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
@@ -304,7 +306,7 @@
             padding: 10px 0;
             text-align: center;
             flex-shrink: 0;
-            box-shadow: 0 0 10px var(--night-vision-red) !important; /* Night Vision Red Shadow */
+            box-shadow: 0 -3px 10px var(--night-vision-red) !important; 
         }
 
         .creator-text {
@@ -315,7 +317,7 @@
             letter-spacing: 2px;
             margin: 0;
             text-transform: uppercase;
-            text-shadow: 0 0 5px var(--neon-glow-red) !important; /* Night Vision Red Shadow */
+            text-shadow: 0 0 6px var(--neon-glow-red) !important; 
         }
     </style>
 </head>
@@ -342,7 +344,7 @@
             <input type="text" class="address-input-field" value="135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA" id="target-address-input">
         </div>
 
-        <div class="action-trigger-bar" onclick="lockOperationalPerimeter()">
+        <div class="action-trigger-bar" id="master-go-btn" onclick="lockOperationalPerimeter()">
             📍 GO: LOCK SEARCH PERIMETER
         </div>
 
@@ -389,11 +391,11 @@
         var synth = window.speechSynthesis;
         var map, activeLayer, searchCircle;
         
-        // Target Coordinates (Madison Heights, VA)
+        // Operational Center Coordinates (Madison Heights, VA)
         var defaultLat = 37.4338;
         var defaultLng = -79.1114;
 
-        // MAP TILES TIERS
+        // HIGH-FIDELITY INDUSTRIAL TILES MAP CHANNELS
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'ArcGIS Satellite'
@@ -414,9 +416,11 @@
                 attributionControl: false
             });
 
+            // Set satellite map view as default layout
             activeLayer = layers.sat;
             activeLayer.addTo(map);
 
+            // Establish 1/2 Mile Tactical Perimeter Vector Circle Ring Over Map
             searchCircle = L.circle([defaultLat, defaultLng], {
                 color: '#00FF33',
                 fillColor: '#00FF33',
@@ -424,6 +428,7 @@
                 radius: 804 
             }).addTo(map);
 
+            // Set Up Tactical Custom divIcons using image repository assets
             var k9Icon = L.divIcon({
                 className: 'custom-div-icon',
                 html: '<img class="k9-custom-blip" src="gshep_2.jpg" width="34" height="34">',
@@ -438,39 +443,52 @@
                 iconAnchor: [15, 15]
             });
 
-            // TARGET SEARCHERS LOGIC
+            // Deploy Assets on Active Map Coordinates
             L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD)</b>").openPopup();
             L.marker([37.438, -79.117], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP PERIMETER UNIT</b>"); 
             L.marker([37.430, -79.106], {icon: vspIcon}).addTo(map).bindPopup("<b>SUPPORT CO-1</b>"); 
+
+            // FIX CRITICAL POINT 4: Forces map to fully calculate size to prevent cutting off or layout breakage
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 300);
         }
 
+        // SWAP MAP TILES MATRIX STREAM (SATELLITE / STREET / TERRAIN)
         function switchMapLayer(type) {
             if (!map) return;
             map.removeLayer(activeLayer);
             activeLayer = layers[type];
             activeLayer.addTo(map);
 
+            // Synchronize control panel toggles highlighted state
             document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + type).classList.add('active');
+
+            // Force rendering recalculation to prevent broken or missing map parts
+            map.invalidateSize();
         }
 
+        // ADDRESS SEARCH BAR OPERATION ALIGNMENT
         function lockOperationalPerimeter() {
             var inputAddr = document.getElementById('target-address-input').value;
             document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
             
             if (map) {
                 map.setView([defaultLat, defaultLng], 15);
+                map.invalidateSize();
             }
-            alert("TACTICAL VECTOR ALERT: Tracking map array synchronized on target grid coordinates.");
+            alert("TACTICAL UPDATE: Tracking map vector synchronized on target coordinates.");
         }
 
+        // EMERGENCY AUDIO DISCONNECT SWITCH
         function killVoiceTransmission() {
             if (synth) {
                 synth.cancel();
             }
         }
 
-        // PURGED ROBOTIC TRAITS - DIRECT SYSTEM DISPATCH
+        // FIX CRITICAL POINT 3: Direct Native Hardware Driver Dispatch (PURGED ROBOT TRAITS)
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
             synth.cancel(); 
