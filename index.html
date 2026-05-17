@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - NIGHT VISION TACTICAL OVERLAY</title>
+    <title>TACNET - DUAL-ENTRY O/S INTERACTION BUILD</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -69,8 +69,8 @@
         /* SCREEN 1: HUB FRONT GATE */
         .home-logo-hub {
             text-align: center;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             border: 2px double var(--neon-green);
             padding: 12px;
             background: var(--dark-gray);
@@ -79,34 +79,62 @@
         .home-logo-hub h1 { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 2.2rem; }
         .home-logo-hub p { color: var(--ui-text); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
         
+        /* PRE-STAGE DEPLOYMENT RACK */
+        .prestage-panel {
+            background: var(--dark-gray);
+            border: 1px solid var(--gold-primary);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .prestage-label { font-size: 0.95rem; color: #fff; font-weight: bold; }
+        .toggle-switch-btn {
+            background: #222;
+            color: var(--alert-red);
+            border: 2px solid var(--alert-red);
+            font-family: 'Black Ops One', sans-serif;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toggle-switch-btn.active-toggle {
+            background: rgba(0, 255, 51, 0.15);
+            color: var(--neon-green);
+            border-color: var(--neon-green);
+        }
+
         .big-launch-command-btn {
             background: var(--neon-green);
             color: var(--pure-black);
             font-family: 'Black Ops One', sans-serif;
-            font-size: 1.3rem;
-            padding: 20px;
+            font-size: 1.25rem;
+            padding: 18px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
-            box-shadow: 0 0 15px var(--ui-glow);
+            box-shadow: 0 0 12px var(--ui-glow);
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             width: 100%;
         }
         .patent-shield-box {
             background: rgba(223, 183, 32, 0.08);
             border: 1px solid var(--gold-primary);
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--ui-text);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
-        .credential-gate-panel { background: var(--dark-gray); border: 1px solid var(--neon-green); padding: 12px; border-radius: 6px; }
-        .gate-title { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 1.1rem; margin-bottom: 10px; text-align: center; border-bottom: 1px dashed var(--neon-green); padding-bottom: 4px; }
-        .gate-status-line { color: var(--ui-text); font-size: 0.9rem; margin-bottom: 6px; display: flex; justify-content: space-between; }
+        .credential-gate-panel { background: var(--dark-gray); border: 1px solid var(--neon-green); padding: 10px; border-radius: 6px; }
+        .gate-title { font-family: 'Black Ops One', sans-serif; color: var(--gold-primary); font-size: 1rem; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed var(--neon-green); padding-bottom: 4px; }
+        .gate-status-line { color: var(--ui-text); font-size: 0.85rem; margin-bottom: 6px; display: flex; justify-content: space-between; }
 
         /* SCREEN 2: ACTIVE RECON HUD */
         .search-header {
@@ -194,7 +222,12 @@
             <p>Task Force Search & Recovery Link</p>
         </div>
 
-        <button class="big-launch-command-btn" onclick="navigateToAppPage(2)">📡 INITIALIZE TASK FORCE SEARCH</button>
+        <div class="prestage-panel">
+            <span class="prestage-label">O/S AGENCY FRONT LAUNCH:</span>
+            <button class="toggle-switch-btn" id="prestage-toggle" onclick="togglePrestageSetup()">OFFLINE</button>
+        </div>
+
+        <button class="big-launch-command-btn" onclick="launchOperationalHUD()">📡 INITIALIZE TASK FORCE SEARCH</button>
 
         <div class="patent-shield-box">
             🔒 LAW ENFORCEMENT INTERFACE DESIGN SPECCED BY:<br>
@@ -204,8 +237,8 @@
         <div class="credential-gate-panel">
             <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
-            <div class="gate-status-line"><span>O/S AGENCY PORT:</span> <span style="color:var(--gold-primary);">SCALABLE / OPEN</span></div>
-            <div class="gate-status-line"><span>NIGHT VISION LIGHT:</span> <span style="color:var(--neon-green);">TACTICAL IR READY</span></div>
+            <div class="gate-status-line"><span>O/S ROUTING PORT:</span> <span id="gate-port-status" style="color:var(--gold-primary);">MANUALLY DEFERRED</span></div>
+            <div class="gate-status-line"><span>VISUAL LIGHT:</span> <span style="color:var(--neon-green);">DAY/IR DUAL-STAGED</span></div>
         </div>
     </div>
 
@@ -214,7 +247,7 @@
             <h2>TACTICAL SEARCH RECON</h2>
             <div class="header-btn-rack">
                 <button class="nvg-toggle-btn" onclick="toggleNightVisionMode()" id="nvg-btn-label">🕶️ IR MODE</button>
-                <button class="return-home-btn" onclick="navigateToAppPage(1)">⬅️ DISCONNECT</button>
+                <button class="return-home-btn" onclick="returnToFrontGate()">⬅️ DISCONNECT</button>
             </div>
         </div>
 
@@ -231,9 +264,7 @@
         <div class="medical-intel-readout">
             <div class="intel-header-title" id="intel-title">INCIDENT LOG DECK</div>
             <div class="intel-body-text" id="intel-body">
-                Maneuverable Roster Online. 
-                
-                Tap the "IR MODE" button in the top header or voice command "NIGHT VISION" to switch the screen to low-intensity light.
+                Tracking Array Active.
             </div>
         </div>
 
@@ -242,7 +273,7 @@
             <button class="action-click-btn" onclick="fireMedicalArray('gunshot')">💥 2. GUNSHOT</button>
             <button class="action-click-btn" onclick="fireMedicalArray('heat')">☀️ 3. HEAT STROKE</button>
             <button class="action-click-btn" onclick="fireMedicalArray('snake')">🐍 4. SNAKE BITE</button>
-            <button class="action-click-btn" onclick="fireMedicalArray('vet')" style="border-color:var(--gold-primary); color:var(--gold-primary);">🏥 EMERGENCY VET</button>
+            <button class="action-click-btn" onclick="activateOutsideAgencyPort('MANUAL BUTTON CLICK')" style="border-color:var(--gold-primary); color:var(--gold-primary); background:rgba(223,183,32,0.05);" id="os-inject-btn">📡 INJECT O/S PORT</button>
             <button class="action-click-btn" onclick="resetRadarView()" style="border-color:#3366ff; color:#3366ff; background:rgba(0,68,255,0.08);">🐕 CLEAR TRAILS & RALLY</button>
         </div>
     </div>
@@ -261,13 +292,11 @@
         let cordonText = "";
         let forcesExpanded = false;
         let nvgActive = false;
+        let prestageOSForces = false; // Gate entry variable
 
-        let trackUnits = [
-            { id: "1", label: "WOOD-K91", baseX: 0, baseY: -20 },
-            { id: "2", label: "SMITH-104", baseX: 60, baseY: 40 }
-        ];
-
-        let trackHistory = { "1": [], "2": [] };
+        // Base Arrays
+        let trackUnits = [];
+        let trackHistory = {};
 
         const emergencyProtocols = {
             cpr: { title: "🚨 EMERGENCY PROTOCOL: K9 C.P.R.", text: "• POSITION: Place dog on its RIGHT side.\n• AIRWAY: Pull tongue forward, clear fluids.\n• COMPRESSIONS: 30 heavy chest compressions behind elbow line. 2 rescue breaths down muzzle.", audio: "K9 C P R active. Lay dog on right side." },
@@ -276,6 +305,50 @@
             snake: { title: "🚨 EMERGENCY PROTOCOL: K9 SNAKE BITE", text: "• PROCEDURE: Halt search team movement. Carry the dog.\n• PLACEMENT: Keep bite location strictly below heart line level.", audio: "Snake bite active. Immobilize tracking dog." },
             vet: { title: "🏥 EXTRACTION RADIAL: EMERGENCY CLINIC", text: "• VETERINARY CLINIC ENGAGED\n• VECTOR ROUTING: Track immediate lane direct through US-29 South.", audio: "Veterinary navigation locked. Proceed via twenty nine south." }
         };
+
+        // SCREEN 1: TOGGLE BEFORE DISPATCH
+        function togglePrestageSetup() {
+            prestageOSForces = !prestageOSForces;
+            const btn = document.getElementById('prestage-toggle');
+            const statusText = document.getElementById('gate-port-status');
+            
+            if (prestageOSForces) {
+                btn.innerText = "DEPLOYED";
+                btn.classList.add('active-toggle');
+                statusText.innerText = "PRE-STAGED FOR LAUNCH";
+                statusText.style.color = "var(--neon-green)";
+            } else {
+                btn.innerText = "OFFLINE";
+                btn.classList.remove('active-toggle');
+                statusText.innerText = "MANUALLY DEFERRED";
+                statusText.style.color = "var(--gold-primary)";
+            }
+        }
+
+        function launchOperationalHUD() {
+            // Setup roster arrays cleanly based on the chosen entry type
+            if (prestageOSForces) {
+                trackUnits = [
+                    { id: "1", label: "WOOD-K91", baseX: 0, baseY: -20 },
+                    { id: "2", label: "SMITH-104", baseX: 60, baseY: 40 },
+                    { id: "3", label: "O/S-VSP-212", baseX: -50, baseY: -60 },
+                    { id: "4", label: "O/S-AMHERST-12", baseX: -80, baseY: 20 }
+                ];
+                forcesExpanded = true;
+            } else {
+                trackUnits = [
+                    { id: "1", label: "WOOD-K91", baseX: 0, baseY: -20 },
+                    { id: "2", label: "SMITH-104", baseX: 60, baseY: 40 }
+                ];
+                forcesExpanded = false;
+            }
+
+            // Zero out legacy histories
+            trackHistory = {};
+            trackUnits.forEach(u => { trackHistory[u.id] = []; });
+
+            navigateToAppPage(2);
+        }
 
         function toggleNightVisionMode() {
             nvgActive = !nvgActive;
@@ -298,7 +371,19 @@
             document.getElementById(`page-${pageID}-node`).classList.add('active-page');
 
             if (pageID === 2) {
-                setTimeout(() => { initRadarEngine(); }, 150);
+                setTimeout(() => { 
+                    initRadarEngine(); 
+                    // Set status update text
+                    if (prestageOSForces) {
+                        document.getElementById('intel-title').innerText = "📡 FULL FORCE INITIALIZED";
+                        document.getElementById('intel-body').innerText = "Command deployed with O/S Port active from startup. Core assets and Outside Agencies loaded simultaneously onto the matrix.";
+                        document.getElementById('os-inject-btn').style.display = "none";
+                    } else {
+                        document.getElementById('intel-title').innerText = "🐕 MANEUVERABLE RECON ONLINE";
+                        document.getElementById('intel-body').innerText = "Roster operating lean and fast. Tap 'INJECT O/S PORT' or use voice protocols if backup is requested.";
+                        document.getElementById('os-inject-btn').style.display = "block";
+                    }
+                }, 150);
             }
         }
 
@@ -329,7 +414,6 @@
         function drawRadarScreen() {
             if (!ctx) return;
             
-            // Night vision vs Day View Colors
             ctx.fillStyle = nvgActive ? "#0c0000" : "#0a130a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -343,19 +427,19 @@
             let dotBorderColor = nvgActive ? "#ff0000" : "#ffffff";
             let textLabelColor = nvgActive ? "#ff3333" : "#dfb720";
 
-            // Draw Circles
+            // Target Circles
             ctx.strokeStyle = ringColor; 
             ctx.lineWidth = 1.5;
             for (let r = 45; r < Math.max(canvas.width, canvas.height); r += 45) {
                 ctx.beginPath(); ctx.arc(gridCenterX, gridCenterY, r, 0, 2 * Math.PI); ctx.stroke();
             }
 
-            // Draw Crosshairs
+            // Crosshairs
             ctx.strokeStyle = axisColor;
             ctx.beginPath(); ctx.moveTo(0, gridCenterY); ctx.lineTo(canvas.width, gridCenterY); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(gridCenterX, 0); ctx.lineTo(gridCenterX, canvas.height); ctx.stroke();
 
-            // Render Trailing Breadcrumbs
+            // Track Trails
             trackUnits.forEach(unit => {
                 let history = trackHistory[unit.id];
                 if (history && history.length > 1) {
@@ -372,7 +456,7 @@
                 }
             });
 
-            // Containment Cordon
+            // Cordon
             if (cordonActive) {
                 ctx.strokeStyle = nvgActive ? "#ff0000" : "#00ff33";
                 ctx.lineWidth = 2.5;
@@ -385,7 +469,7 @@
                 ctx.fillText(`PERIMETER LOCKED`, cordonX + 85, cordonY + 4);
             }
 
-            // Render Dynamic Unit Markers
+            // Unit Markers
             trackUnits.forEach(unit => {
                 let unitX = gridCenterX + unit.baseX + offsetX;
                 let unitY = gridCenterY + unit.baseY + offsetY;
@@ -415,31 +499,48 @@
         function dragEnd() { isDragging = false; }
 
         function resetRadarView() {
-            offsetX = 0; offsetY = 0; trackHistory = {}; logCurrentPositions(); drawRadarScreen();
+            offsetX = 0; offsetY = 0; 
+            trackUnits.forEach(u => { trackHistory[u.id] = []; });
+            logCurrentPositions(); drawRadarScreen();
             document.getElementById('intel-title').innerText = "🎯 MATRIX RESET";
-            document.getElementById('intel-body').innerText = "All trails cleared. Units reset to center baselines.";
+            document.getElementById('intel-body').innerText = "All active track trails purged clean. Current roster positions stabilized back to baseline markers.";
         }
 
-        function activateOutsideAgencyPort() {
+        // MID-OPERATION DYNAMIC INJECTION
+        function activateOutsideAgencyPort(sourceMethod) {
             if (forcesExpanded) return;
             forcesExpanded = true;
+
+            // Seamlessly append outside forces mid-operation
             trackUnits.push(
                 { id: "3", label: "O/S-VSP-212", baseX: -50, baseY: -60 },
                 { id: "4", label: "O/S-AMHERST-12", baseX: -80, baseY: 20 }
             );
-            logCurrentPositions(); drawRadarScreen();
-            document.getElementById('intel-title').innerText = "📡 O/S AGENCY PORT ACTIVE";
-            document.getElementById('intel-body').innerText = "VSP-212 and Amherst-12 injected into the operational grid layer.";
+
+            // Seed fresh historical trackers without breaking previous lines
+            trackUnits.forEach(u => { if (!trackHistory[u.id]) trackHistory[u.id] = []; });
+
+            logCurrentPositions();
+            drawRadarScreen();
+
+            document.getElementById('os-inject-btn').style.display = "none";
+            document.getElementById('intel-title').innerText = "📡 MID-TRACK PORT INJECTION";
+            document.getElementById('intel-body').innerText = `🚨 EMERGENCY TASK FORCE EXPANSION:\nTriggered via: ${sourceMethod}.\n\nOutside agency ports unsealed in real-time. VSP-212 and Amherst-12 are now live and streaming historical data on the tracking matrix.`;
+            
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance("Outside agency port active."));
+                window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance("Outside agency port active. Additional manpower injected."));
             }
+        }
+
+        function returnToFrontGate() {
+            navigateToAppPage(1);
         }
 
         function triggerManualAddressOverride() {
             let value = document.getElementById('voice-display').value.trim();
             if (!value) return;
-            if (value.toLowerCase().includes("scaled forces") || value.toLowerCase().includes("forces")) {
-                activateOutsideAgencyPort();
+            if (value.toLowerCase().includes("scaled forces") || value.toLowerCase().includes("forces") || value.toLowerCase().includes("inject")) {
+                activateOutsideAgencyPort("MANUAL TEXT BOX ENTRY");
             } else if (value.toLowerCase().includes("night vision") || value.toLowerCase().includes("vision") || value.toLowerCase().includes("dark")) {
                 toggleNightVisionMode();
             } else {
@@ -484,8 +585,7 @@
                 else if (textResult.includes("gunshot") || textResult.includes("bleed")) { fireMedicalArray('gunshot'); }
                 else if (textResult.includes("heat")) { fireMedicalArray('heat'); }
                 else if (textResult.includes("snake")) { fireMedicalArray('snake'); }
-                else if (textResult.includes("vet")) { fireMedicalArray('vet'); }
-                else if (textResult.includes("scaled forces") || textResult.includes("forces")) { activateOutsideAgencyPort(); }
+                else if (textResult.includes("scaled forces") || textResult.includes("forces") || textResult.includes("inject")) { activateOutsideAgencyPort("TACTICAL VOICE ENTRY"); }
                 else if (textResult.includes("night vision") || textResult.includes("vision") || textResult.includes("dark")) { toggleNightVisionMode(); }
                 else { processCordonStrike(textResult); }
             };
