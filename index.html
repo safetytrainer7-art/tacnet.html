@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - CONSOLE CORE</title>
+    <title>TACNET - FIXED PORTAL</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
@@ -35,7 +34,7 @@
             position: fixed;
         }
 
-        /* MASTER PAGE CARRIER SYSTEM */
+        /* MASTER SCREEN CONTAINER */
         .app-page {
             display: none; 
             width: 100%;
@@ -49,23 +48,20 @@
             display: flex !important; 
         }
 
-        /* ======================================================== */
-        /* PAGE 1: MASTER HOME SYSTEM CONSOLE                       */
-        /* ======================================================== */
+        /* LOGO HUB */
         .home-logo-hub {
             text-align: center;
-            margin-top: 25px;
-            margin-bottom: 20px;
+            margin-top: 15px;
+            margin-bottom: 15px;
             border: 2px double var(--neon-green);
-            padding: 15px;
+            padding: 12px;
             background: var(--dark-gray);
             border-radius: 8px;
         }
         .home-logo-hub h1 {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
-            font-size: 2.4rem;
-            letter-spacing: 1px;
+            font-size: 2.2rem;
         }
         .home-logo-hub p {
             color: #ffffff;
@@ -74,46 +70,8 @@
             text-transform: uppercase;
             margin-top: 4px;
         }
-        .patent-shield-box {
-            background: rgba(223, 183, 32, 0.08);
-            border: 1px solid var(--gold-primary);
-            padding: 15px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
-        .patent-officer {
-            color: #ffffff;
-            font-weight: bold;
-            font-size: 1.05rem;
-            display: block;
-            margin-top: 4px;
-        }
-        .credential-gate-panel {
-            background: var(--dark-gray);
-            border: 1px solid var(--neon-green);
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: auto; /* Pushes the launch button to the bottom perfectly */
-        }
-        .gate-title {
-            font-family: 'Black Ops One', sans-serif;
-            color: var(--gold-primary);
-            font-size: 1.1rem;
-            margin-bottom: 12px;
-            text-align: center;
-            border-bottom: 1px dashed var(--neon-green);
-            padding-bottom: 4px;
-        }
-        .gate-status-line {
-            color: #fff;
-            font-size: 0.95rem;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
+
+        /* CRITICAL BUTTON INTRUSION - POSITIONED AT THE TOP SECTION */
         .big-launch-command-btn {
             background: var(--neon-green);
             color: var(--pure-black);
@@ -126,16 +84,55 @@
             text-align: center;
             box-shadow: 0 0 15px var(--neon-green);
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            display: block;
+            width: 100%;
         }
         .big-launch-command-btn:active {
             background: var(--gold-primary);
             box-shadow: 0 0 15px var(--gold-primary);
         }
 
-        /* ======================================================== */
-        /* PAGE 2: RECON PERIMETER HUD BRIDGE                      */
-        /* ======================================================== */
+        /* SUPPORT DETAILS */
+        .patent-shield-box {
+            background: rgba(223, 183, 32, 0.08);
+            border: 1px solid var(--gold-primary);
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+        .patent-officer {
+            color: var(--gold-primary);
+            font-weight: bold;
+        }
+        .credential-gate-panel {
+            background: var(--dark-gray);
+            border: 1px solid var(--neon-green);
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .gate-title {
+            font-family: 'Black Ops One', sans-serif;
+            color: var(--gold-primary);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px dashed var(--neon-green);
+            padding-bottom: 4px;
+        }
+        .gate-status-line {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* SECOND SCREEN DATA */
         .search-header {
             border-bottom: 2px solid var(--neon-green);
             padding-bottom: 6px;
@@ -169,13 +166,6 @@
             font-size: 1.1rem;
             line-height: 1.5;
         }
-        .signature-footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #444;
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
     </style>
 </head>
 <body>
@@ -186,9 +176,10 @@
             <p>Task Force Search & Recovery Link</p>
         </div>
 
+        <button class="big-launch-command-btn" onclick="switchAppPage(2)">📡 INITIALIZE TASK FORCE SEARCH</button>
+
         <div class="patent-shield-box">
-            🔒 UNITED STATES LAW ENFORCEMENT INTERFACE<br>
-            DESIGN INVENTED & SPECCED BY:
+            🔒 LAW ENFORCEMENT INTERFACE DESIGN SPECCED BY:<br>
             <span class="patent-officer">DEPUTY SHERIFF EARL A. WOOD (RET) &bull; VA</span>
         </div>
 
@@ -197,12 +188,7 @@
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
             <div class="gate-status-line"><span>GPS INTEGRATION:</span> <span style="color:var(--neon-green);">READY</span></div>
             <div class="gate-status-line"><span>ROSTER RESTRIC:</span> <span style="color:var(--gold-primary);">OFFICER CORE</span></div>
-            <div class="gate-status-line"><span>INTERFACE STABILITY:</span> <span style="color:var(--neon-green);">100% VERIFIED</span></div>
         </div>
-
-        <button class="big-launch-command-btn" onclick="switchAppPage(2)">📡 INITIALIZE TASK FORCE SEARCH</button>
-        
-        <div class="signature-footer">PROPERTY SCHEMATICS DEPUTY EARL A. WOOD</div>
     </div>
 
     <div class="app-page" id="page-2-node">
@@ -212,9 +198,8 @@
         </div>
 
         <div class="status-wireframe-box">
-            <span style="color:var(--gold-primary); font-family:'Black Ops One'; font-size:1.3rem; display:block; margin-bottom:10px;">STAGE 1 PASSED</span>
-            The full home console layout is working perfectly on your iPhone screen without cutting off.<br><br>
-            Tap the yellow button above to return home. Once you confirm this layout looks right, we will drop the map engine back in under our new safeguards!
+            <span style="color:var(--gold-primary); font-family:'Black Ops One'; font-size:1.3rem; display:block; margin-bottom:10px;">TOP-HEAVY ALIGNMENT ACTIVE</span>
+            The button is successfully locked onto the top deck. Tap the yellow button above to head back home.
         </div>
     </div>
 
