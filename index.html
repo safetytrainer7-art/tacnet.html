@@ -160,7 +160,22 @@
             background: #000;
         }
 
-        /* NEON RED NIGHT VISION GLOW OVERLAY */
+        /* CUSTOM ASSET MARKER GRAPHICS */
+        .k9-custom-blip {
+            border: 2px solid var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-green);
+            object-fit: cover;
+        }
+
+        .vsp-custom-blip {
+            border: 2px solid var(--bright-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--bright-blue);
+            object-fit: cover;
+        }
+
+        /* NEON RED NIGHT VISION GLOW OVERLAY EFFECT */
         .night-vision-glow {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -355,7 +370,7 @@
         var synth = window.speechSynthesis;
         var map, activeLayer, searchCircle;
         
-        // Exact Search Coordinate Base Target Area
+        // Exact Search Coordinate Base Target Area (Madison Heights, VA)
         var defaultLat = 37.4338;
         var defaultLng = -79.1114;
 
@@ -374,7 +389,7 @@
         function initMap() {
             map = L.map('map', {
                 center: [defaultLat, defaultLng],
-                zoom: 14,
+                zoom: 15,
                 zoomControl: false, 
                 attributionControl: false
             });
@@ -390,10 +405,25 @@
                 radius: 804 
             }).addTo(map);
 
-            // Deploys active unit blip markers onto map grid array
-            L.marker([defaultLat, defaultLng]).addTo(map).bindPopup("<b>TARGET SEARCH SCENE</b>").openPopup();
-            L.marker([37.436, -79.115]).addTo(map); 
-            L.marker([37.431, -79.108]).addTo(map); 
+            // DEFINE CUSTOM TACTICAL IMAGE BLIPS TO OVERRIDE THE DEFAULT BLUE DOT
+            var k9Icon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<img class="k9-custom-blip" src="gshep_2.jpg" width="32" height="32">',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            var vspIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<img class="vsp-custom-blip" src="va.png-modified.jpg" width="28" height="28">',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            // Deploy Custom Branded Asset Icons Onto Map Matrix
+            L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD ASSET)</b>").openPopup();
+            L.marker([37.437, -79.116], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP-212 SUPPORT</b>"); 
+            L.marker([37.431, -79.107], {icon: vspIcon}).addTo(map).bindPopup("<b>SQUAD-104 SUPPORT</b>"); 
         }
 
         function switchMapLayer(type) {
@@ -410,7 +440,7 @@
             var inputAddr = document.getElementById('target-address-input').value;
             document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
             
-            map.setView([defaultLat, defaultLng], 14);
+            map.setView([defaultLat, defaultLng], 15);
             alert("TACTICAL UPDATE: Satellite grid tracking synchronized on target destination.");
         }
 
