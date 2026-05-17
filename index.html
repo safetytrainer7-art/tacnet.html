@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET Command Portal</title>
+    <title>TACNET Multi-Agency Command Portal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
@@ -14,42 +14,31 @@
             --red: #ff3030;
             --civilian: #28d96f;
             --purple: #bf66ff;
-            --night-vision-red: rgba(255, 0, 0, 0.28);
-            --neon-glow-red: rgba(255, 0, 0, 0.70);
+            --dark-gray: #111111;
         }
 
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: #000; font-family: Arial, Helvetica, sans-serif;
-            color: #fff; overflow: hidden; position: relative;
+            color: #fff; overflow: hidden;
         }
 
-        /* PERMANENT HIGH-VISIBILITY CRIMSON NIGHT VISION SHIELD */
-        body::before {
-            content: ''; position: fixed; inset: 0; pointer-events: none;
-            background: repeating-linear-gradient(
-                to bottom,
-                rgba(255, 0, 0, .04),
-                rgba(255, 0, 0, .04) 2px,
-                transparent 2px,
-                transparent 4px
-            );
-            z-index: 9999;
-        }
-
-        body::after {
-            content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 160px var(--night-vision-red), inset 0 0 60px rgba(255, 0, 0, 0.25);
-            z-index: 9998;
-        }
-
-        /* CORE VIEWPORT LAYOUT GRID */
+        /* MASTER VIEWPORT STACK */
         .main-viewport {
             display: flex; flex-direction: column; width: 100vw; height: 100vh;
-            position: relative; overflow: hidden;
+            overflow: hidden;
         }
 
-        /* COMPACT COMMAND INPUT HUD */
+        /* MULTI-AGENCY NETWORK SECURITY HUD */
+        .network-bar {
+            padding: 6px 10px; background: #0a0f0a; display: flex; gap: 8px;
+            align-items: center; border-bottom: 1px solid #223322; flex-shrink: 0;
+        }
+        .net-label { font-size: 0.72rem; color: var(--gold); font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        #networkCodeInput { width: 110px; background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 4px 6px; font-weight: bold; font-size: 0.75rem; text-align: center; }
+        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.7rem; font-weight: 900; padding: 4px 8px; cursor: pointer; text-transform: uppercase; border-radius: 2px; }
+
+        /* COMMAND INPUT HUD */
         .search-controls {
             padding: 8px; display: flex; gap: 8px; background: #050a05; flex-shrink: 0;
             border-bottom: 2px solid var(--gold); z-index: 1001;
@@ -57,117 +46,93 @@
 
         #addressInput {
             flex: 1; background: #000; border: 2px solid var(--neon-green); color: #fff;
-            padding: 12px; font-weight: bold; font-size: 1rem; outline: none;
-            text-shadow: 0 0 5px var(--neon-green);
+            padding: 10px; font-weight: bold; font-size: 0.95rem; outline: none;
         }
 
-        .goBtn {
-            width: 75px; background: var(--neon-green); color: #000; border: none;
-            font-weight: 900; font-size: 1.1rem; cursor: pointer; box-shadow: 0 0 10px var(--neon-green);
-        }
+        .goBtn { width: 65px; background: var(--neon-green); color: #000; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
+        .resetBtn { background: #220000; border: 2px solid var(--red); color: var(--red); font-weight: bold; font-size: 0.8rem; padding: 0 8px; cursor: pointer; }
 
-        .menuToggleBtn {
-            width: 50px; background: #111; color: var(--gold); border: 2px solid var(--gold);
-            font-size: 1.2rem; cursor: pointer; font-weight: bold; display: flex;
-            align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(255,204,0,0.4);
-        }
-
-        /* PLACEMENT HUD NOTIFICATION OVERLAY */
+        /* PLACEMENT HUD ALERT BAR */
         #placementStatus {
-            display: none; background: var(--red); color: #fff; padding: 10px;
-            text-align: center; font-weight: bold; font-size: 0.95rem; letter-spacing: 1px;
-            text-transform: uppercase; z-index: 1001; box-shadow: 0 4px 15px rgba(255,0,0,0.7);
+            display: none; background: var(--red); color: #fff; padding: 8px;
+            text-align: center; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;
+            text-transform: uppercase; z-index: 1001;
         }
 
-        /* EXTENDED TARGET MAPPING PANEL */
+        /* UPPER VIEWPORT MAP PANEL */
         #map {
-            flex: 1; width: 100%; background: #000; z-index: 1;
+            height: 48vh; width: 100%; background: #222; z-index: 1; border-bottom: 2px solid var(--gold);
         }
 
-        /* CRISIS VOICE COMMAND MATRIX */
-        .voicePanel {
-            padding: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
-            background: #030703; border-top: 1px solid #112211; flex-shrink: 0;
+        /* BOTTOM WORK CONTROL INTERACTIVE HUD CONTAINER */
+        .lower-deck-container {
+            flex: 1; display: flex; flex-direction: column; background: #000; overflow: hidden; position: relative;
         }
 
-        .voiceBtn {
-            padding: 12px 4px; font-size: .75rem; border: 1px solid var(--gold); font-weight: bold;
-            cursor: pointer; background: #000; color: var(--gold); text-align: center;
-            text-transform: uppercase; border-radius: 3px;
+        /* PAGE SHEETS (SLIDERS) */
+        .deck-page {
+            position: absolute; inset: 0; padding: 10px; box-sizing: border-box;
+            display: none; flex-direction: column; gap: 10px; overflow-y: auto;
         }
+        .deck-page.active { display: flex; }
 
-        .btn-stop-transmission {
-            grid-column: span 3; border: 1px solid #ff3333; background: #1a0000;
-            color: #ff9999; padding: 12px; text-align: center; font-weight: 900;
-            cursor: pointer; text-transform: uppercase; font-size: 0.85rem; margin-top: 2px;
-        }
-
-        /* OVERLAY CONTROL PANEL GRAPHICS GRID */
-        .sideDrawer {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.96); z-index: 5000; box-sizing: border-box;
-            padding: 20px; flex-direction: column; gap: 14px; overflow-y: auto;
-        }
-
-        .sideDrawer.open { display: flex; }
-
-        .drawerHeader {
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid var(--gold); padding-bottom: 10px; flex-shrink: 0;
-        }
-        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.4rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-glow-red); }
-        .closeDrawerBtn { background: #220000; border: 1px solid #ff3333; color: #ff3333; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 4px; }
-
-        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 4px 0; flex-shrink: 0; }
-        .patch { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
-
-        .drawerSectionTitle { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* MARKER DEPLOYMENT SECTOR CONTROLS */
-        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        /* --- PAGE 1: DEPLOYMENT SECTOR CONTROLS (UNDER MAP) --- */
+        .section-header { color: var(--neon-green); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 3px; }
         
+        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .unitDeployBtn {
-            padding: 12px; font-size: .85rem; background: #000; color: #fff;
+            padding: 14px 10px; font-size: .85rem; background: #111; color: #fff;
             border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
             text-transform: uppercase; text-align: center; border-radius: 4px;
         }
-        .btn-blue { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 8px var(--blue); }
-        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); box-shadow: 0 0 8px var(--lightblue); }
-        .btn-red { border-color: var(--red); color: var(--red); box-shadow: 0 0 8px var(--red); }
-        .btn-civilian { border-color: var(--civilian); color: var(--civilian); box-shadow: 0 0 8px var(--civilian); }
-        .btn-purple { border-color: var(--purple); color: var(--purple); box-shadow: 0 0 8px var(--purple); }
-        
-        .btn-reset { border-color: #ffaa00; color: #ffaa00; font-weight: 900; background: #221100; box-shadow: 0 0 10px #ffaa00; }
+        .btn-blue { border-color: var(--blue); color: var(--blue); }
+        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); }
+        .btn-red { border-color: var(--red); color: var(--red); }
+        .btn-civilian { border-color: var(--civilian); color: var(--civilian); }
+        .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; }
+
+        /* --- PAGE 2: OPERATIONAL SUPPORT DECK --- */
+        .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .voiceBtn {
+            padding: 12px 2px; font-size: .75rem; border: 1px solid var(--gold); font-weight: bold;
+            cursor: pointer; background: #111; color: var(--gold); text-align: center;
+            text-transform: uppercase; border-radius: 3px;
+        }
+        .btn-stop-transmission {
+            grid-column: span 3; border: 1px solid #ff3333; background: #1a0000;
+            color: #ff9999; padding: 10px; text-align: center; font-weight: 900;
+            cursor: pointer; text-transform: uppercase; font-size: 0.8rem;
+        }
 
         #notesBox {
-            width: 100%; height: 95px; background: #000; color: #fff;
-            border: 1px solid var(--neon-green); padding: 10px; font-size: 0.9rem; outline: none;
+            width: 100%; height: 75px; background: #000; color: #fff;
+            border: 1px solid var(--neon-green); padding: 8px; font-size: 0.85rem; outline: none;
             resize: none; font-family: sans-serif; box-sizing: border-box;
         }
 
         .reportBtn {
             padding: 14px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 4px; font-size: 1rem; margin-top: 2px; flex-shrink: 0;
-            box-shadow: 0 0 15px var(--neon-green);
+            border-radius: 4px; font-size: 0.95rem; margin-top: auto;
         }
 
-        /* RETURN NAVIGATION GRID HUD POPUP */
-        #returnOverlay {
-            display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.92);
-            z-index: 6000; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+        /* NAVIGATION INTERCHANGE FOOTER TRIGGER BAR */
+        .deck-navigation-bar {
+            height: 50px; background: #080808; border-top: 2px solid var(--gold);
+            display: flex; flex-shrink: 0; z-index: 2000;
         }
-        .returnBtn {
-            padding: 16px 40px; background: var(--purple); color: #fff; font-size: 1.2rem;
-            font-weight: 900; border: none; border-radius: 6px; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 25px var(--purple);
+        .navToggleBtn {
+            flex: 1; background: none; border: none; color: var(--gold); font-weight: 900;
+            font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
+        .navToggleBtn.disabled { color: #444; cursor: not-allowed; }
 
-        /* OFFICIAL CREATOR ATTRIBUTION FOOTER BLOCK */
-        .attributionBlock {
-            margin-top: auto; border-top: 1px solid #333; padding-top: 14px;
-            text-align: center; color: #ff7777; font-size: 0.8rem; font-weight: bold;
-            line-height: 1.5; letter-spacing: 1px; flex-shrink: 0;
+        /* PERMANENT ASSIGNED FIXED CREATOR INSIGNIA RUN */
+        .fixedAttribution {
+            background: #000; border-top: 1px solid #1a1a1a; padding: 6px;
+            text-align: center; color: #ff7777; font-size: 0.72rem; font-weight: bold;
+            line-height: 1.3; letter-spacing: 1px; flex-shrink: 0;
         }
 
         /* HIGH-VISIBILITY PULSING NEON HOUSE TARGET ANCHOR PIN */
@@ -176,74 +141,72 @@
             box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
         }
         @keyframes pulseTarget {
-            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.9); }
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.9); }
             70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(0, 255, 102, 0); }
-            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
         }
     </style>
 </head>
 <body>
 
     <div class="main-viewport">
+        <div class="network-bar">
+            <span class="net-label">Multi-Agency Sync:</span>
+            <input id="networkCodeInput" placeholder="ENTER SYNC CODE" value="ACSD-K9">
+            <button class="syncBtn" onclick="connectAgencyChannel()">LINK CODE</button>
+        </div>
+
         <div class="search-controls">
             <input id="addressInput" placeholder="ENTER SEARCH TARGET ADDRESS" value="135 FLOSSIE DRIVE MADISON HEIGHTS VA">
             <button class="goBtn" onclick="searchAddress()">GO</button>
-            <button class="menuToggleBtn" onclick="toggleDrawer()">⚙️</button>
+            <button class="resetBtn" onclick="resetTrackingGrid()">RESET</button>
         </div>
 
-        <div id="placementStatus">TAP MAP LOCATION TO DEPLOY SEARCHER</div>
+        <div id="placementStatus">TAP MAP SECTOR TO MANUALLY PLUG UNIT COORD</div>
 
         <div id="map"></div>
 
-        <div class="voicePanel">
-            <button class="voiceBtn" onclick="speakMedicalProtocol('cpr')">🐾 CPR</button>
-            <button class="voiceBtn" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</button>
-            <button class="voiceBtn" onclick="speakMedicalProtocol('heatstroke')">☀️ HEAT</button>
-            <button class="voiceBtn" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE</button>
-            <button class="voiceBtn" onclick="speakMedicalProtocol('vet')">🏥 VET</button>
-            <button class="voiceBtn" onclick="speakMedicalProtocol('rally')">🚨 RALLY</button>
-            <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP VOICE TRANSMISSION</button>
-        </div>
-
-        <div id="sideDrawer" class="sideDrawer">
-            <div class="drawerHeader">
-                <h3 class="drawerTitle">TACNET PORTAL</h3>
-                <button class="closeDrawerBtn" onclick="toggleDrawer()">CLOSE</button>
-            </div>
-
-            <div class="agencyLogos">
-                <img src="amherst_badge.png.jpg" class="patch" onerror="this.style.visibility='hidden'">
-                <img src="va.png-modified.jpg" class="patch" onerror="this.style.visibility='hidden'">
-            </div>
-
-            <div>
-                <div class="drawerSectionTitle">1. TARGET GRID COMMANDS</div>
+        <div class="lower-deck-container">
+            
+            <div id="deckPage1" class="deck-page active">
+                <div class="section-header">1. TARGET GRID COMMAND ASSET PLACEMENT</div>
                 <div class="unitGrid">
                     <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
                     <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
                     <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
                     <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
-                    <button class="unitDeployBtn btn-purple" style="grid-column: span 2;" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
-                    <button class="unitDeployBtn btn-reset" style="grid-column: span 2;" onclick="resetTrackingGrid()">🔄 RESET DEPLOYMENT GRID</button>
+                    <button class="unitDeployBtn btn-purple" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
                 </div>
             </div>
 
-            <div>
-                <div class="drawerSectionTitle">2. COURT LOG / DISPOSITION NOTES</div>
-                <textarea id="notesBox" placeholder="Enter target track specifics, field dispositions, or K9 alerts for certified report generation..."></textarea>
+            <div id="deckPage2" class="deck-page">
+                <div class="section-header">2. K9 EMERGENCY EMED FIRST AID VOICE BROADCAST</div>
+                <div class="voiceGrid">
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('cpr')">🐾 CPR</button>
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('gunshot')">💥 GUNSHOT</button>
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('heatstroke')">☀️ HEAT</button>
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('snakebite')">🐍 SNAKE</button>
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('vet')">🏥 VET</button>
+                    <button class="voiceBtn" onclick="speakMedicalProtocol('rally')">🚨 RALLY</button>
+                    <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP VOICE TRANSMISSION</button>
+                </div>
+
+                <div class="section-header" style="margin-top: 5px;">3. EVIDENCE DISPOSITION / ARREST SUMMARY LOG NOTES</div>
+                <textarea id="notesBox" placeholder="Enter tracking telemetry notes or canine alerts for direct courtroom printing..."></textarea>
+
+                <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COMPREHENSIVE COURT REPORT (PDF)</button>
             </div>
 
-            <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COURT REPORT (PDF)</button>
-
-            <div class="attributionBlock">
-                TACNET COMMAND MODULE<br>
-                APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
-            </div>
         </div>
 
-        <div id="returnOverlay">
-            <h2 style="color: var(--gold); letter-spacing: 2px; font-weight: 900;">REPORT CONCLUDED Successfully</h2>
-            <button class="returnBtn" onclick="dismissReturnOverlay()">📂 RETURN TO GRID</button>
+        <div class="deck-navigation-bar">
+            <button id="navBtn1" class="navToggleBtn disabled" onclick="switchDeckPage(1)" disabled>🗺️ ACTIVE MAP ASSETS</button>
+            <button id="navBtn2" class="navToggleBtn" onclick="switchDeckPage(2)">📋 NEXT PAGE: OPS SUPPORT DECK ➔</button>
+        </div>
+
+        <div class="fixedAttribution">
+            TACNET COMMAND MODULE  •  MULTI-AGENCY TACTICAL NETWORK<br>
+            APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
         </div>
     </div>
 
@@ -304,12 +267,36 @@
             }
 
             setTimeout(()=>{ map.invalidateSize(); }, 400);
-            reportTrackingHistory.push('TACTICAL OPERATIONS GRID RUN STARTED');
+            
+            // INITIAL ENGINE RECORD START
+            reportTrackingHistory.push('TACTICAL MULTI-AGENCY GRID RUN INITIALIZED SUCESSFULLY.');
         }
 
-        function toggleDrawer() {
-            document.getElementById('sideDrawer').classList.toggle('open');
-            setTimeout(()=>{ map.invalidateSize(); }, 200);
+        function switchDeckPage(pageNum) {
+            document.getElementById('deckPage1').classList.remove('active');
+            document.getElementById('deckPage2').classList.remove('active');
+            document.getElementById('navBtn1').classList.remove('disabled');
+            document.getElementById('navBtn2').classList.remove('disabled');
+            document.getElementById('navBtn1').disabled = false;
+            document.getElementById('navBtn2').disabled = false;
+
+            if(pageNum === 1) {
+                document.getElementById('deckPage1').classList.add('active');
+                document.getElementById('navBtn1').classList.add('disabled');
+                document.getElementById('navBtn1').disabled = true;
+            } else {
+                document.getElementById('deckPage2').classList.add('active');
+                document.getElementById('navBtn2').classList.add('disabled');
+                document.getElementById('navBtn2').disabled = true;
+            }
+        }
+
+        function connectAgencyChannel() {
+            var channelCode = document.getElementById('networkCodeInput').value.trim();
+            if(channelCode === "") return;
+            
+            alert(`MULTI-AGENCY COORDINATION SYNC ACTIVE\nJoined Operational Data Stream: ${channelCode.toUpperCase()}`);
+            reportTrackingHistory.push(`SECURE MULTI-AGENCY SYNC CHANNEL ACTIVATED: [${channelCode.toUpperCase()}]`);
         }
 
         async function searchAddress(){
@@ -328,12 +315,11 @@
                 operationalLat = parseFloat(data[0].lat);
                 operationalLng = parseFloat(data[0].lon);
 
-                map.setView([operationalLat, operationalLng], 18); // Zoom tightly onto roof structure
+                map.setView([operationalLat, operationalLng], 18); // Tight lock-on grid view zoom
 
                 if(perimeter){ map.removeLayer(perimeter); }
                 if(targetHousePin){ map.removeLayer(targetHousePin); }
 
-                // CONTAINMENT RING OVERLAY VECTOR
                 perimeter = L.circle([operationalLat, operationalLng], {
                     color: '#00ff66',
                     fillColor: '#00ff66',
@@ -341,15 +327,16 @@
                     radius: 804
                 }).addTo(map);
 
-                // HIGH-VISIBILITY PULSING ROOF OVERLAY TARGET MARKER
+                // HIGH-VISIBILITY PULSING GREEN HOUSE ANCHOR PIN
                 var targetIcon = L.divIcon({
                     className: 'target-pulsing-icon',
                     iconSize: [20, 20]
                 });
                 targetHousePin = L.marker([operationalLat, operationalLng], {icon: targetIcon}).addTo(map)
-                    .bindPopup(`<b>TARGET STRUCTURE DESTINATION</b><br>${address.toUpperCase()}`).openPopup();
+                    .bindPopup(`<b>TARGET RESIDENCE SPECIFIED</b><br>${address.toUpperCase()}`).openPopup();
 
-                reportTrackingHistory.push('TACTICAL TARGET SECURED AND PINNED AT SECTOR: ' + address.toUpperCase());
+                // RECORD TRACKING INCIDENT INTERCEPTED
+                reportTrackingHistory.push('TARGET OPERATION LOCK-ON TARGET: ' + address.toUpperCase() + ` | LAT: ${operationalLat.toFixed(5)}, LNG: ${operationalLng.toFixed(5)}`);
                 map.invalidateSize();
 
             } catch(e) {
@@ -360,7 +347,6 @@
         function prepUnitPlacement(type) {
             currentPlacementType = type;
             isPlacementActive = true;
-            toggleDrawer();
             
             var statusHUD = document.getElementById('placementStatus');
             statusHUD.innerText = "TAP MAP LOCATION TO DEPLOY " + type.toUpperCase();
@@ -382,33 +368,31 @@
                 fillColor: colors[currentPlacementType],
                 fillOpacity: 1,
                 weight: 2.5
-            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET</b><br>Grid Position Tracked`);
+            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET</b><br>Manual Grid Deployment`);
 
             deployedMarkersArray.push(marker);
             deployedUnitsLog.push({ type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
-            reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET DEPLOYED MANUAL AT LOCATION -> LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}`);
+            
+            // ACTION CAPTURED AUTOMATICALLY IN EVIDENTIARY RECORDER GRID
+            reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET MANUALLY LOGGED AND DEPLOYED AT LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}`);
 
             isPlacementActive = false;
             currentPlacementType = null;
             document.getElementById('placementStatus').style.display = "none";
         }
 
-        // COMPLETE DATA CLEAN OUT ACTION MODULE
         function resetTrackingGrid() {
-            if(!confirm("CONFIRM SYSTEM CLEAR: Wipe all tracked assets and target sectors?")) return;
+            if(!confirm("CONFIRM SECTOR CLEAN: Wipe out all logged assets and targets?")) return;
             
-            // Wipe Leaflet map elements
             deployedMarkersArray.forEach(m => map.removeLayer(m));
             deployedMarkersArray = [];
             deployedUnitsLog = [];
-            reportTrackingHistory = [];
             
             if(targetHousePin) { map.removeLayer(targetHousePin); targetHousePin = null; }
-            
             document.getElementById('notesBox').value = "";
-            reportTrackingHistory.push('TACTICAL OPERATIONS GRID COMPLETELY RESET BY COMMAND');
-            alert("GRID CLEAR: System ready for fresh run.");
-            toggleDrawer();
+            
+            reportTrackingHistory.push('MASTER DEPLOYMENT CONTROL VECTOR WIPED CLEAN BY INDEPENDENT RE-ALIGNMENT COMMAND.');
+            alert("GRID RE-ARMED: All parameters cleared.");
         }
 
         function killVoiceTransmission(){
@@ -445,44 +429,45 @@
             synth.speak(speech);
         }
 
-        function dismissReturnOverlay() {
-            document.getElementById('returnOverlay').style.display = 'none';
-        }
-
-        // PROFESSIONAL COURT PDF REPORT GENERATION COMPILATION MATRIX
+        // PROFESSIONAL CASE FILE PDF RECORD COMPILATION
         function generateCourtPDF() {
             try {
                 var { jsPDF } = window.jspdf;
                 var doc = new jsPDF();
                 var userNotes = document.getElementById('notesBox').value;
+                var channelCode = document.getElementById('networkCodeInput').value.trim();
 
                 var currentY = 25;
                 
-                // TOP LAW ENFORCEMENT COMMAND HEADER BLOCK
-                doc.setFillColor(15, 30, 15);
-                doc.rect(15, 12, 180, 18, 'F');
+                // TOP LAW ENFORCEMENT COMMAND HEADER DECK
+                doc.setFillColor(20, 25, 20);
+                doc.rect(15, 12, 180, 20, 'F');
                 doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(14);
-                doc.setTextColor(255, 204, 0); // Gold Title Accent
-                doc.text('EVIDENTIARY OFFICIAL SEARCH MISSION LOG REPORT', 20, 24);
+                doc.setFontSize(13);
+                doc.setTextColor(255, 204, 0); 
+                doc.text('TACTICAL COMMAND MULTI-AGENCY INCIDENT MISSION LOG REPORT', 18, 25);
                 
-                currentY = 42;
+                doc.setFontSize(9);
+                doc.setTextColor(200, 250, 200);
+                doc.text(`ACTIVE MULTI-AGENCY SYSTEM NETWORK SYNC VALUE: ${channelCode ? channelCode.toUpperCase() : 'STANDALONE GRID'}`, 18, 30);
+                
+                currentY = 44;
                 doc.setTextColor(0,0,0);
                 doc.setFontSize(10);
                 doc.setFont('Helvetica', 'normal');
-                doc.text('PRODUCED SYSTEMATICALLY VIA TACNET OPERATIONAL PORTAL CORE NETWORK', 20, currentY);
+                doc.text('PRODUCED VIA TACNET SEARCH DEPLOYMENT INFRASTRUCTURE', 20, currentY);
                 
-                currentY += 15;
+                currentY += 14;
                 doc.setFont('Helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.text('I. SEARCH OPERATION TELEMETRY HISTORICAL SEGMENTS:', 20, currentY);
+                doc.text('I. AUTOMATIC INCIDENT EVENT RECORDING TIMELINE:', 20, currentY);
                 currentY += 8;
                 doc.setFont('Helvetica', 'normal');
                 doc.setFontSize(9);
 
                 reportTrackingHistory.forEach(function(logLine) {
                     if(currentY > 265) { doc.addPage(); currentY = 25; }
-                    doc.text('>>  ' + logLine, 20, currentY);
+                    doc.text('•  ' + logLine, 20, currentY);
                     currentY += 7;
                 });
 
@@ -490,18 +475,18 @@
                 if(currentY > 250) { doc.addPage(); currentY = 25; }
                 doc.setFont('Helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.text('II. DEPLOYED PERIMETER ASSETS TRACKING MATRIX:', 20, currentY);
+                doc.text('II. CERTIFIED TELEMETRY TRACK MATRIX FOR ACTIVE ASSETS:', 20, currentY);
                 currentY += 8;
                 doc.setFont('Helvetica', 'normal');
                 doc.setFontSize(9);
 
                 if(deployedUnitsLog.length === 0) {
-                    doc.text('No manual coordinate indicators registered during this deployment timeline.', 25, currentY);
+                    doc.text('No tracking assets deployed during this incident timeline.', 25, currentY);
                     currentY += 7;
                 } else {
                     deployedUnitsLog.forEach(function(unit) {
                         if(currentY > 265) { doc.addPage(); currentY = 25; }
-                        doc.text(`[ASSET MARK] Type: ${unit.type}  |  Telemetry: Latitude ${unit.lat}, Longitude ${unit.lng}`, 25, currentY);
+                        doc.text(`[UNIT TRACK] Asset Category: ${unit.type}  |  Coordinates: Lat ${unit.lat}, Lng ${unit.lng}`, 25, currentY);
                         currentY += 7;
                     });
                 }
@@ -511,7 +496,7 @@
                     if(currentY > 240) { doc.addPage(); currentY = 25; }
                     doc.setFont('Helvetica', 'bold');
                     doc.setFontSize(11);
-                    doc.text('III. FIELD EVIDENCE & DISPOSITION NOTES:', 20, currentY);
+                    doc.text('III. FIELD EVIDENCE & COMPLIANCE DISPOSITION SUMMATION:', 20, currentY);
                     currentY += 8;
                     doc.setFont('Helvetica', 'normal');
                     doc.setFontSize(9);
@@ -530,21 +515,17 @@
                 currentY += 8;
                 doc.setFont('Helvetica', 'bold');
                 doc.setFontSize(9.5);
-                doc.text('TACNET SYSTEMS LEGAL EVIDENCE VERIFICATION ASSIGNMENT', 20, currentY);
+                doc.text('TACNET SYSTEMS COURTROOM VERIFICATION RECORD CERTIFICATE', 20, currentY);
                 currentY += 5;
                 doc.setFont('Helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
 
-                // DOWNLOAD DOCUMENT
                 doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
-                
-                // FLIP VIEWS TO INTERACTIVE POPUP NAV
-                toggleDrawer();
-                document.getElementById('returnOverlay').style.display = 'flex';
+                switchDeckPage(1); // Navigates instantly back to the active tracking grid page
 
             } catch(err) {
-                alert("PDF COMPILING EXCEPTION ACCESSED: " + err.message);
+                alert("REPORT EXCEPTION ACCESSED: " + err.message);
             }
         }
     </script>
