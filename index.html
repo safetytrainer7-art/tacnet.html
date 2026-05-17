@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET Multi-Agency Tactical Command</title>
+    <title>TACNET Tactical Task Force Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <style>
         :root {
@@ -23,7 +24,7 @@
             color: #fff; overflow: hidden; position: relative;
         }
 
-        /* HARD-WIRED TACTICAL NIGHT-VISION LIGHT OVERLAY */
+        /* PERMANENT CRIMSON TACTICAL LIGHT COCKPIT OVERLAY */
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none;
             background: repeating-linear-gradient(to bottom, rgba(255,0,0,0.02), rgba(255,0,0,0.02) 2px, transparent 2px, transparent 4px);
@@ -31,25 +32,47 @@
         }
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 100px var(--night-red), inset 0 0 30px rgba(255,0,0,0.15);
+            box-shadow: inset 0 0 100px var(--night-red);
             z-index: 9998;
         }
 
-        /* VIEWPORT LAYOUT */
+        /* MASTER SCREEN CONTAINER */
         .main-viewport {
             display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;
         }
 
-        /* TIMELINE PANELS */
+        /* LOUD TOP-LEVEL COMMAND TITLE BANNER */
+        .master-command-header {
+            background: #0d0000; border-bottom: 2px solid var(--red);
+            padding: 12px 6px; text-align: center; flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(255,0,0,0.2);
+        }
+        .master-command-header h1 {
+            margin: 0; padding: 0; font-size: 1.05rem; color: #fff;
+            letter-spacing: 1px; font-weight: 900; text-transform: uppercase;
+            text-shadow: 0 0 8px var(--red); line-height: 1.2;
+        }
+
+        /* PRESTIGE APP CREATOR REGISTRY BADGE */
+        .creator-registry-badge {
+            background: #0a0f0a; border-bottom: 1px solid var(--neon-green);
+            padding: 6px 4px; text-align: center; flex-shrink: 0;
+        }
+        .creator-registry-badge p {
+            margin: 0; padding: 0; font-size: 0.72rem; color: var(--neon-green);
+            font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase;
+        }
+
+        /* TAB DECK CONTAINER SHEETS */
         .viewport-sheet {
-            display: none; flex-direction: column; width: 100%; height: calc(100% - 56px); overflow: hidden;
+            display: none; flex-direction: column; width: 100%; flex: 1; overflow: hidden;
         }
         .viewport-sheet.active-sheet { display: flex; }
         
         .scrollable-content { flex: 1; overflow-y: auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; background: #030503; }
         .section-header { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 4px; }
 
-        /* MULTI-AGENCY LINK HUD */
+        /* MULTI-AGENCY COORDINATION SYNC HUD */
         .network-bar {
             padding: 8px 10px; background: #080d08; display: flex; gap: 8px;
             align-items: center; border-bottom: 1px solid var(--gold); flex-shrink: 0;
@@ -59,7 +82,7 @@
         .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.8rem; font-weight: 900; padding: 6px 12px; cursor: pointer; text-transform: uppercase; }
         #networkBanner { background: #002200; color: var(--neon-green); padding: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; display: none; text-transform: uppercase; border-bottom: 1px solid var(--neon-green); }
 
-        /* TARGET ADDRESS DISPATCH BAR */
+        /* TARGET DISPATCH SEARCH HUD */
         .search-controls {
             padding: 8px; display: flex; gap: 8px; background: #000; flex-shrink: 0;
             border-bottom: 2px solid var(--neon-green);
@@ -78,12 +101,12 @@
 
         #map { flex: 1; width: 100%; background: #111; }
 
-        /* REAL-TIME COMMAND CHRONOLOGY LEDGER BOX */
+        /* SYSTEM CHRONOLOGY CHIP RECORD LOGS BOX */
         .terminal-box { height: 75px; background: #020502; border-top: 1px solid #112211; padding: 6px; flex-shrink: 0; box-sizing: border-box; }
         #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #33cc66; line-height: 1.3; }
         .ticker-line { padding: 1px 0; border-bottom: 1px solid #040a04; }
 
-        /* UNIT DEPLOYMENT CONTROLS */
+        /* COMMAND SEARCH ASSETS GRID */
         .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .unitDeployBtn {
             padding: 16px 10px; font-size: 0.95rem; background: #111; color: #fff;
@@ -97,7 +120,7 @@
         .btn-gold { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 8px rgba(255,204,0,0.3); }
         .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; padding: 20px 0; font-size: 1.05rem; box-shadow: 0 0 10px rgba(191,102,255,0.4); }
 
-        /* MEDICAL DECK COMPONENTS */
+        /* EMERGENCY BROADCAST CONTROL BLOCK */
         .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .voiceBtn { padding: 14px 2px; font-size: .85rem; border: 1px solid var(--gold); font-weight: bold; cursor: pointer; background: #111; color: var(--gold); text-align: center; text-transform: uppercase; border-radius: 3px; }
         .btn-stop-transmission { grid-column: span 3; border: 1px solid var(--red); background: #1a0000; color: #ff9999; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; }
@@ -113,7 +136,7 @@
             border-radius: 4px; font-size: 1.1rem; box-shadow: 0 0 15px var(--neon-green); margin-top: auto; width: 100%; box-sizing: border-box;
         }
 
-        /* NAVIGATION BAR FOOTER Switch */
+        /* BOTTOM OPERATION VIEW Switch NAVIGATION PANEL */
         .deck-navigation-bar {
             height: 56px; background: #080808; border-top: 2px solid var(--gold);
             display: flex; flex-shrink: 0; z-index: 2000;
@@ -131,7 +154,7 @@
             line-height: 1.3; letter-spacing: 1px; flex-shrink: 0;
         }
 
-        /* TARGET STRUCTURE DEPLOYMENT ANCHOR PIN */
+        /* HIGH-VISIBILITY TARGET STRUCT ANCHOR PIN */
         .target-pulsing-icon {
             background: var(--neon-green); border: 2px solid #fff; border-radius: 50%;
             box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
@@ -146,6 +169,14 @@
 <body>
 
     <div class="main-viewport">
+        
+        <div class="master-command-header">
+            <h1>Tacnet: The Multi-Agency Tactical Task Force Search App</h1>
+        </div>
+
+        <div class="creator-registry-badge">
+            <p>Developed By App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
+        </div>
         
         <div id="sheetMapCommand" class="viewport-sheet active-sheet">
             <div class="network-bar">
@@ -231,7 +262,6 @@
         var operationalLat = 37.4338;
         var operationalLng = -79.1114;
 
-        // FIXED HIGH-RECON TACTICAL RECON LAYERS
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
             tacticalGrid: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}.png', { maxZoom: 20 })
@@ -239,6 +269,10 @@
 
         window.onload = function() {
             initMap();
+            // Pre-load professional voice directory arrays to ensure clean deployment
+            if (synth && synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = function() { getProfessionalVoice(); };
+            }
         };
 
         function logToSystemRecord(msg) {
@@ -264,7 +298,7 @@
                 color: '#00ff66',
                 fillColor: '#00ff66',
                 fillOpacity: .10,
-                radius: 804
+                radius: 402
             }).addTo(map);
 
             L.control.layers({
@@ -287,7 +321,7 @@
             }
 
             setTimeout(()=>{ map.invalidateSize(); }, 400);
-            logToSystemRecord('TACNET PLATFORM SYSTEM COCKPIT OPERATIONAL.');
+            logToSystemRecord('TACNET MULTI-AGENCY CORE PLATFORM INITIALIZED.');
         }
 
         function toggleSystemScreen(screenNum) {
@@ -354,7 +388,7 @@
                     color: '#00ff66',
                     fillColor: '#00ff66',
                     fillOpacity: .10,
-                    radius: 804
+                    radius: 402
                 }).addTo(map);
 
                 var targetIcon = L.divIcon({ className: 'target-pulsing-icon', iconSize: [22, 22] });
@@ -381,22 +415,13 @@
         }
 
         function executeManualPlacement(lat, lng) {
-            var colors = { 
-                leo: '#1d7dff', 
-                k9: '#66d9ff', 
-                sar: '#ff3030', 
-                civilian: '#28d96f', 
-                article: '#ffcc00', 
-                poi: '#bf66ff' 
-            };
-
+            var colors = { leo: '#1d7dff', k9: '#66d9ff', sar: '#ff3030', civilian: '#28d96f', article: '#ffcc00', poi: '#bf66ff' };
             var uniqueId = Date.now();
 
             var marker = L.circleMarker([lat, lng], {
                 radius: 11, color: '#fff', fillColor: colors[currentPlacementType], fillOpacity: 1, weight: 2.5
             }).addTo(map);
 
-            // COMPILING TAP-TO-REMOVE INTERFACE INSIDE WINDOW POPUP
             var popupContent = document.createElement('div');
             popupContent.style.textAlign = 'center';
             popupContent.innerHTML = `
@@ -421,14 +446,12 @@
         }
 
         function removeSpecificMarker(idToClear) {
-            // TARGET AND REMOVE FROM THE MAP DISPLAY LAYER
             var markerIndex = deployedMarkersArray.findIndex(m => m.tacticalId === idToClear);
             if (markerIndex !== -1) {
                 map.removeLayer(deployedMarkersArray[markerIndex]);
                 deployedMarkersArray.splice(markerIndex, 1);
             }
 
-            // TARGET AND REMOVE FROM INTERNAL COURT DOCUMENT LEDGERS
             var logIndex = deployedUnitsLog.findIndex(u => u.id === idToClear);
             if (logIndex !== -1) {
                 var deletedType = deployedUnitsLog[logIndex].type;
@@ -446,15 +469,33 @@
             document.getElementById('notesBox').value = "";
             document.getElementById('liveEventTicker').innerHTML = "";
             reportTrackingHistory = [];
-            logToSystemRecord('CORE SYSTEMS FLUSH COMPLETE. RESET MATRIX LOGGED.');
+            logToSystemRecord('CORE SYSTEMS FLUSH ASSIGNED. CLEAN START REGISTERED.');
             alert("BOARD RESET COMPLETE.");
         }
 
         function killVoiceTransmission(){ if(synth) { synth.cancel(); } }
 
-        function speakMedicalProtocol(type){
+        // EXPLICIT SEARCH FILTER FOR HIGH-QUALITY NATURAL VOICES (ELIMINATES THE DRUNK/ROBOT GLITCH)
+        function getProfessionalVoice() {
+            if(!synth) return null;
+            var voiceList = synth.getVoices();
+            
+            // Look for crisp, modern natural English accents first (Google, Apple, or Microsoft premium voices)
+            var premiumTargets = ["Google US English", "en-US-Neural2", "en-GB-Neural2", "Samantha", "Microsoft David"];
+            for (var i = 0; i < premiumTargets.length; i++) {
+                var found = voiceList.find(v => v.name.includes(premiumTargets[i]));
+                if(found) return found;
+            }
+            
+            // Standard backup English voice filter
+            var backupEnglish = voiceList.find(v => v.lang.startsWith('en'));
+            return backupEnglish || null;
+        }
+
+        function speakMedicalProtocol(type) {
             if(!synth) return;
-            synth.cancel();
+            synth.cancel(); // Terminate any lingering channel buffers instantly
+            
             var msg = '';
             if(type==='cpr') msg = 'Executing canine CPR instructions. Lay the dog on its right side. Verify airway is clear. Deliver thirty chest compressions behind the elbow, then deliver two breaths into the nostrils. Repeat.';
             if(type==='gunshot') msg = 'Executing gunshot trauma response. Pack entry site tightly with hemostatic gauze. Apply heavy, steady manual direct pressure for three minutes minimum.';
@@ -464,6 +505,17 @@
             if(type==='rally') msg = 'All cordon units cease search patterns and collapse positions back inward on lead K9 asset, Wood Canine One.';
 
             var speech = new SpeechSynthesisUtterance(msg);
+            
+            // LOCK IN THE CHOSEN PROFESSIONAL VOICE ENGINE
+            var targetVoice = getProfessionalVoice();
+            if(targetVoice) {
+                speech.voice = targetVoice;
+            }
+            
+            // RE-CALIBRATED CADENCE CONTROLS: Locks pacing to a steady, clear, highly legible tactical standard
+            speech.rate = 0.95;  // Slightly throttled down to ensure clear articulation under stress
+            speech.pitch = 1.0;  // Balanced mid-tone profile to eliminate metallic distortion
+            
             synth.speak(speech);
             logToSystemRecord(`EMERGENCY FIELD TRANSMISSION ENGAGED: [${type.toUpperCase()}]`);
         }
@@ -478,8 +530,8 @@
                 
                 doc.setFillColor(15, 30, 15);
                 doc.rect(15, 12, 180, 22, 'F');
-                doc.setFont('Helvetica', 'bold').setFontSize(14).setTextColor(255, 204, 0);
-                doc.text('TACTICAL COMMAND SEARCH OPERATIONS INCIDENT LOG REPORT', 18, 24);
+                doc.setFont('Helvetica', 'bold').setFontSize(13).setTextColor(255, 204, 0);
+                doc.text('TACNET MULTI-AGENCY TACTICAL TASK FORCE SEARCH OPERATIONS LOG', 18, 24);
                 doc.setFontSize(9.5).setTextColor(200, 255, 200);
                 doc.text(`MULTI-AGENCY SECURE NETWORK SYNC CHANNEL CODE: ${code ? code.toUpperCase() : 'STANDALONE OPERATIONAL CHANNEL'}`, 18, 30);
                 
@@ -535,14 +587,14 @@
                 doc.line(20, currentY, 190, currentY);
                 currentY += 8;
                 doc.setFont('Helvetica', 'bold').setFontSize(9.5);
-                doc.text('TACNET COMMAND SYSTEMS EVIDENCE COMPLIANCE RECORD CERTIFICATE', 20, currentY);
+                doc.text('TACNET MULTI-AGENCY TACTICAL TASK FORCE SEARCH APP EVIDENCE COMPLIANCE CERTIFICATE', 20, currentY);
                 currentY += 5;
                 doc.setFont('Helvetica', 'normal').setFontSize(9);
-                doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
+                doc.text('DEVELOPED BY APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
 
                 doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
                 toggleSystemScreen(1);
-                logToSystemRecord('OFFICIAL DISPOSITION RECON RECORD PRINTED TO COMPLETED PDF FILE.');
+                logToSystemRecord('OFFICIAL COURT DISPOSITION EXPORT DOWNLOADED SUCCESSFULLY.');
 
             } catch(err) {
                 alert("PDF ERROR: " + err.message);
