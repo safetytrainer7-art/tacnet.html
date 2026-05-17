@@ -4,233 +4,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET | MULTI-AGENCY TASK FORCE</title>
+    <title>TACNET | TACTICAL SEARCH RECON</title>
     <style>
         :root {
-            --hunter-green: #1B3022;
-            --neon-green: #39FF14;
-            --gold: #D4AF37;
-            --sos-red: #B22222;
-            --glass: rgba(27, 48, 34, 0.85);
+            --dark-bg: #121212;
+            --panel-bg: #1a1a1a;
+            --neon-green: #00FF33;
+            --bright-blue: #0066FF;
+            --hot-pink: #FF3366;
+            --gold: #FFCC00;
+            --orange: #FF6600;
+            --teal: #00CCCC;
+            --header-olive: #3b3a1a;
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background: #000; color: var(--gold);
-            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+            background-color: var(--dark-bg); color: #FFFFFF;
+            font-family: Arial, Helvetica, sans-serif; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        /* THE ORIGINAL TEXT HEADER - CRACKED GOLD STYLING */
-        .hud-header {
-            position: absolute; top: 0; width: 100%; z-index: 10;
-            background: linear-gradient(to bottom, var(--glass), transparent);
-            text-align: center; padding: 15px 0; border-bottom: 2px solid var(--gold);
+        /* HIGH-VIS AGENCY COMMAND HEADER */
+        .top-header {
+            background: linear-gradient(to bottom, #4a4722, #1c1b0a);
+            border-bottom: 3px solid var(--gold);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            box-sizing: border-box;
         }
 
-        .title-main {
-            font-size: 2.8rem; font-weight: bold; letter-spacing: 5px; margin: 0;
-            text-shadow: 3px 3px 0px #000; text-transform: uppercase;
+        .header-patch-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .title-sub { font-size: 1rem; letter-spacing: 2px; color: var(--neon-green); font-weight: bold; }
-
-        /* TWO-PAGE DISPLAY FRAMEWORKS */
-        .page {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; z-index: 1;
+        .agency-logo {
+            height: 52px;
+            width: 52px;
+            object-fit: contain;
+            border-radius: 50%;
         }
 
-        .page.active { display: block; }
-
-        /* PAGE 1: SEARCH DASHBOARD SCREEN */
-        #search-page {
-            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1200x1200&maptype=satellite');
-            background-size: cover; background-position: center;
+        .badge-star {
+            height: 54px;
+            width: 54px;
+            object-fit: contain;
         }
 
-        /* PAGE 2: VOICE ACTIVATED K9 FIRST AID HUD */
-        #k9-medical-page {
-            background: #0d1a11;
-            padding-top: 140px;
+        .center-branding {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title {
+            color: var(--gold);
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin: 0;
+            text-shadow: 2px 2px 2px #000;
+        }
+
+        .header-sub {
+            color: #FFFFFF;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 2px 0 0 0;
+        }
+
+        /* CONSOLE MAIN SCREEN AREA */
+        .console-container {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
             box-sizing: border-box;
             overflow-y: auto;
+            padding-bottom: 45px; /* Clear space for fixed footer signature */
         }
 
-        /* COMMAND HOUSINGS & DOCKS */
-        .hud-left, .hud-right {
-            position: absolute; top: 140px; z-index: 10;
-            display: flex; flex-direction: column; gap: 12px; padding: 10px;
+        /* VOICE INPUT ADDRESS REGISTRATION FRAME */
+        .address-bar-frame {
+            display: flex;
+            border: 2px solid var(--neon-green);
+            background-color: #000000;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
-        .hud-left { left: 15px; }
-        .hud-right { right: 15px; width: 240px; }
-
-        .hud-bottom {
-            position: absolute; bottom: 0; width: 100%; z-index: 10;
-            background: var(--glass); display: flex; justify-content: space-around;
-            padding: 20px 0; border-top: 2px solid var(--gold);
+        .mic-indicator {
+            background-color: var(--hot-pink);
+            color: #FFFFFF;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .tactical-box {
-            background: var(--glass); border: 1px solid var(--gold);
-            padding: 15px; border-radius: 4px; box-shadow: 0 0 15px #000;
-            margin: 0 20px 15px 20px;
+        .address-input-field {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: #FFFFFF;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
-        .icon-circle {
-            width: 60px; height: 60px; border: 2px solid var(--gold);
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; background: var(--hunter-green);
-            cursor: pointer; font-weight: bold; font-size: 0.8rem;
-            text-align: center; line-height: 1.1; box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        .medical-card {
-            background: rgba(20, 35, 25, 0.9);
-            border: 1px solid var(--neon-green);
-            padding: 15px; margin: 15px 30px; border-radius: 4px;
+        /* ACTION TRIGGER BAR */
+        .action-trigger-bar {
+            background-color: var(--neon-green);
+            color: #000000;
+            text-align: center;
+            padding: 11px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
             cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
         }
 
-        .medical-card:active { background: var(--hunter-green); }
-
-        .btn-sos {
-            background: var(--sos-red); color: #fff; border: 2px solid #fff;
-            padding: 18px; font-weight: bold; border-radius: 8px;
-            animation: pulse 1.5s infinite; cursor: pointer; font-size: 1.1rem;
+        /* RADAR SCOPE TERMINAL SCREEN */
+        .radar-screen-container {
+            height: 280px;
+            background-color: #000000;
+            border: 1px solid #333333;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
         }
 
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .radar-grid {
+            position: absolute;
+            width: 200%; height: 200%;
+            top: -50%; left: -50%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 51, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 51, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
 
-        #perimeter-visual {
-            position: absolute; top: 50%; left: 50%; 
+        .radar-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            border: 1px solid rgba(0, 255, 51, 0.15);
+            border-radius: 50%;
             transform: translate(-50%, -50%);
-            width: 320px; height: 320px;
-            border: 3px dashed var(--neon-green);
-            background: rgba(57, 255, 20, 0.15);
-            border-radius: 50%; display: none; z-index: 5;
+            pointer-events: none;
         }
-        
-        button {
-            background: var(--hunter-green); color: var(--gold);
-            border: 1px solid var(--gold); padding: 10px 15px;
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
+
+        .vector-cordon-circle {
+            position: absolute;
+            top: 50%; left: 45%;
+            width: 140px; height: 140px;
+            border: 2px solid var(--neon-green);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .cordon-label {
+            position: absolute;
+            left: 110%; top: 40%;
+            color: #FFFFFF; font-size: 0.75rem; font-family: monospace;
+            white-space: nowrap;
+        }
+
+        .tracker-blip {
+            position: absolute;
+            width: 26px; height: 26px;
+            background-color: var(--bright-blue);
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
+        }
+
+        .blip-label {
+            position: absolute;
+            left: 30px; color: #888888;
+            font-size: 0.7rem; font-family: monospace;
+            white-space: nowrap;
+        }
+
+        /* DATA LOG INTERFACE */
+        .data-log-panel {
+            border-top: 1px dashed var(--gold);
+            padding-top: 10px;
+        }
+
+        .log-status-header {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .log-body-text {
+            color: #E0E0E0;
+            font-family: monospace;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* CRISIS OPS DIRECTIVE BUTTON MATRIX */
+        .bottom-action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .action-grid-btn {
+            background-color: #000000;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-transform: uppercase;
+        }
+
+        .btn-pink   { border: 2px solid var(--hot-pink); color: var(--hot-pink); }
+        .btn-red    { border: 2px solid #CC3333; color: #CC3333; }
+        .btn-orange { border: 2px solid var(--orange); color: var(--orange); }
+        .btn-teal   { border: 2px solid var(--teal); color: var(--teal); }
+        .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
+        .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
+
+        .action-grid-btn:active { background-color: #FFFFFF; color: #000000; }
+
+        /* FIXED BOTTOM SIGNATURE TRACK row */
+        .fixed-creator-footer {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background-color: #050505;
+            border-top: 2px solid #222;
+            padding: 8px 0;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .creator-text {
+            color: #FF6666;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 0;
+            text-transform: uppercase;
         }
     </style>
 </head>
-<body id="tacnet-ui">
+<body>
 
-    <div class="hud-header">
-        <div class="title-main">TACNET</div>
-        <div class="title-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
+    <div class="top-header">
+        <img class="badge-star" src="amherst_badge.png.jpg" alt="Amherst Sheriff Badge" onerror="this.style.display='none'">
+        
+        <div class="center-branding">
+            <h1 class="header-title">TACNET</h1>
+            <p class="header-sub">Nextline Multi-Agency Tactical Task Force</p>
+        </div>
+        
+        <div class="header-patch-box">
+            <img class="agency-logo" src="gshep_2.jpg" alt="K9 Unit" onerror="this.style.display='none'">
+            <img class="agency-logo" src="va.png-modified.jpg" alt="VSP Patch" onerror="this.style.display='none'">
+        </div>
     </div>
 
-    <div id="search-page" class="page active">
-        <div id="perimeter-visual"></div>
-
-        <div class="hud-left">
-            <div class="icon-circle" onclick="togglePerimeter()">PERIM<br>SET</div>
-            <div class="icon-circle" onclick="dropMarker()">ARTCL<br>DROP</div>
-            <div class="icon-circle" onclick="toggleNightVision()">NVG<br>MODE</div>
+    <div class="console-container">
+        
+        <div class="address-bar-frame">
+            <div class="mic-indicator">🎤 MIC</div>
+            <input type="text" class="address-input-field" value="135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA" id="target-address-input">
         </div>
 
-        <div class="hud-right">
-            <div class="tactical-box" style="margin:0;">
-                <div style="color: var(--neon-green); border-bottom: 1px solid var(--gold); font-weight: bold; padding-bottom: 5px;">OP: ALPHA-247</div>
-                <div style="font-size: 0.9rem; margin-top: 8px;">
-                    AMHERST CO, VA<br>
-                    UNITS: 7 LEO / 2 K9<br>
-                    TEMP: 72°F / CLEAR
+        <div class="action-trigger-bar" onclick="lockOperationalPerimeter()">
+            📍 GO: LOCK SEARCH PERIMETER
+        </div>
+
+        <div class="radar-screen-container">
+            <div class="radar-grid"></div>
+            
+            <div class="radar-ring" style="width: 100px; height: 100px;"></div>
+            <div class="radar-ring" style="width: 200px; height: 200px;"></div>
+            <div class="radar-ring" style="width: 350px; height: 350px;"></div>
+            <div class="radar-ring" style="width: 500px; height: 500px;"></div>
+
+            <div class="vector-cordon-circle">
+                <div class="cordon-label">CORDON: 1/2 MILE RADIUS</div>
+            </div>
+
+            <div class="tracker-blip" style="top: 38%; left: 36%;">
+                3 <div class="blip-label">VSP-212</div>
+            </div>
+            
+            <div class="tracker-blip" style="top: 45%; left: 42%;">
+                1 <div class="blip-label" style="color: var(--neon-green); font-weight: bold;">WOOD-K91</div>
+            </div>
+            
+            <div class="tracker-blip" style="top: 58%; left: 48%;">
+                2 <div class="blip-label">SMITH-104</div>
+            </div>
+        </div>
+
+        <div class="data-log-panel">
+            <div class="log-status-header">📍 PERIMETER CORDON LOCKED</div>
+            <div class="log-body-text">
+                Vector cordon circle drawn on local console layout.<br>
+                Target Area: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
+                <div style="margin-top: 8px;">
+                    Searchers 1, 2, and 3 are mapped and scaled within target radius parameters. Fully active.
                 </div>
             </div>
-            <button class="btn-sos" onclick="triggerSOS()">SOS EMERGENCY</button>
         </div>
+
+        <div class="bottom-action-grid">
+            <div class="action-grid-btn btn-pink" onclick="speakMedicalProtocol('cpr')">🐾 1. K9 CPR</div>
+            <div class="action-grid-btn btn-red" onclick="speakMedicalProtocol('gunshot')">💥 2. GUNSHOT</div>
+            <div class="action-grid-btn btn-orange" onclick="speakMedicalProtocol('heatstroke')">☀️ 3. HEAT STROKE</div>
+            <div class="action-grid-btn btn-teal" onclick="speakMedicalProtocol('snakebite')">🐍 4. SNAKE BITE</div>
+            <div class="action-grid-btn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</div>
+            <div class="action-grid-btn btn-blue" onclick="speakMedicalProtocol('rally')">🐕 RALLY ON K9-1</div>
+        </div>
+
     </div>
 
-    <div id="k9-medical-page" class="page">
-        <div class="tactical-box">
-            <div style="color: var(--neon-green); font-weight: bold; text-align: center; font-size: 1.2rem;">
-                🔊 K9 VOICE-ACTIVATED MEDICAL RESPONDER
-            </div>
-            <div style="font-size: 0.85rem; text-align: center; margin-top: 5px; color: #fff;">
-                Tap a block below to engage operational hands-free audio guidance.
-            </div>
-        </div>
-
-        <div class="medical-card" onclick="speakProtocol('trauma')">
-            <strong style="color: var(--sos-red);">[BLOCK 1] FIELD TRAUMA / HEMORRHAGE CONTROL</strong>
-            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">Apply direct pressure over laceration. Utilize operational K9 hemostatic gauze from tactical kit.</p>
-        </div>
-
-        <div class="medical-card" onclick="speakProtocol('heat')">
-            <strong style="color: #ff8c00;">[BLOCK 2] HEAT EXHAUSTION / HYPERTHERMIA</strong>
-            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">Move canine immediately to air-conditioned unit. Apply cool water to paws, abdomen, and groin area.</p>
-        </div>
-
-        <div class="medical-card" onclick="speakProtocol('narcan')">
-            <strong style="color: #00bfff;">[BLOCK 3] TOXIC EXPOSURE / NARCAN DELIVERY</strong>
-            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">If canine exhibits lethargy or respiratory distress following detection run, administer intranasal Naloxone.</p>
-        </div>
-    </div>
-
-    <div class="hud-bottom">
-        <button onclick="switchPage('search')">TACTICAL SEARCH</button>
-        <button onclick="switchPage('k9')">K9 FIRST AID</button>
-        <button onclick="alert('Accessing VA/Federal Case Law Database')">CASE LAW</button>
-        <button onclick="stopVoice()">MUTE AUDIO</button>
+    <div class="fixed-creator-footer">
+        <p class="creator-text">App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
     </div>
 
     <script>
         var synth = window.speechSynthesis;
 
-        // TWO-PAGE SWITCH LOGIC
-        function switchPage(pageName) {
-            document.getElementById('search-page').classList.remove('active');
-            document.getElementById('k9-medical-page').classList.remove('active');
-            
-            if(pageName === 'search') {
-                document.getElementById('search-page').classList.add('active');
-            } else if(pageName === 'k9') {
-                document.getElementById('k9-medical-page').classList.add('active');
-            }
+        function lockOperationalPerimeter() {
+            var inputAddr = document.getElementById('target-address-input').value;
+            document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
+            alert("TACTICAL UPDATE: Cordon Vector locked dynamically onto target location.");
         }
 
-        // HANDS-FREE CLINICAL AUDIO TRANSMISSIONS
-        function speakProtocol(type) {
+        function speakMedicalProtocol(actionType) {
+            if (!synth) return;
             synth.cancel(); 
             let message = "";
 
-            if (type === 'trauma') {
-                message = "Attention Officer. For K9 field trauma, apply immediate direct pressure to the wound site using clean tactical gauze. Maintain firm pressure. Locate the pressure point above the injury if severe arterial bleeding persists.";
-            } else if (type === 'heat') {
-                message = "Attention Officer. For canine heat exhaustion, cease tracking immediately. Move the dog to shade or a cooled cruiser. Wet the belly, groin, and paw pads with cool water. Do not submerge the dog in ice water.";
-            } else if (type === 'narcan') {
-                message = "Attention Officer. In case of toxic opioid ingestion or accidental inhalation, observe for pinpoint pupils and respiratory failure. Administer a standard single dose of intranasal narcan immediately into one nostril. Maintain open airway.";
+            if (actionType === 'cpr') {
+                message = "Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.";
+            } else if (actionType === 'gunshot') {
+                message = "Executing K9 Gunshot trauma response. Immediately packed the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.";
+            } else if (actionType === 'heatstroke') {
+                message = "Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.";
+            } else if (actionType === 'snakebite') {
+                message = "Executing K9 Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.";
+            } else if (actionType === 'vet') {
+                message = "Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.";
+            } else if (actionType === 'rally') {
+                message = "Command directive issued: All perimeter units collapse cordon formations and rally coordinates back inward on target lead asset position, Wood Canine One.";
             }
 
-            var utter = new SpeechSynthesisUtterance(message);
-            utter.rate = 0.95; 
-            synth.speak(utter);
+            var transmission = new SpeechSynthesisUtterance(message);
+            transmission.rate = 0.95; 
+            synth.speak(transmission);
         }
-
-        function stopVoice() {
-            synth.cancel();
-        }
-
-        // TACTICAL SYSTEM MODULES
-        function togglePerimeter() {
-            const p = document.getElementById('perimeter-visual');
-            p.style.display = p.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function dropMarker() { alert("Article Drop: GPS Telemetry Saved."); }
-
-        function toggleNightVision() {
-            const ui = document.getElementById('tacnet-ui');
-            ui.style.filter = ui.style.filter === 'sepia(1) hue-rotate(80deg) brightness(1.2)' ? 'none' : 'sepia(1) hue-rotate(80deg) brightness(1.2)';
-        }
-
-        function triggerSOS() { alert("EMERGENCY SOS: BROADCAST OUT TO TASK FORCE UNITS."); }
     </script>
 </body>
 </html>
