@@ -1,223 +1,153 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET | MULTI-AGENCY TACTICAL TASK FORCE</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+    <title>TACNET | MULTI-AGENCY TASK FORCE</title>
     <style>
         :root {
             --hunter-green: #1B3022;
             --neon-green: #39FF14;
             --gold: #D4AF37;
             --sos-red: #B22222;
-            --glass: rgba(20, 35, 25, 0.9);
+            --glass: rgba(27, 48, 34, 0.85);
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background: #111; color: var(--gold);
+            background: #000; color: var(--gold);
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
-            display: flex; flex-direction: column;
         }
 
-        /* BANNER AREA USING YOUR CUSTOM TNET IMAGE */
-        .master-banner {
-            background: #000;
-            border-bottom: 4px solid var(--neon-green);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100px;
-            overflow: hidden;
+        /* ORIGINAL TACTICAL HEADER */
+        .hud-header {
+            position: absolute; top: 0; width: 100%; z-index: 10;
+            background: linear-gradient(to bottom, var(--glass), transparent);
+            text-align: center; padding: 15px 0; border-bottom: 2px solid var(--gold);
         }
 
-        .master-banner img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+        .title-main {
+            font-size: 2.8rem; font-weight: bold; letter-spacing: 5px; margin: 0;
+            text-shadow: 3px 3px 0px #000; text-transform: uppercase;
         }
 
-        /* CONSOLE WORKSPACE */
-        .console-body {
-            display: flex;
-            flex-grow: 1;
-            padding: 10px;
-            gap: 10px;
-            background: #222;
+        .title-sub { font-size: 1rem; letter-spacing: 2px; color: var(--neon-green); font-weight: bold; }
+
+        /* FULL SCREEN MAP BACKGROUND */
+        #main-map {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1200x1200&maptype=satellite');
+            background-size: cover; background-position: center; z-index: 1;
         }
 
-        /* THE LIVE SCREEN HOUSING THE MAP */
-        .screen-container {
-            flex-grow: 1;
-            position: relative;
-            border: 4px solid #444;
-            background-color: #000;
-            box-shadow: inset 0 0 20px #000;
+        /* HUD OVERLAYS */
+        .hud-left, .hud-right {
+            position: absolute; top: 140px; z-index: 10;
+            display: flex; flex-direction: column; gap: 12px; padding: 10px;
         }
 
-        #live-map {
-            width: 100%; height: 100%;
+        .hud-left { left: 15px; }
+        .hud-right { right: 15px; width: 240px; }
+
+        .hud-bottom {
+            position: absolute; bottom: 0; width: 100%; z-index: 10;
+            background: var(--glass); display: flex; justify-content: space-around;
+            padding: 20px 0; border-top: 2px solid var(--gold);
         }
 
-        /* CUSTOM CONTROLS OVERLAY ON THE RIGHT */
-        .control-panel {
-            width: 240px;
-            background: #333;
-            border: 3px solid #5a5a5a;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* TACTICAL ELEMENTS */
+        .tactical-box {
+            background: var(--glass); border: 1px solid var(--gold);
+            padding: 12px; border-radius: 4px; box-shadow: 0 0 15px #000;
         }
 
-        .panel-heading {
-            background: #111;
-            padding: 5px;
-            text-align: center;
-            font-weight: bold;
-            border: 1px solid var(--gold);
-            font-size: 0.8rem;
+        .icon-circle {
+            width: 60px; height: 60px; border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; background: var(--hunter-green);
+            cursor: pointer; font-weight: bold; font-size: 0.8rem;
+            text-align: center; line-height: 1.1; box-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
 
-        /* INTERACTIVE HARDWARE CONTROLS */
-        .hw-btn {
-            background: linear-gradient(180deg, #555 0%, #222 100%);
-            border: 2px solid #666; color: var(--gold);
-            padding: 12px; font-weight: bold; font-family: monospace;
-            cursor: pointer; text-transform: uppercase; border-radius: 4px;
-            text-align: center;
-        }
-        .hw-btn:active { background: var(--gold); color: #000; }
-        .hw-btn-gold { border-color: var(--gold); background: linear-gradient(180deg, #6b561b 0%, #221a05 100%); }
-
-        .btn-sos-hardware {
-            background: linear-gradient(180deg, var(--sos-red) 0%, #500 100%);
-            border: 2px solid #ff4500; color: #fff;
-            padding: 15px; font-size: 1rem; font-weight: bold; cursor: pointer;
-        }
-        .btn-sos-hardware:active { background: #fff; color: var(--sos-red); }
-
-        /* CREATOR FOOTER STAMP */
-        .creator-footer {
-            background: #000;
-            color: #ff6347;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            border-top: 2px solid #333;
+        .btn-sos {
+            background: var(--sos-red); color: #fff; border: 2px solid #fff;
+            padding: 18px; font-weight: bold; border-radius: 8px;
+            animation: pulse 1.5s infinite; cursor: pointer; font-size: 1.1rem;
         }
 
-        /* NIGHT VISION FILTER EFFECT */
-        .nvg-active {
-            filter: brightness(0.7) contrast(1.4) sepia(100%) hue-rotate(85deg) !important;
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
-        /* MAP MARKER STYLES */
-        .map-label {
-            color: white;
-            font-weight: bold;
-            font-family: monospace;
-            text-shadow: 1px 1px 2px black;
-            font-size: 11px;
-            text-align: center;
+        #perimeter-visual {
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 320px; height: 320px;
+            border: 3px dashed var(--neon-green);
+            background: rgba(57, 255, 20, 0.15);
+            border-radius: 50%; display: none; z-index: 5;
+        }
+        
+        button {
+            background: var(--hunter-green); color: var(--gold);
+            border: 1px solid var(--gold); padding: 10px 15px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
         }
     </style>
 </head>
-<body id="master-console">
+<body id="tacnet-ui">
 
-    <div class="master-banner">
-        <img src="tnet.png" alt="TACNET SYSTEM BANNER" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block'">
-        <div id="alt-title" style="display:none; color:var(--gold); font-size:2rem; font-weight:bold;">TACNET MAIN CONSOLE</div>
+    <div id="main-map"></div>
+    <div id="perimeter-visual"></div>
+
+    <div class="hud-header">
+        <div class="title-main">TACNET</div>
+        <div class="title-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
     </div>
 
-    <div class="console-body">
-        
-        <div class="screen-container">
-            <div id="live-map"></div>
+    <div class="hud-left">
+        <div class="icon-circle" onclick="togglePerimeter()">PERIM<br>SET</div>
+        <div class="icon-circle" onclick="dropMarker()">ARTCL<br>DROP</div>
+        <div class="icon-circle" onclick="toggleNightVision()">NVG<br>MODE</div>
+    </div>
+
+    <div class="hud-right">
+        <div class="tactical-box">
+            <div style="color: var(--neon-green); border-bottom: 1px solid var(--gold); font-weight: bold; padding-bottom: 5px;">OP: ALPHA-247</div>
+            <div style="font-size: 0.9rem; margin-top: 8px;">
+                AMHERST CO, VA<br>
+                UNITS: 7 LEO / 2 K9<br>
+                TEMP: 72°F / CLEAR
+            </div>
         </div>
-
-        <div class="control-panel">
-            <div class="panel-heading">SYSTEM EXECUTION</div>
-            <button class="hw-btn hw-btn-gold" onclick="focusSearchArea()">CENTER ON SEARCH</button>
-            <button class="hw-btn hw-btn-gold" onclick="startK9Voice()">K9 DEPLOY</button>
-            
-            <div class="panel-heading" style="margin-top: 10px;">SAFETY SYSTEM</div>
-            <button class="hw-btn btn-sos-hardware" onclick="triggerSOS()">OFFICER SOS</button>
-            
-            <button class="hw-btn" style="margin-top: auto; border-color: var(--neon-green);" onclick="toggleNVG()">NIGHT VISION</button>
-        </div>
+        <button class="btn-sos" onclick="triggerSOS()">SOS EMERGENCY</button>
     </div>
 
-    <div class="creator-footer">
-        APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
+    <div class="hud-bottom">
+        <button onclick="alert('Live Ops Active')">LIVE OPS</button>
+        <button onclick="startK9Guide()">K9 OPS</button>
+        <button onclick="alert('Accessing VA/Federal Case Law')">CASE LAW</button>
+        <button onclick="alert('Admin: Brotherhood Access Valid')">ADMIN</button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // INITIALIZE MAP LOCKED TO MADISON HEIGHTS / AMHERST CO, VA
-        // COORDINATES: 37.4514, -79.1522
-        var map = L.map('live-map').setView([37.4514, -79.1522], 14);
-
-        // PULL FREE HIGH-RESOLUTION SAT IMAGES FROM USGS/NASA SERVERS
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tactical Satellite Feed Active'
-        }).addTo(map);
-
-        // DRAW COLOURED FIELD UNIT SYMBOLS DIRECTLY ON THE SATELLITE AREA
-        
-        // Blue Circles (LEO Field Units)
-        var leo1 = L.circleMarker([37.456, -79.158], {color: '#00bfff', fillColor: '#1e90ff', fillOpacity: 0.8, radius: 14}).addTo(map);
-        leo1.bindTooltip("<div class='map-label'>LEO-1</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
-
-        var leo2 = L.circleMarker([37.448, -79.145], {color: '#00bfff', fillColor: '#1e90ff', fillOpacity: 0.8, radius: 14}).addTo(map);
-        leo2.bindTooltip("<div class='map-label'>LEO</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
-
-        // Amber Hexagon/Circle (K9 Tracking Command)
-        var k9Unit = L.circleMarker([37.451, -79.162], {color: '#D4AF37', fillColor: '#b8860b', fillOpacity: 0.9, radius: 18}).addTo(map);
-        k9Unit.bindTooltip("<div class='map-label' style='color:#000;'>K9</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
-
-        // Red Marker (Search Perimeter Center Focus)
-        var perimeterCenter = L.circleMarker([37.452, -79.151], {color: '#ff4500', fillColor: '#b22222', fillOpacity: 0.8, radius: 12}).addTo(map);
-        perimeterCenter.bindTooltip("<div class='map-label'>LEO</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
-
-        // Highlighted Visual Search Perimeter
-        var operationalCircle = L.circle([37.4514, -79.1522], {
-            color: '#39FF14',
-            fillColor: '#39FF14',
-            fillOpacity: 0.15,
-            radius: 800,
-            dashArray: '5, 5'
-        }).addTo(map);
-
-        // SYSTEM SCRIPT UTILITIES
-        function focusSearchArea() {
-            map.setView([37.4514, -79.1522], 14);
-            alert("Console viewport re-centered on Madison Heights Command Sector.");
+        function togglePerimeter() {
+            const p = document.getElementById('perimeter-visual');
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
         }
 
-        function toggleNVG() {
-            document.getElementById('master-console').classList.toggle('nvg-active');
+        function dropMarker() { alert("Article Drop: GPS Tagged at Current Position."); }
+
+        function toggleNightVision() {
+            const ui = document.getElementById('tacnet-ui');
+            ui.style.filter = ui.style.filter === 'sepia(1) hue-rotate(80deg) brightness(1.2)' ? 'none' : 'sepia(1) hue-rotate(80deg) brightness(1.2)';
         }
 
-        function startK9Voice() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const transmission = new SpeechSynthesisUtterance("TACNET K9 Guide Active. Systems operating at peak capability.");
-                window.speechSynthesis.speak(transmission);
-            } else {
-                alert("K9 Audio Routing Triggered.");
-            }
+        function startK9Guide() {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance("TACNET K9 Guide Online. Operational and ready.");
+            synth.speak(utter);
         }
 
-        function triggerSOS() {
-            alert("⚠️ CRITICAL EMERGENCY: SOS BROADCAST ACTIVE ⚠️\nTelemetry packet successfully routed to Amherst Communications Division.");
-        }
+        function triggerSOS() { alert("EMERGENCY SOS: SIGNAL BROADCASTED TO ALL TASK FORCE UNITS."); }
     </script>
 </body>
 </html>
