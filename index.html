@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TACNET | TACTICAL SEARCH RECON</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --dark-bg: #000000;
@@ -82,7 +81,7 @@
             margin: 2px 0 0 0;
         }
 
-        /* IOS STABLE SCROLLING SCAFFOLDING */
+        /* FIXED CONSOLE CONTAINER FOR TESTING */
         .console-container {
             padding: 10px;
             display: flex;
@@ -95,7 +94,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* TELEMETRY INPUT TRACK */
+        /* TELEMETRY INPUT FRAME */
         .address-bar-frame {
             display: flex;
             border: 2px solid var(--neon-green);
@@ -126,90 +125,157 @@
             font-weight: bold;
         }
 
-        /* HARD-LOCKED DYNAMIC ADDRESS SEARCH "GO" BUTTON */
+        /* HIGH-VISIBILITY SEARCH ADDRESS GO BUTTON */
         .action-trigger-bar {
             background-color: var(--neon-green);
             color: #000000;
             text-align: center;
-            padding: 12px;
+            padding: 14px;
             font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
             cursor: pointer;
             border-radius: 4px;
             text-transform: uppercase;
             flex-shrink: 0;
-            box-shadow: 0 0 10px rgba(0, 255, 51, 0.6);
+            box-shadow: 0 0 15px rgba(0, 255, 51, 0.8);
+            border: 2px solid #FFFFFF;
         }
 
-        /* LIVE TACTICAL TERMINAL RADAR CONSOLE */
+        /* RADAR SCOPE MONITORING SCREEN WITH NEON RED LIGHT */
         .radar-screen-container {
             height: 280px; 
             background-color: #000000;
-            border: 2px solid #333333;
+            /* CRITICAL: NEON RED GLOW EMBEDDED DIRECTLY INTO INTERFACE CODE */
+            background-image: radial-gradient(circle, rgba(255, 0, 33, 0.4) 0%, rgba(150, 0, 0, 0.2) 50%, rgba(0, 0, 0, 1) 100%);
+            border: 3px solid #444444;
             position: relative;
-            border-radius: 4px;
+            border-radius: 6px;
             flex-shrink: 0;
-            z-index: 1;
             overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.6);
         }
 
-        #map {
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-
-        /* CUSTOM ASSET MARKER GRAPHICS */
-        .k9-custom-blip {
-            border: 2px solid var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-green);
-            object-fit: cover;
-        }
-
-        .vsp-custom-blip {
-            border: 2px solid var(--bright-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--bright-blue);
-            object-fit: cover;
-        }
-
-        /* NEON RED NIGHT VISION GLOW OVERLAY EFFECT */
-        .night-vision-glow {
+        /* INTERNAL VISUAL GRID LINES */
+        .vector-grid-overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255, 0, 51, 0.28) 0%, rgba(255, 0, 0, 0.08) 60%, rgba(0, 0, 0, 0.4) 100%);
-            box-shadow: inset 0 0 25px rgba(255, 0, 33, 0.5);
-            pointer-events: none; /* Allows fluid map manipulation directly underneath */
-            z-index: 1000; 
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 51, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 51, 0.12) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
 
-        /* TACTICAL MAP MULTI-VIEW TOGGLES */
-        .map-layer-controls {
+        /* SIMULATED VIEW OVERLAYS */
+        .map-view-layer {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .map-view-layer.active {
+            opacity: 1;
+        }
+
+        /* STREET VIEW VECTOR LAYER */
+        .street-matrix {
+            border: 2px solid rgba(0, 204, 204, 0.3);
+        }
+        .simulated-street {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+        }
+
+        /* TERRAIN VIEW VECTOR LAYER */
+        .terrain-matrix {
+            border: 2px solid rgba(255, 204, 0, 0.3);
+        }
+        .topo-contour-line {
+            position: absolute;
+            border: 1px solid rgba(255, 204, 0, 0.25);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* RADAR SCANNING RINGS */
+        .radar-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            border: 1px solid rgba(0, 255, 51, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 1/2 MILE RADIUS CORDON VECTOR */
+        .vector-cordon-circle {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 180px; height: 180px;
+            border: 2px dashed var(--neon-green);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 255, 51, 0.03);
+        }
+
+        .cordon-label {
+            position: absolute;
+            top: -20px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--neon-green); font-size: 0.7rem; font-family: monospace;
+            white-space: nowrap; font-weight: bold;
+            background-color: #000; padding: 2px 6px; border: 1px solid var(--neon-green);
+        }
+
+        /* FIX WORK UNITS TARGET BLIPS */
+        .tracker-blip-box {
+            position: absolute;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            align-items: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .blip-core-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid #FFFFFF;
+            box-shadow: 0 0 10px #000;
+        }
+
+        .blip-text-tag {
+            color: #FFFFFF; font-size: 0.7rem; font-family: monospace;
+            font-weight: bold; white-space: nowrap; margin-top: 4px;
+            background-color: rgba(0,0,0,0.75); padding: 1px 4px; border-radius: 2px;
+        }
+
+        /* SCREEN FILTERS TOGGLE PANELS */
+        .map-layer-controls {
+            position: absolute;
+            top: 10px; right: 10px;
+            display: flex; flex-direction: column; gap: 6px;
             z-index: 1100;
         }
 
         .layer-btn {
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.9);
             color: var(--neon-green);
-            border: 1px solid var(--neon-green);
-            padding: 6px 10px;
-            font-size: 0.75rem;
+            border: 2px solid var(--neon-green);
+            padding: 8px 12px;
+            font-size: 0.8rem;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 3px;
+            border-radius: 4px;
             text-transform: uppercase;
         }
         .layer-btn.active {
             background-color: var(--neon-green);
             color: #000000;
+            box-shadow: 0 0 8px var(--neon-green);
         }
 
         /* DATA LOG PANEL */
@@ -233,7 +299,7 @@
             line-height: 1.4;
         }
 
-        /* MEDICAL OPERATION MATRIX */
+        /* MEDICAL ACTIONS */
         .bottom-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -263,7 +329,7 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        /* COMMAND INTERRUPT AUDIO RAIL */
+        /* TRANSMISSION AUDIO KILL SWITCH */
         .btn-stop-audio {
             grid-column: span 2;
             background-color: #2b0000;
@@ -281,7 +347,7 @@
 
         .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
 
-        /* CREATOR FOOTER STRIP */
+        /* CREATOR FOOTER BAR */
         .fixed-creator-footer {
             background-color: #050505;
             border-top: 2px solid #222;
@@ -329,22 +395,53 @@
         </div>
 
         <div class="radar-screen-container">
-            <div id="map"></div>
+            <div class="vector-grid-overlay"></div>
             
-            <div class="night-vision-glow"></div>
+            <div id="layer-street" class="map-view-layer street-matrix active">
+                <div class="simulated-street" style="top: 0px; left: 140px; width: 24px; height: 100%;"></div> 
+                <div class="simulated-street" style="top: 130px; left: 0px; width: 100%; height: 20px;"></div> 
+                <div class="simulated-street" style="top: 60px; left: 40px; width: 120px; height: 14px; transform: rotate(15deg);"></div>
+            </div>
+
+            <div id="layer-terrain" class="map-view-layer terrain-matrix">
+                <div class="topo-contour-line" style="top: 50%; left: 50%; width: 80px; height: 80px;"></div>
+                <div class="topo-contour-line" style="top: 50%; left: 50%; width: 160px; height: 160px;"></div>
+                <div class="topo-contour-line" style="top: 50%; left: 50%; width: 240px; height: 240px;"></div>
+            </div>
+            
+            <div class="radar-ring" style="width: 100px; height: 100px;"></div>
+            <div class="radar-ring" style="width: 200px; height: 200px;"></div>
+
+            <div class="vector-cordon-circle">
+                <div class="cordon-label">CORDON: 1/2 MILE RADIUS</div>
+            </div>
+
+            <div class="tracker-blip-box" style="top: 50%; left: 50%;">
+                <div class="blip-core-dot" style="background-color: var(--neon-green);"></div>
+                <div class="blip-text-tag" style="border: 1px solid var(--neon-green);">WOOD-K91</div>
+            </div>
+
+            <div class="tracker-blip-box" style="top: 30%; left: 35%;">
+                <div class="blip-core-dot" style="background-color: var(--bright-blue);"></div>
+                <div class="blip-text-tag">VSP-212</div>
+            </div>
+
+            <div class="tracker-blip-box" style="top: 70%; left: 65%;">
+                <div class="blip-core-dot" style="background-color: var(--bright-blue);"></div>
+                <div class="blip-text-tag">SMITH-104</div>
+            </div>
 
             <div class="map-layer-controls">
-                <button class="layer-btn active" id="btn-sat" onclick="switchMapLayer('sat')">Sat View</button>
-                <button class="layer-btn" id="btn-street" onclick="switchMapLayer('street')">Street</button>
-                <button class="layer-btn" id="btn-terrain" onclick="switchMapLayer('terrain')">Terrain</button>
+                <button class="layer-btn active" id="toggle-street" onclick="toggleTacticalView('street')">Street View</button>
+                <button class="layer-btn" id="toggle-terrain" onclick="toggleTacticalView('terrain')">Terrain View</button>
             </div>
         </div>
 
         <div class="data-log-panel">
-            <div class="log-status-header">📍 PERIMETER CORDON STATUS</div>
+            <div class="log-status-header">📍 PERIMETER CORDON LOCKED</div>
             <div class="log-body-text">
-                Tactical Satellite Systems synchronized.<br>
-                Target Cordon: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
+                Console engine updated. Internal vector rendering online.<br>
+                Target: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
             </div>
         </div>
 
@@ -365,92 +462,38 @@
         <p class="creator-text">App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         var synth = window.speechSynthesis;
-        var map, activeLayer, searchCircle;
-        
-        // Exact Search Coordinate Base Target Area (Madison Heights, VA)
-        var defaultLat = 37.4338;
-        var defaultLng = -79.1114;
 
-        var layers = {
-            sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Esri Satellite'
-            }),
-            street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', {
-                attribution: 'OpenStreetMap'
-            }),
-            terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{y}/{x}.png', {
-                attribution: 'Topo Terrain'
-            })
-        };
+        // HIGH-VISIBILITY TOGGLE SYSTEM
+        function toggleTacticalView(viewType) {
+            document.querySelectorAll('.map-view-layer').forEach(layer => layer.classList.remove('active'));
+            document.querySelectorAll('.layer-btn').forEach(btn => btn.classList.remove('active'));
 
-        function initMap() {
-            map = L.map('map', {
-                center: [defaultLat, defaultLng],
-                zoom: 15,
-                zoomControl: false, 
-                attributionControl: false
-            });
-
-            activeLayer = layers.sat;
-            activeLayer.addTo(map);
-
-            // Establish 1/2 Mile Vector Perimeter Cordon Circle Ring
-            searchCircle = L.circle([defaultLat, defaultLng], {
-                color: '#00FF33',
-                fillColor: '#00FF33',
-                fillOpacity: 0.12,
-                radius: 804 
-            }).addTo(map);
-
-            // DEFINE CUSTOM TACTICAL IMAGE BLIPS TO OVERRIDE THE DEFAULT BLUE DOT
-            var k9Icon = L.divIcon({
-                className: 'custom-div-icon',
-                html: '<img class="k9-custom-blip" src="gshep_2.jpg" width="32" height="32">',
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
-            });
-
-            var vspIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: '<img class="vsp-custom-blip" src="va.png-modified.jpg" width="28" height="28">',
-                iconSize: [28, 28],
-                iconAnchor: [14, 14]
-            });
-
-            // Deploy Custom Branded Asset Icons Onto Map Matrix
-            L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD ASSET)</b>").openPopup();
-            L.marker([37.437, -79.116], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP-212 SUPPORT</b>"); 
-            L.marker([37.431, -79.107], {icon: vspIcon}).addTo(map).bindPopup("<b>SQUAD-104 SUPPORT</b>"); 
+            if (viewType === 'street') {
+                document.getElementById('layer-street').classList.add('active');
+                document.getElementById('toggle-street').classList.add('active');
+            } else if (viewType === 'terrain') {
+                document.getElementById('layer-terrain').classList.add('active');
+                document.getElementById('toggle-terrain').classList.add('active');
+            }
         }
 
-        function switchMapLayer(type) {
-            map.removeLayer(activeLayer);
-            activeLayer = layers[type];
-            activeLayer.addTo(map);
-
-            document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + type).classList.add('active');
-        }
-
-        // ADDRESS GO TRIGGER SYSTEM LOGIC
+        // GO SYSTEM SYNC
         function lockOperationalPerimeter() {
             var inputAddr = document.getElementById('target-address-input').value;
             document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
-            
-            map.setView([defaultLat, defaultLng], 15);
-            alert("TACTICAL UPDATE: Satellite grid tracking synchronized on target destination.");
+            alert("TACTICAL UPDATE: Internal tracking vectors locked onto: " + inputAddr.toUpperCase());
         }
 
+        // SPEECH KILL ENGINE
         function killVoiceTransmission() {
             if (synth) {
                 synth.cancel();
             }
         }
 
-        // HIGH-VIS NATIVE APPLE COMPATIBLE VOICE BROADCAST DISPATCH
+        // NATIVE HARDWARE DISPATCH ENGINE (PURGED ROBOT TRAITS)
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
             synth.cancel(); 
@@ -473,15 +516,12 @@
 
             var transmission = new SpeechSynthesisUtterance(message);
             
-            // Hard-locks language framework to clear out sluggish synthetic automated voices
             transmission.lang = 'en-US';
             transmission.rate = 1.0; 
             transmission.pitch = 1.0; 
             
             synth.speak(transmission);
         }
-
-        window.onload = initMap;
     </script>
 </body>
 </html>
