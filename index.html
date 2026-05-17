@@ -21,7 +21,9 @@
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: #000; font-family: Arial, Helvetica, sans-serif;
-            color: #fff; overflow: hidden;
+            color: #fff; 
+            /* FIXED: Force browser to completely lock out horizontal shifting */
+            overflow: hidden; 
         }
 
         /* CORE CRIMSON NIGHT VISION SHIELD */
@@ -43,9 +45,10 @@
             z-index: 9998;
         }
 
-        /* FULL INTERACTIVE SCREEN CONTAINER */
+        /* FULL INTERACTIVE MAIN CONTAINER PANEL */
         .main-viewport {
             display: flex; flex-direction: column; width: 100%; height: 100%;
+            position: relative; overflow: hidden;
         }
 
         /* COMPACT COMMAND INPUT HUD */
@@ -89,36 +92,36 @@
         }
 
         .voiceBtn {
-            padding: 10px 4px; font-size: .72rem; border: 1px solid var(--gold); font-weight: bold;
+            padding: 12px 4px; font-size: .75rem; border: 1px solid var(--gold); font-weight: bold;
             cursor: pointer; background: #000; color: var(--gold); text-align: center;
             text-transform: uppercase; border-radius: 3px;
         }
 
         .btn-stop-transmission {
             grid-column: span 3; border: 1px solid #ff3333; background: #1a0000;
-            color: #ff9999; padding: 10px; text-align: center; font-weight: 900;
-            cursor: pointer; text-transform: uppercase; font-size: 0.8rem;
+            color: #ff9999; padding: 12px; text-align: center; font-weight: 900;
+            cursor: pointer; text-transform: uppercase; font-size: 0.85rem; margin-top: 2px;
         }
 
-        /* SLIDE-OUT COURT OPERATIONS DRAWER */
+        /* FIXED FIXED FIXED: ABSOLUTE SCREEN DETACHMENT DRAWER */
         .sideDrawer {
-            position: fixed; top: 0; right: -320px; width: 320px; height: 100%;
+            position: absolute; top: 0; bottom: 0; right: -325px; width: 320px;
             background: rgba(5, 10, 5, 0.98); border-left: 2px solid var(--gold);
-            z-index: 5000; transition: right 0.3s ease; padding: 16px;
-            display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            z-index: 5000; transition: right 0.25s ease-out; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px; overflow-y: auto;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.9);
         }
 
         .sideDrawer.open { right: 0; }
 
         .drawerHeader {
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px dashed var(--gold); padding-bottom: 8px;
+            border-bottom: 1px dashed var(--gold); padding-bottom: 8px; flex-shrink: 0;
         }
         .drawerTitle { margin: 0; color: var(--gold); font-size: 1.2rem; font-weight: 900; }
         .closeDrawerBtn { background: none; border: none; color: #ff3333; font-size: 1.3rem; font-weight: bold; cursor: pointer; }
 
-        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 10px 0; }
+        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 4px 0; flex-shrink: 0; }
         .patch { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
 
         .drawerSectionTitle { color: var(--neon-green); font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
@@ -138,22 +141,22 @@
         .btn-purple { border-color: var(--purple); color: var(--purple); }
 
         #notesBox {
-            width: 100%; height: 90px; background: #000; color: #fff;
+            width: 100%; height: 95px; background: #000; color: #fff;
             border: 1px solid var(--neon-green); padding: 8px; font-size: 0.85rem; outline: none;
-            resize: none;
+            resize: none; font-family: sans-serif;
         }
 
         .reportBtn {
             padding: 12px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 4px; font-size: 0.9rem; margin-top: 5px;
+            border-radius: 4px; font-size: 0.9rem; margin-top: 2px; flex-shrink: 0;
         }
 
         /* OFFICIAL CREATOR ATTRIBUTION FOOTER BLOCK */
         .attributionBlock {
             margin-top: auto; border-top: 1px solid #333; padding-top: 10px;
             text-align: center; color: #ff7777; font-size: 0.72rem; font-weight: bold;
-            line-height: 1.4; letter-spacing: 1px;
+            line-height: 1.4; letter-spacing: 1px; flex-shrink: 0;
         }
     </style>
 </head>
@@ -179,40 +182,40 @@
             <button class="voiceBtn" onclick="speakMedicalProtocol('rally')">🚨 RALLY</button>
             <button class="btn-stop-transmission" onclick="killVoiceTransmission()">🛑 STOP VOICE TRANSMISSION</button>
         </div>
-    </div>
 
-    <div id="sideDrawer" class="sideDrawer">
-        <div class="drawerHeader">
-            <h3 class="drawerTitle">TACNET OPERATIONS</h3>
-            <button class="closeDrawerBtn" onclick="toggleDrawer()">✕</button>
-        </div>
-
-        <div class="agencyLogos">
-            <img src="amherst_badge.png.jpg" class="patch" onerror="this.style.visibility='hidden'">
-            <img src="va.png-modified.jpg" class="patch" onerror="this.style.visibility='hidden'">
-        </div>
-
-        <div>
-            <div class="drawerSectionTitle">1. SELECT TRACKING ASSET</div>
-            <div class="unitGrid">
-                <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
-                <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
-                <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
-                <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
-                <button class="unitDeployBtn btn-purple" style="grid-column: span 2;" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
+        <div id="sideDrawer" class="sideDrawer">
+            <div class="drawerHeader">
+                <h3 class="drawerTitle">TACNET PANEL</h3>
+                <button class="closeDrawerBtn" onclick="toggleDrawer()">✕</button>
             </div>
-        </div>
 
-        <div>
-            <div class="drawerSectionTitle">2. COURT LOG / DISPOSITION NOTES</div>
-            <textarea id="notesBox" placeholder="Enter target track specifics, field dispositions, or K9 alerts for certified report generation..."></textarea>
-        </div>
+            <div class="agencyLogos">
+                <img src="amherst_badge.png.jpg" class="patch" onerror="this.style.visibility='hidden'">
+                <img src="va.png-modified.jpg" class="patch" onerror="this.style.visibility='hidden'">
+            </div>
 
-        <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COURT REPORT (PDF)</button>
+            <div>
+                <div class="drawerSectionTitle">1. SELECT TRACKING ASSET</div>
+                <div class="unitGrid">
+                    <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
+                    <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
+                    <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
+                    <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
+                    <button class="unitDeployBtn btn-purple" style="grid-column: span 2;" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
+                </div>
+            </div>
 
-        <div class="attributionBlock">
-            TACNET COMMAND MODULE<br>
-            APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
+            <div>
+                <div class="drawerSectionTitle">2. COURT LOG / DISPOSITION NOTES</div>
+                <textarea id="notesBox" placeholder="Enter target track specifics, field dispositions, or K9 alerts for certified report generation..."></textarea>
+            </div>
+
+            <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COURT REPORT (PDF)</button>
+
+            <div class="attributionBlock">
+                TACNET COMMAND MODULE<br>
+                APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
+            </div>
         </div>
     </div>
 
@@ -257,8 +260,6 @@
                 'Terrain View': layers.terrain
             }, null, { position: 'topright' }).addTo(map);
 
-            // MAP TAPPING LISTENER SYSTEM FOR TRUE COORDINATE CAPTURE PLACEMENT
-            map.bindPopup();
             map.on('click', function(e) {
                 if (!isPlacementActive || !currentPlacementType) return;
                 executeManualPlacement(e.latlng.lat, e.latlng.lng);
@@ -279,7 +280,7 @@
 
         function toggleDrawer() {
             document.getElementById('sideDrawer').classList.toggle('open');
-            setTimeout(()=>{ map.invalidateSize(); }, 310);
+            setTimeout(()=>{ map.invalidateSize(); }, 300);
         }
 
         async function searchAddress(){
@@ -317,12 +318,9 @@
             }
         }
 
-        // LOCK ARREST SELECTION VALUE AND FLIP OPERATIONAL VIEW BACK TO MAP
         function prepUnitPlacement(type) {
             currentPlacementType = type;
             isPlacementActive = true;
-            
-            // Close slide panel drawer layout so user sees entire map screen clearly on device
             toggleDrawer();
             
             var statusHUD = document.getElementById('placementStatus');
@@ -330,7 +328,6 @@
             statusHUD.style.display = "block";
         }
 
-        // DEPLOY SPECIFIC COLORED MARKERS AT EXACT MAP FINGER COORDINATE HIT
         function executeManualPlacement(lat, lng) {
             var colors = { 
                 leo: '#1d7dff', 
@@ -351,7 +348,6 @@
             deployedUnitsLog.push({ type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
             reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET PLACED MANUAL AT LAT: ${lat.toFixed(4)}, LNG: ${lng.toFixed(4)}`);
 
-            // Clear configuration flags and close notice bar indicator
             isPlacementActive = false;
             currentPlacementType = null;
             document.getElementById('placementStatus').style.display = "none";
@@ -391,7 +387,6 @@
             synth.speak(speech);
         }
 
-        // PROFESSIONAL COURT PDF REPORT GENERATION COMPILATION MATRIX
         function generateCourtPDF() {
             var { jsPDF } = window.jspdf;
             var doc = new jsPDF();
@@ -448,7 +443,6 @@
                 currentY += (multiLineNotes.length * 6);
             }
 
-            // OFFICIAL FIXED CERTIFICATION LEGAL RUN FOOTER FOOTPRINT
             currentY += 20;
             if(currentY > 260) { doc.addPage(); currentY = 30; }
             doc.setLineWidth(0.5);
