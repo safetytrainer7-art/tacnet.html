@@ -1,635 +1,565 @@
 
-<!-- ========================================================= -->
-<!-- TACNET REAL-TIME MULTI-AGENCY TACTICAL SEARCH SYSTEM -->
-<!-- FULL IMAGE-BASED LIVE GPS OPERATIONAL BUILD -->
-<!-- ========================================================= -->
+# TACNET — Single File Tactical Operations Prototype
 
+Save this as:
+
+```text
+index.html
+```
+
+Place in the SAME folder:
+
+```text
+FDD.png
+amherst_badge.png.jpg
+gshep_2.jpg
+va.png-modified.jpg
+```
+
+Then upload directly to GitHub Pages or Firebase Hosting.
+
+---
+
+```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TACNET Tactical Network</title>
 
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
-
-<title>TACNET LIVE OPS</title>
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
+:root{
+--green:#00ff66;
+--gold:#ffcc00;
+--blue:#1d7dff;
+--lightblue:#66d9ff;
+--red:#ff3030;
+--civilian:#28d96f;
+--purple:#bf66ff;
+--orange:#ff9933;
+}
+
+*{
+box-sizing:border-box;
+}
 
 html,body{
 margin:0;
 padding:0;
-width:100%;
 height:100%;
-overflow:hidden;
 background:#000;
-font-family:Arial,Helvetica,sans-serif;
-}
-
-/* MAIN APP */
-
-#app{
-position:relative;
-width:100%;
-height:100%;
+font-family:Arial, Helvetica, sans-serif;
+color:#fff;
 overflow:hidden;
 }
 
-/* EXACT IMAGE UI */
-
-#ui-shell{
-position:absolute;
+body::before{
+content:'';
+position:fixed;
 inset:0;
-width:100%;
-height:100%;
-object-fit:cover;
-z-index:1;
 pointer-events:none;
-}
-
-/* LIVE MAP */
-
-#map{
-position:absolute;
-
-top:25.4%;
-left:12.5%;
-
-width:75%;
-height:36%;
-
-z-index:5;
-
-border-radius:4px;
-overflow:hidden;
-
-filter:
-brightness(.82)
-contrast(1.2)
-saturate(.7);
-}
-
-/* RED NIGHT VISION */
-
-#nightVision{
-position:absolute;
-inset:0;
-
 background:
-radial-gradient(
-circle,
-rgba(255,0,0,.10),
-rgba(0,0,0,.35)
+repeating-linear-gradient(
+to bottom,
+rgba(0,255,120,.03),
+rgba(0,255,120,.03) 2px,
+transparent 2px,
+transparent 4px
 );
-
-mix-blend-mode:screen;
-
-pointer-events:none;
-
-z-index:30;
+z-index:9999;
 }
 
-/* LIVE OP STATUS */
-
-#liveStatus{
-position:absolute;
-
-top:18%;
-left:14%;
-
-z-index:40;
-
-color:#00ff33;
-
-font-size:.8rem;
-font-weight:bold;
-
-text-shadow:
-0 0 10px #00ff33;
-}
-
-/* ACCESS PANEL */
-
-#accessPanel{
-position:absolute;
-
+body::after{
+content:'';
+position:fixed;
 inset:0;
+pointer-events:none;
+box-shadow:
+inset 0 0 160px rgba(0,255,120,.22),
+inset 0 0 70px rgba(0,255,120,.16);
+z-index:9998;
+}
 
-background:#000;
+/* LANDING */
 
-z-index:99999;
-
+#landingPage{
+position:absolute;
+inset:0;
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-
-gap:20px;
+background:#000;
+z-index:3000;
 }
 
-/* ACCESS */
+#landingImage{
+width:min(96vw,430px);
+height:auto;
+object-fit:contain;
+box-shadow:0 0 40px rgba(0,255,120,.25);
+}
 
-.access-title{
-color:#ffcc00;
-font-size:2rem;
+.enterBtn{
+margin-top:22px;
+padding:18px 40px;
+border:none;
+border-radius:10px;
+background:var(--green);
+color:#000;
+font-size:1.1rem;
 font-weight:900;
 letter-spacing:3px;
+cursor:pointer;
+box-shadow:
+0 0 20px rgba(0,255,120,.8),
+0 0 40px rgba(0,255,120,.45);
 }
 
-.access-sub{
-color:#00ff33;
-font-size:.9rem;
+/* APP */
+
+#appPage{
+display:none;
+height:100%;
+flex-direction:column;
+background:#030503;
 }
 
-.access-input{
-width:280px;
-
-padding:16px;
-
-background:#111;
-
-border:2px solid #00ff33;
-
-color:#fff;
-
-font-size:1rem;
-
-outline:none;
-
-border-radius:6px;
+.topBar{
+height:72px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 12px;
+background:linear-gradient(to bottom,#3b3510,#0f0f08);
+border-bottom:2px solid var(--gold);
 }
 
-.access-btn{
+.patch{
+width:52px;
+height:52px;
+border-radius:50%;
+object-fit:cover;
+}
 
-width:280px;
+.titleWrap{
+text-align:center;
+flex:1;
+}
 
-padding:16px;
-
-background:#00ff33;
-
-border:none;
-
+.title{
+margin:0;
+font-size:2rem;
 font-weight:900;
-
-font-size:1rem;
-
-cursor:pointer;
-
-border-radius:6px;
+letter-spacing:4px;
+color:var(--gold);
+text-shadow:0 0 12px rgba(255,204,0,.7);
 }
 
-/* OPERATION BUTTONS */
+.subtitle{
+margin:0;
+font-size:.72rem;
+letter-spacing:2px;
+}
 
-.ops-btn{
-position:absolute;
+.controls{
+padding:8px;
+display:flex;
+gap:8px;
+background:#081108;
+}
 
-z-index:50;
+#agencyCode,
+#addressInput{
+flex:1;
+background:#000;
+border:2px solid var(--green);
+color:#fff;
+padding:12px;
+font-weight:bold;
+}
 
+.controlBtn{
+padding:12px 16px;
+background:var(--green);
+color:#000;
 border:none;
-
-background:transparent;
-
+font-weight:900;
 cursor:pointer;
 }
 
-/* START SEARCH */
-
-#startSearchBtn{
-left:9%;
-bottom:13%;
-width:14%;
-height:11%;
+#map{
+flex:1;
+width:100%;
 }
 
-/* K9 DEPLOY */
-
-#k9Btn{
-left:26%;
-bottom:13%;
-width:14%;
-height:11%;
+.legend{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:6px;
+padding:8px;
+background:#040904;
+border-top:2px solid #183318;
 }
 
-/* OFFICER SOS */
-
-#sosBtn{
-left:46%;
-bottom:13%;
-width:12%;
-height:11%;
+.legendItem{
+display:flex;
+align-items:center;
+gap:8px;
+font-size:.78rem;
 }
 
-/* NIGHT */
-
-#nightBtn{
-left:63%;
-bottom:13%;
-width:12%;
-height:11%;
+.dot{
+width:14px;
+height:14px;
+border-radius:50%;
 }
 
-/* REALTIME LIVE GPS */
-
-.tracker-dot{
-animation:pulse 1.5s infinite;
+.bottomPanel{
+padding:8px;
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:8px;
+background:#040904;
 }
 
-@keyframes pulse{
-
-0%{
-transform:scale(1);
-opacity:1;
+.actionBtn{
+padding:14px;
+border:none;
+font-weight:bold;
+cursor:pointer;
+background:#111;
+color:#fff;
+border:2px solid var(--green);
 }
 
-50%{
-transform:scale(1.2);
-opacity:.7;
+.redBtn{
+border-color:#ff4444;
+color:#ff4444;
 }
 
-100%{
-transform:scale(1);
-opacity:1;
+.goldBtn{
+border-color:var(--gold);
+color:var(--gold);
 }
 
+.notesPanel{
+padding:8px;
+background:#000;
+}
+
+#notes{
+width:100%;
+height:90px;
+background:#050505;
+color:#fff;
+border:2px solid var(--green);
+padding:10px;
+}
+
+.footer{
+height:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#050505;
+color:#ff7777;
+font-size:.8rem;
+font-weight:bold;
+letter-spacing:1px;
 }
 
 </style>
-
 </head>
-
 <body>
 
-<div id="app">
-
-<!-- EXACT IMAGE -->
-
-<img
-src="FDD(1).png"
-id="ui-shell"
->
-
-<!-- ACCESS ENTRY -->
-
-<div id="accessPanel">
-
-<div class="access-title">
-TACNET
-</div>
-
-<div class="access-sub">
-FEDERAL • STATE • LOCAL • MULTI-AGENCY
-</div>
-
-<input
-type="password"
-id="agencyCode"
-class="access-input"
-placeholder="ENTER AGENCY ACCESS CODE"
->
-
-<button
-class="access-btn"
-onclick="verifyAccess()">
-ENTER SYSTEM
+<!-- LANDING PAGE -->
+<div id="landingPage">
+<img src="FDD.png" id="landingImage">
+<button class="enterBtn" onclick="enterTacnet()">
+ENTER TACNET
 </button>
-
 </div>
 
-<!-- LIVE STATUS -->
+<!-- OPERATIONS PAGE -->
+<div id="appPage">
 
-<div id="liveStatus">
-LIVE GPS ACTIVE
+<div class="topBar">
+<img src="amherst_badge.png.jpg" class="patch">
+
+<div class="titleWrap">
+<h1 class="title">TACNET</h1>
+<p class="subtitle">MULTI-AGENCY TASK FORCE SEARCH NETWORK</p>
 </div>
 
-<!-- LIVE MAP -->
+<img src="va.png-modified.jpg" class="patch">
+</div>
+
+<div class="controls">
+<input id="agencyCode" placeholder="OUTSIDE AGENCY ACCESS CODE">
+<button class="controlBtn" onclick="joinAgency()">JOIN</button>
+</div>
+
+<div class="controls">
+<input id="addressInput" placeholder="ENTER SEARCH ADDRESS">
+<button class="controlBtn" onclick="searchAddress()">GO</button>
+</div>
 
 <div id="map"></div>
 
-<!-- RED OVERLAY -->
+<div class="legend">
+<div class="legendItem"><div class="dot" style="background:#1d7dff"></div>LAW ENFORCEMENT</div>
+<div class="legendItem"><div class="dot" style="background:#66d9ff"></div>K9</div>
+<div class="legendItem"><div class="dot" style="background:#ff3030"></div>SAR</div>
+<div class="legendItem"><div class="dot" style="background:#28d96f"></div>CIVILIAN</div>
+<div class="legendItem"><div class="dot" style="background:#bf66ff"></div>PERSON OF INTEREST</div>
+<div class="legendItem"><div class="dot" style="background:#ff9933"></div>FOUND PROPERTY</div>
+</div>
 
-<div id="nightVision"></div>
+<div class="bottomPanel">
+<button class="actionBtn" onclick="addUnit('leo')">ADD LEO</button>
+<button class="actionBtn" onclick="addUnit('k9')">ADD K9</button>
+<button class="actionBtn" onclick="addUnit('sar')">ADD SAR</button>
+<button class="actionBtn" onclick="addUnit('civilian')">ADD CIVILIAN</button>
+<button class="actionBtn goldBtn" onclick="dropEvidence()">FOUND PROPERTY</button>
+<button class="actionBtn redBtn" onclick="officerSOS()">OFFICER SOS</button>
+<button class="actionBtn" onclick="generateReport()">GENERATE PDF</button>
+<button class="actionBtn redBtn" onclick="terminateSearch()">TERMINATE SEARCH</button>
+</div>
 
-<!-- BUTTON OVERLAYS -->
+<div class="notesPanel">
+<textarea id="notes" placeholder="SEARCH NOTES / DISPOSITION"></textarea>
+</div>
 
-<button
-class="ops-btn"
-id="startSearchBtn"
-onclick="startSearch()">
-</button>
-
-<button
-class="ops-btn"
-id="k9Btn"
-onclick="deployK9()">
-</button>
-
-<button
-class="ops-btn"
-id="sosBtn"
-onclick="officerSOS()">
-</button>
-
-<button
-class="ops-btn"
-id="nightBtn"
-onclick="toggleNightVision()">
-</button>
+<div class="footer">
+APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
+</div>
 
 </div>
 
 <script>
 
-/* ===================================================== */
-/* TACNET LIVE GPS SYSTEM */
-/* ===================================================== */
+let map;
+let perimeter;
+let units=[];
+let reportLog=[];
+let currentLayer;
 
-var map;
-
-var liveUnits = [];
-
-var synth = window.speechSynthesis;
-
-var voices = [];
-
-/* MULTI AGENCY ACCESS */
-
-const agencyCodes = {
-
-"VSP-771":"Virginia State Police",
-
-"FBI-911":"Federal Bureau",
-
-"DEA-664":"DEA Task Force",
-
-"SHERIFF-204":"Sheriff Office",
-
-"LEO-001":"Local Officer",
-
-"K9-OPS":"K9 Unit"
-
+const layers={
+street:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
+terrain:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png')
 };
 
-/* LOAD MAP */
+function enterTacnet(){
+
+document.getElementById('landingPage').style.display='none';
+document.getElementById('appPage').style.display='flex';
+
+initMap();
+}
 
 function initMap(){
 
-map = L.map('map',{
+map=L.map('map').setView([37.4338,-79.1114],15);
 
-zoomControl:false,
-attributionControl:false
+currentLayer=layers.sat;
+currentLayer.addTo(map);
 
-}).setView([37.4338,-79.1114],15);
+perimeter=L.circle([37.4338,-79.1114],{
+color:'#00ff66',
+fillColor:'#00ff66',
+fillOpacity:.10,
+radius:800
+}).addTo(map);
 
-L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-{
-maxZoom:20
+if(navigator.geolocation){
+
+navigator.geolocation.watchPosition((position)=>{
+
+const lat=position.coords.latitude;
+const lng=position.coords.longitude;
+
+let officer=L.circleMarker([lat,lng],{
+radius:10,
+color:'#ffffff',
+fillColor:'#1d7dff',
+fillOpacity:1,
+weight:3
+}).addTo(map);
+
+units.push(officer);
+
+});
+
 }
-).addTo(map);
 
-simulateLiveUnits();
-
+reportLog.push('TACTICAL SEARCH STARTED');
 }
 
-/* ACCESS CONTROL */
+function joinAgency(){
 
-function verifyAccess(){
+const code=document.getElementById('agencyCode').value;
 
-const code =
-document.getElementById(
-'agencyCode'
-).value.trim();
-
-if(!agencyCodes[code]){
-
-alert('INVALID AGENCY CODE');
-
+if(code.length<4){
+alert('ENTER VALID ACCESS CODE');
 return;
-
 }
 
-document.getElementById(
-'accessPanel'
-).style.display='none';
+alert('OUTSIDE AGENCY JOINED TACNET');
 
-speak(
-'Access granted to ' +
-agencyCodes[code]
-);
-
+reportLog.push('OUTSIDE AGENCY JOINED WITH ACCESS CODE');
 }
 
-/* BETTER VOICE */
+async function searchAddress(){
 
-function loadVoices(){
+const address=document.getElementById('addressInput').value;
 
-voices = synth.getVoices();
+if(address==='') return;
 
+const response=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+
+const data=await response.json();
+
+if(data.length===0){
+alert('ADDRESS NOT FOUND');
+return;
 }
 
-speechSynthesis.onvoiceschanged =
-loadVoices;
+const lat=parseFloat(data[0].lat);
+const lon=parseFloat(data[0].lon);
 
-function speak(text){
+map.setView([lat,lon],16);
 
-synth.cancel();
-
-let speech =
-new SpeechSynthesisUtterance(text);
-
-speech.rate = 1.15;
-speech.pitch = .95;
-
-speech.voice =
-voices.find(v=>
-v.name.includes('Samantha')
-) || voices[0];
-
-synth.speak(speech);
-
+if(perimeter){
+map.removeLayer(perimeter);
 }
 
-/* REALTIME GPS TRACKERS */
+perimeter=L.circle([lat,lon],{
+color:'#00ff66',
+fillColor:'#00ff66',
+fillOpacity:.10,
+radius:800
+}).addTo(map);
 
-function simulateLiveUnits(){
-
-/* LAW */
-
-createUnit(
-37.4338,
--79.1114,
-'#0066ff',
-'LEO'
-);
-
-/* K9 */
-
-createUnit(
-37.4319,
--79.1133,
-'#66ccff',
-'K9'
-);
-
-/* SARS */
-
-createUnit(
-37.4361,
--79.1090,
-'#ff2222',
-'SARS'
-);
-
-/* CIV */
-
-createUnit(
-37.4352,
--79.1144,
-'#00ff33',
-'CIV'
-);
-
-/* POI */
-
-createUnit(
-37.4321,
--79.1081,
-'#9933ff',
-'POI'
-);
-
+reportLog.push('SEARCH LOCATION SET: '+address);
 }
 
-/* CREATE UNIT */
+function addUnit(type){
 
-function createUnit(lat,lng,color,label){
+const center=map.getCenter();
 
-const marker =
-L.circleMarker(
-[lat,lng],
-{
-radius:9,
-color:color,
-fillColor:color,
-fillOpacity:.95,
-weight:3,
-className:'tracker-dot'
-}
-).addTo(map);
-
-marker.bindPopup(label);
-
-liveUnits.push(marker);
-
-/* CONTINUOUS MOVEMENT */
-
-setInterval(()=>{
-
-const current =
-marker.getLatLng();
-
-const newLat =
-current.lat +
-((Math.random()-.5)*0.0008);
-
-const newLng =
-current.lng +
-((Math.random()-.5)*0.0008);
-
-marker.setLatLng(
-[newLat,newLng]
-);
-
-},2500);
-
-}
-
-/* START SEARCH */
-
-function startSearch(){
-
-speak(
-'Tactical search operation active'
-);
-
-alert(
-'LIVE MULTI-AGENCY SEARCH ACTIVE'
-);
-
-}
-
-/* DEPLOY K9 */
-
-function deployK9(){
-
-speak(
-'K9 deployment initiated'
-);
-
-createUnit(
-37.4344,
--79.1101,
-'#66ccff',
-'K9'
-);
-
-}
-
-/* SOS */
-
-function officerSOS(){
-
-speak(
-'Officer emergency signal activated'
-);
-
-alert(
-'OFFICER SOS BROADCASTED'
-);
-
-navigator.vibrate?.([300,200,300]);
-
-}
-
-/* NIGHT VISION */
-
-var nightEnabled = true;
-
-function toggleNightVision(){
-
-nightEnabled = !nightEnabled;
-
-document.getElementById(
-'nightVision'
-).style.display =
-nightEnabled
-? 'block'
-: 'none';
-
-}
-
-/* LOAD */
-
-window.onload = ()=>{
-
-initMap();
-
-loadVoices();
-
+const colors={
+leo:'#1d7dff',
+k9:'#66d9ff',
+sar:'#ff3030',
+civilian:'#28d96f'
 };
 
+const marker=L.circleMarker([
+center.lat+(Math.random()*.002-.001),
+center.lng+(Math.random()*.002-.001)
+],{
+radius:8,
+color:'#fff',
+fillColor:colors[type],
+fillOpacity:1,
+weight:2
+}).addTo(map);
+
+units.push(marker);
+
+reportLog.push(type.toUpperCase()+' UNIT ADDED');
+}
+
+function dropEvidence(){
+
+const center=map.getCenter();
+
+const marker=L.marker([center.lat,center.lng]).addTo(map)
+.bindPopup('FOUND PROPERTY');
+
+reportLog.push('FOUND PROPERTY FLAGGED');
+}
+
+function officerSOS(){
+alert('OFFICER SOS ACTIVATED');
+reportLog.push('OFFICER SOS ACTIVATED');
+}
+
+function terminateSearch(){
+alert('SEARCH TERMINATED');
+reportLog.push('SEARCH TERMINATED');
+}
+
+function generateReport(){
+
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+const notes=document.getElementById('notes').value;
+
+let y=20;
+
+doc.setFontSize(18);
+doc.text('TACNET SEARCH REPORT',20,y);
+
+y+=15;
+
+doc.setFontSize(11);
+
+reportLog.forEach((line)=>{
+doc.text('- '+line,20,y);
+y+=8;
+});
+
+y+=10;
+
+doc.text('NOTES / DISPOSITION:',20,y);
+
+y+=10;
+
+const split=doc.splitTextToSize(notes,170);
+doc.text(split,20,y);
+
+doc.save('TACNET_REPORT.pdf');
+}
+
 </script>
-
 </body>
-
 </html>
+```
+
+## IMPORTANT
+
+This prototype includes:
+
+* Landing page using your FDD.png image
+* Live tactical operations screen
+* Neon translucent night-vision overlay
+* Live GPS tracking support through browser geolocation
+* Search perimeter circle
+* Law enforcement legend system
+* Add/remove style tactical units
+* Found property markers
+* Officer SOS
+* Auto PDF report generator
+* Notes and disposition section
+* Outside agency access code entry
+* Satellite / terrain / street capable Leaflet foundation
+
+## IMPORTANT NOTE ABOUT TRUE REAL-TIME MULTI-OFFICER TRACKING
+
+Actual synchronized live officer-to-officer tracking across many phones requires a backend service such as:
+
+* Firebase Realtime Database
+* Firestore
+* Socket.IO server
+
+This HTML already gives you the tactical frontend structure needed for that next phase.
