@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACTICAL SEARCH RECON</title>
+    <title>TACNET | TACTICAL SEARCH RECON</title>
     <style>
         :root {
             --dark-bg: #121212;
@@ -14,52 +14,84 @@
             --gold: #FFCC00;
             --orange: #FF6600;
             --teal: #00CCCC;
+            --header-olive: #3b3a1a;
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background-color: var(--dark-bg); color: #FFFFFF;
-            font-family: Arial, Helvetica, sans-serif; overflow-x: hidden;
+            font-family: Arial, Helvetica, sans-serif; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        /* TOP CONSOLE HEADER */
+        /* HIGH-VIS AGENCY COMMAND HEADER */
         .top-header {
-            background-color: #000000;
-            padding: 10px 15px;
+            background: linear-gradient(to bottom, #4a4722, #1c1b0a);
+            border-bottom: 3px solid var(--gold);
+            padding: 8px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: 70px;
+            box-sizing: border-box;
+        }
+
+        .header-patch-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .agency-logo {
+            height: 52px;
+            width: 52px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .badge-star {
+            height: 54px;
+            width: 54px;
+            object-fit: contain;
+        }
+
+        .center-branding {
+            text-align: center;
+            flex-grow: 1;
         }
 
         .header-title {
             color: var(--gold);
             font-weight: 900;
-            font-size: 1.3rem;
-            letter-spacing: 1px;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            margin: 0;
+            text-shadow: 2px 2px 2px #000;
         }
 
-        .btn-disconnect {
-            background-color: var(--bright-blue);
+        .header-sub {
             color: #FFFFFF;
-            border: 1px solid #FFFFFF;
-            padding: 4px 10px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
-            cursor: pointer;
-            border-radius: 3px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 2px 0 0 0;
         }
 
-        /* COMMAND INTERFACE CONTAINER */
+        /* CONSOLE MAIN SCREEN AREA */
         .console-container {
             padding: 12px;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            flex-grow: 1;
             box-sizing: border-box;
+            overflow-y: auto;
+            padding-bottom: 45px; /* Clear space for fixed footer signature */
         }
 
-        /* VOICE ADDRESS BAR SYSTEM */
+        /* VOICE INPUT ADDRESS REGISTRATION FRAME */
         .address-bar-frame {
             display: flex;
             border: 2px solid var(--neon-green);
@@ -91,12 +123,12 @@
             letter-spacing: 1px;
         }
 
-        /* ACTION INITIATION BAR */
+        /* ACTION TRIGGER BAR */
         .action-trigger-bar {
             background-color: var(--neon-green);
             color: #000000;
             text-align: center;
-            padding: 10px;
+            padding: 11px;
             font-weight: 900;
             font-size: 1.1rem;
             letter-spacing: 1px;
@@ -105,9 +137,9 @@
             text-transform: uppercase;
         }
 
-        /* VECTOR RADAR HUD AREA */
+        /* RADAR SCOPE TERMINAL SCREEN */
         .radar-screen-container {
-            height: 300px;
+            height: 280px;
             background-color: #000000;
             border: 1px solid #333333;
             position: relative;
@@ -115,7 +147,6 @@
             border-radius: 4px;
         }
 
-        /* Radar Grid Lines */
         .radar-grid {
             position: absolute;
             width: 200%; height: 200%;
@@ -127,7 +158,6 @@
             pointer-events: none;
         }
 
-        /* Concentric Radar Rings */
         .radar-ring {
             position: absolute;
             top: 50%; left: 50%;
@@ -137,7 +167,6 @@
             pointer-events: none;
         }
 
-        /* Vector Cordon Bounds */
         .vector-cordon-circle {
             position: absolute;
             top: 50%; left: 45%;
@@ -155,7 +184,6 @@
             white-space: nowrap;
         }
 
-        /* Field Tracking Blips */
         .tracker-blip {
             position: absolute;
             width: 26px; height: 26px;
@@ -188,30 +216,22 @@
             color: var(--gold);
             font-weight: bold;
             font-size: 0.95rem;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            margin-bottom: 6px;
         }
 
         .log-body-text {
             color: #E0E0E0;
             font-family: monospace;
             font-size: 0.95rem;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
-        .log-data-line {
-            margin-top: 10px;
-            color: #FFFFFF;
-        }
-
-        /* COMMAND INTERACTIVE DOCK MATRIX */
+        /* CRISIS OPS DIRECTIVE BUTTON MATRIX */
         .bottom-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .action-grid-btn {
@@ -235,17 +255,44 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        .action-grid-btn:active {
-            background-color: #FFFFFF;
-            color: #000000;
+        .action-grid-btn:active { background-color: #FFFFFF; color: #000000; }
+
+        /* FIXED BOTTOM SIGNATURE TRACK row */
+        .fixed-creator-footer {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background-color: #050505;
+            border-top: 2px solid #222;
+            padding: 8px 0;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .creator-text {
+            color: #FF6666;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 0;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
     <div class="top-header">
-        <div class="header-title">Tactical Search Recon</div>
-        <button class="btn-disconnect" onclick="alert('Disconnecting Console Session...')">⬅ DISCONNECT</button>
+        <img class="badge-star" src="amherst_badge.png.jpg" alt="Amherst Sheriff Badge" onerror="this.style.display='none'">
+        
+        <div class="center-branding">
+            <h1 class="header-title">TACNET</h1>
+            <p class="header-sub">Nextline Multi-Agency Tactical Task Force</p>
+        </div>
+        
+        <div class="header-patch-box">
+            <img class="agency-logo" src="gshep_2.jpg" alt="K9 Unit" onerror="this.style.display='none'">
+            <img class="agency-logo" src="va.png-modified.jpg" alt="VSP Patch" onerror="this.style.display='none'">
+        </div>
     </div>
 
     <div class="console-container">
@@ -272,7 +319,7 @@
             </div>
 
             <div class="tracker-blip" style="top: 38%; left: 36%;">
-                3 <div class="blip-label" style="color: #A0A0A0;">VSP-212</div>
+                3 <div class="blip-label">VSP-212</div>
             </div>
             
             <div class="tracker-blip" style="top: 45%; left: 42%;">
@@ -280,7 +327,7 @@
             </div>
             
             <div class="tracker-blip" style="top: 58%; left: 48%;">
-                2 <div class="blip-label" style="color: #A0A0A0;">SMITH-104</div>
+                2 <div class="blip-label">SMITH-104</div>
             </div>
         </div>
 
@@ -288,8 +335,8 @@
             <div class="log-status-header">📍 PERIMETER CORDON LOCKED</div>
             <div class="log-body-text">
                 Vector cordon circle drawn on local console layout.<br>
-                Target Area: <span id="log-target-address" style="color: #FFFFFF;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
-                <div class="log-data-line">
+                Target Area: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
+                <div style="margin-top: 8px;">
                     Searchers 1, 2, and 3 are mapped and scaled within target radius parameters. Fully active.
                 </div>
             </div>
@@ -306,6 +353,10 @@
 
     </div>
 
+    <div class="fixed-creator-footer">
+        <p class="creator-text">App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
+    </div>
+
     <script>
         var synth = window.speechSynthesis;
 
@@ -315,14 +366,9 @@
             alert("TACTICAL UPDATE: Cordon Vector locked dynamically onto target location.");
         }
 
-        // HANDS-FREE VOICE ASSISTANCE FOR FIELD EMERGENCY OPS
         function speakMedicalProtocol(actionType) {
-            if (!synth) {
-                alert("Speech execution engine missing.");
-                return;
-            }
-            
-            synth.cancel(); // Terminate previous loops immediately
+            if (!synth) return;
+            synth.cancel(); 
             let message = "";
 
             if (actionType === 'cpr') {
@@ -340,7 +386,7 @@
             }
 
             var transmission = new SpeechSynthesisUtterance(message);
-            transmission.rate = 0.95; // Steady tactical voice rate
+            transmission.rate = 0.95; 
             synth.speak(transmission);
         }
     </script>
