@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,6 @@
             --gold: #FFCC00;
             --orange: #FF6600;
             --teal: #00CCCC;
-            --header-olive: #3b3a1a;
         }
 
         body, html {
@@ -258,7 +256,7 @@
 
         .action-grid-btn:active { background-color: #FFFFFF; color: #000000; }
 
-        /* FIXED BOTTOM SIGNATURE TRACK row */
+        /* FIXED BOTTOM SIGNATURE TRACK ROW */
         .fixed-creator-footer {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
@@ -359,38 +357,7 @@
     </div>
 
     <script>
-      <script>
         var synth = window.speechSynthesis;
-        var tacticalVoice = null;
-
-        // FUNCTION TO LOG AND LOCK THE BEST PREMIUM MALE VOICE AVAILABLE
-        function loadTacticalVoice() {
-            if (!synth) return;
-            var voices = synth.getVoices();
-            
-            // Search criteria for clear, authoritative natural voices
-            // Looks for premium local voices first, then high-quality male options
-            var targetVoice = voices.find(function(voice) {
-                return voice.name.includes('David') || 
-                       voice.name.includes('Male') || 
-                       voice.name.includes('Natural') || 
-                       (voice.lang === 'en-US' && voice.name.includes('Google'));
-            });
-
-            // If a specific premium voice is found, lock it in. Otherwise, use the best US English option.
-            if (targetVoice) {
-                tacticalVoice = targetVoice;
-            } else {
-                tacticalVoice = voices.find(function(voice) { return voice.lang === 'en-US'; });
-            }
-        }
-
-        // Chrome and modern browsers load voices asynchronously
-        if (!!synth && 'onvoiceschanged' in synth) {
-            synth.onvoiceschanged = loadTacticalVoice;
-        } else {
-            loadTacticalVoice();
-        }
 
         function lockOperationalPerimeter() {
             var inputAddr = document.getElementById('target-address-input').value;
@@ -398,9 +365,32 @@
             alert("TACTICAL UPDATE: Cordon Vector locked dynamically onto target location.");
         }
 
+        // FAILSAFE VOICE SELECTION MECHANISM
+        function getBestTacticalVoice() {
+            if (!synth) return null;
+            var voices = synth.getVoices();
+            if (voices.length === 0) return null;
+
+            // Priority 1: Clear local system male voices (Microsoft David, Google US Male, premium options)
+            var optimalMale = voices.find(function(v) {
+                return (v.lang.startsWith('en-US') || v.lang.startsWith('en-GB')) && 
+                       (v.name.includes('David') || v.name.includes('Male') || v.name.includes('Natural'));
+            });
+            if (optimalMale) return optimalMale;
+
+            // Priority 2: Fall back to any English voice to prevent failure
+            var englishFallback = voices.find(function(v) { return v.lang.startsWith('en'); });
+            if (englishFallback) return englishFallback;
+
+            // Priority 3: Ultimate system default fallback
+            return voices[0];
+        }
+
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
-            synth.cancel(); // Terminate any ongoing audio loops immediately
+            
+            // Instantly cut off any running transmissions
+            synth.cancel(); 
             
             let message = "";
 
@@ -420,17 +410,21 @@
 
             var transmission = new SpeechSynthesisUtterance(message);
             
-            // Apply our selected clear voice if available
-            if (tacticalVoice) {
-                transmission.voice = tacticalVoice;
+            // Lock in the best voice profile instantly at runtime
+            var selectedVoice = getBestTacticalVoice();
+            if (selectedVoice) {
+                transmission.voice = selectedVoice;
             }
             
-            transmission.rate = 0.92; // Slightly slowed down to sound calm and tactical under stress
-            transmission.pitch = 1.0; // Keeps the tone deep, natural, and clear
+            transmission.rate = 0.92; // Deliberate tactical speed for emergency situations
+            transmission.pitch = 1.0; 
             
             synth.speak(transmission);
         }
-    </script>
+
+        // Failsafe event loop to pre-warm voice engines on mobile/desktop browsers
+        if (synth && 'onvoiceschanged' in synth) {
+            synth.onvoiceschanged = function() { getBestTacticalVoice(); };
         }
     </script>
 </body>
