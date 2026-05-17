@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - MOBILE SEARCH & K9 MEDICAL HUD</title>
+    <title>TACNET - HIGH VISIBILITY PATROL HUD</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
@@ -16,7 +16,8 @@
             --neon-green: #00ff33;
             --gold-primary: #dfb720;
             --alert-red: #ff0033;
-            --dark-gray: #111111;
+            --dark-gray: #151515;
+            --police-blue: #0044ff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,65 +29,80 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
-            overflow-y: auto;
-            padding: 6px;
-            padding-top: calc(6px + env(safe-area-inset-top));
-            padding-bottom: calc(6px + env(safe-area-inset-bottom));
+            overflow: hidden;
+            padding: 8px;
+            padding-top: calc(8px + env(safe-area-inset-top));
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
         }
 
-        /* HEADER BLOCK */
+        /* SIMPLIFIED BANNER */
         .header-frame {
             border-bottom: 2px solid var(--neon-green);
             padding-bottom: 4px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .header-frame h1 { 
             font-family: 'Black Ops One', sans-serif; 
             color: var(--gold-primary); 
-            font-size: 1.8rem; 
-            line-height: 1;
+            font-size: 1.6rem; 
         }
         .header-frame span {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #ffffff;
-            letter-spacing: 2px;
+            font-weight: bold;
         }
 
-        /* HARD-LOCKED STABLE MAP CANVAS */
+        /* HIGH-STABILITY MAP BOX */
         .map-wrapper {
-            height: 48vh; /* Fixed height prevents iOS freezing */
+            height: 45vh; /* Fixed height keeps layout stable on iOS */
             width: 100%;
-            position: relative;
-            border: 1px solid var(--neon-green);
-            border-radius: 4px;
+            border: 2px solid var(--neon-green);
+            border-radius: 6px;
             background: #000;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            overflow: hidden;
         }
         #search-map {
             width: 100%;
             height: 100%;
-            z-index: 1;
+        }
+
+        /* HIGH-VISIBILITY SOLID MAP MARKERS */
+        .tactical-unit-pin {
+            background-color: var(--police-blue);
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            font-family: 'Black Ops One', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(0, 68, 255, 0.8);
         }
 
         /* VOICE BAR */
         .voice-bar {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             background: var(--dark-gray);
-            padding: 6px;
+            padding: 8px;
             border: 1px solid var(--gold-primary);
-            border-radius: 4px;
-            margin-bottom: 6px;
+            border-radius: 6px;
+            margin-bottom: 8px;
         }
         .mic-btn {
             background: var(--alert-red);
             color: #fff;
             border: none;
             font-family: 'Black Ops One', sans-serif;
-            font-size: 0.85rem;
-            padding: 0 14px;
-            border-radius: 3px;
+            font-size: 0.9rem;
+            padding: 0 16px;
+            border-radius: 4px;
             font-weight: bold;
         }
         .voice-input {
@@ -95,87 +111,79 @@
             border: 1px solid var(--neon-green);
             color: #fff;
             font-family: 'Share Tech Mono', monospace;
-            padding: 8px;
-            font-size: 0.9rem;
-            border-radius: 3px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 4px;
         }
 
-        /* DATA & PROTOCOL READOUT BOX */
+        /* SCROLLABLE MEDICAL READOUT MATRIX */
         .intel-vault {
             background: var(--dark-gray);
             border: 1px solid var(--neon-green);
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 6px;
             flex-grow: 1;
-            min-height: 140px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+            margin-bottom: 8px;
         }
         .vault-title {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             border-bottom: 1px dashed var(--neon-green);
             padding-bottom: 4px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .vault-body {
             color: #ffffff;
-            font-size: 1rem;
-            line-height: 1.4;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            white-space: pre-line;
         }
 
-        /* TACTICAL EMERGENCY DIRECT TOUCH TARGETS */
+        /* LARGE DIRECT TAP TARGET EMERGENCY BUTTONS */
         .emergency-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            margin-top: 6px;
+            gap: 8px;
         }
         .emergency-btn {
-            background: rgba(255, 0, 51, 0.15);
-            border: 1px solid var(--alert-red);
-            color: #ff3355;
-            padding: 12px 4px;
+            background: rgba(255, 0, 51, 0.1);
+            border: 2px solid var(--alert-red);
+            color: #ff4466;
+            padding: 14px 4px;
             font-family: 'Black Ops One', sans-serif;
-            font-size: 0.85rem;
-            border-radius: 4px;
+            font-size: 0.95rem;
+            border-radius: 6px;
             cursor: pointer;
             text-align: center;
+            -webkit-tap-highlight-color: transparent;
         }
         .emergency-btn:active {
             background: var(--alert-red);
             color: #fff;
         }
 
-        /* TIMELINE AUDIT FOOTER */
-        .system-logs {
-            font-size: 0.7rem;
-            color: #888;
-            margin-top: 6px;
-            border-top: 1px solid #333;
-            padding-top: 4px;
-        }
-
-        /* PULSING INCIDENT MARKER EFFECT */
+        /* PULSING EXTRACTION MARKER EFFECT */
         @keyframes targetPulse {
             0% { transform: scale(0.6); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0.8); }
-            70% { transform: scale(1.2); opacity: 0.6; box-shadow: 0 0 0 8px rgba(255, 0, 51, 0); }
+            70% { transform: scale(1.3); opacity: 0.5; box-shadow: 0 0 0 10px rgba(255, 0, 51, 0); }
             100% { transform: scale(0.6); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 0, 51, 0); }
         }
         .pulse-marker {
-            background: rgba(255, 0, 51, 0.4);
+            background: rgba(255, 0, 51, 0.5);
             border: 2px solid #ff0033;
             border-radius: 50%;
-            animation: targetPulse 1.3s infinite;
+            animation: targetPulse 1.2s infinite;
         }
     </style>
 </head>
 <body>
 
     <div class="header-frame">
-        <h1>TACNET // SEARCH LINK</h1>
-        <span>DESIGN COPPED BY EX Deputy Earl A. Wood</span>
+        <h1>TACNET MOBILE SEARCH</h1>
+        <span>DEPUTY WOOD ORIGINAL</span>
     </div>
 
     <div class="map-wrapper">
@@ -184,27 +192,23 @@
 
     <div class="voice-bar">
         <button class="mic-btn" onclick="triggerVoiceReceiver()" id="mic-node">🎙️ MIC</button>
-        <input type="text" class="voice-input" id="transcription-node" placeholder="Say: 'TAC, K9 CPR' or location address">
+        <input type="text" class="voice-input" id="transcription-node" placeholder="Say: 'TAC, K9 CPR' or location">
     </div>
 
     <div class="intel-vault">
-        <div class="vault-title" id="display-title">SYSTEM PROTOCOL DECK</div>
+        <div class="vault-title" id="display-title">TACTICAL COMMAND PANEL</div>
         <div class="vault-body" id="display-body">
-            Map loaded. Task Force sync ready. Use the mic or tap an emergency asset below to broadcast immediate K9 first aid protocols.
+            Map display active. Drag map with thumb to pan. Clear solid unit markers 1, 2, and 3 are deployed. Use the mic or tap a button below to activate K9 Emergency First Aid protocols.
         </div>
     </div>
 
     <div class="emergency-grid">
-        <button class="emergency-btn" onclick="triggerMedicalProtocol('cpr')">🐾 K9 CPR</button>
-        <button class="emergency-btn" onclick="triggerMedicalProtocol('gunshot')">💥 GUNSHOT/BLEED</button>
-        <button class="emergency-btn" onclick="triggerMedicalProtocol('heat')">☀️ HEAT STROKE</button>
-        <button class="emergency-btn" onclick="triggerMedicalProtocol('snake')">🐍 SNAKE BITE</button>
+        <button class="emergency-btn" onclick="triggerMedicalProtocol('cpr')">🐾 1. K9 CPR</button>
+        <button class="emergency-btn" onclick="triggerMedicalProtocol('gunshot')">💥 2. GUNSHOT</button>
+        <button class="emergency-btn" onclick="triggerMedicalProtocol('heat')">☀️ 3. HEAT STROKE</button>
+        <button class="emergency-btn" onclick="triggerMedicalProtocol('snake')">🐍 4. SNAKE BITE</button>
         <button class="emergency-btn" onclick="triggerMedicalProtocol('vet')" style="border-color:var(--gold-primary); color:var(--gold-primary);">🏥 EMERGENCY VET</button>
-        <button class="emergency-btn" style="border-color:var(--neon-green); color:var(--neon-green);" onclick="triggerCenterSearch()">🎯 LOCK MY CORE</button>
-    </div>
-
-    <div class="system-logs" id="log-node">
-        [SYSTEM START]: Lightweight layout activated. Roster tags restricted to NAME-NUMBER.
+        <button class="emergency-btn" onclick="resetMapToBaseline()" style="border-color:var(--neon-green); color:var(--neon-green);">🎯 RE-CENTER MAP</button>
     </div>
 
     <script>
@@ -212,160 +216,155 @@
         let activeCordon = null;
         let activeCenter = null;
 
-        // MEDICAL DATA BASELINE FOR IMMEDIATE AUDIO ROUTING
+        // EMERGENCY RESPONDER MEDICAL DICTIONARY
         const medicalDatabase = {
             cpr: {
-                title: "🚨 EMERGENCY CRITICAL: K9 CPR PROTOCOL",
-                text: "1. Lay dog on RIGHT side. Clear mouth airway, pull tongue forward. \n2. Close muzzle entirely with hands. Deliver 2 rescue breaths into the nose. \n3. Compress chest immediately behind elbow: 30 compressions at a rate of 100-120 per minute. \n4. Ratio: 2 breaths to 30 compressions. Check femoral pulse every 2 minutes.",
-                audio: "K9 C P R protocol active. Place dog on right side. Clear airway. Close muzzle, deliver two breaths into the nose, followed by thirty chest compressions behind the elbow. Repeat cycle."
+                title: "🚨 CRITICAL MANDATE: K9 CPR PROTOCOL",
+                text: "• POSITION: Lay dog on RIGHT side.\n• AIRWAY: Open mouth, clear fluid, pull tongue forward.\n• RESCUE BREATHS: Close muzzle completely with hands. Blow 2 breaths directly into the nose.\n• COMPRESSIONS: Compress chest right behind the elbow. Deliver 30 fast compressions (100-120 per minute).\n• RATIO: Continue cycle of 2 breaths to 30 compressions. Recheck femoral pulse every 2 minutes.",
+                audio: "K9 CPR protocol initialized. Position the tracking dog on its right side. Clear the oral airway and pull the tongue forward. Seal the muzzle and deliver two breaths directly into the nose, followed immediately by thirty chest compressions behind the elbow structure. Maintain this cycle."
             },
             gunshot: {
-                title: "🚨 EMERGENCY CRITICAL: K9 GUNSHOT / SEVERE BLEEDING",
-                text: "1. Apply immediate direct pressure with clean gauze or hand. \n2. Pack wound cavity deeply with hemostatic gauze if available. \n3. Apply pressure wrap bandage firmly. \n4. Maintain steady compression. Do NOT apply tourniquets to high-torso or junctional neck regions.",
-                audio: "Gunshot wound protocol active. Apply immediate heavy direct pressure. Pack the wound cavity deeply with gauze. Hold pressure dressing firmly. Do not remove original blood pads."
+                title: "🚨 CRITICAL MANDATE: K9 GUNSHOT / SEVERE HEMORRHAGE",
+                text: "• DIRECT PRESSURE: Place clean gauze or hand directly over the wound with maximum force.\n• PACKING: Pack the wound cavity deeply with hemostatic gauze if available.\n• WRAPPING: Apply a firm pressure wrap bandage. Maintain steady pressure.\n• WARNING: Do NOT apply tourniquets to the high-torso or junctional areas where neck meets body.",
+                audio: "Gunshot and severe hemorrhage protocol active. Apply immediate heavy direct pressure over the site. Pack the wound cavity deeply with gauze. Apply a tight pressure wrap. Do not attempt tourniquets on high-torso junctional areas."
             },
             heat: {
-                title: "🚨 EMERGENCY CRITICAL: K9 HEAT EXHAUSTION / OVERHEAT",
-                text: "1. Alert if core temp exceeds 103 degrees. Critical danger zone is 106 degrees. \n2. Move dog to shade/AC immediately. \n3. Apply lukewarm water to abdomen, armpits, and paw pads. \n4. CRITICAL WARNING: Never use ice water or full submerge, as it constricts blood vessels and traps core heat.",
-                audio: "Heat exhaustion protocol active. Target core temperature reduction. Use lukewarm water on abdomen and pads. Avoid ice water completely as it traps internal heat. Run air conditioning full blast."
+                title: "🚨 CRITICAL MANDATE: K9 HEAT EXHAUSTION & TEMP STATUS",
+                text: "• TARGET METRICS: Alert status at 103 degrees. Deadly emergency threshold at 106 degrees.\n• DEPLOYMENT: Move dog to shade or cooled cruiser interior immediately.\n• COOLING ACTION: Apply lukewarm water to abdomen, armpits, and paw pads. Fan continuously.\n• CRITICAL WARNING: Never use ice water or complete submerge. This constricts blood vessels and traps killer heat inside the core.",
+                audio: "Heat exhaustion and body temperature protocol active. Move the dog to shade or air conditioning immediately. Apply lukewarm water to the abdomen, armpits, and paw pads. Never use ice water, as it locks the heat inside the dog's core."
             },
             snake: {
-                title: "🚨 EMERGENCY CRITICAL: K9 SNAKE BITE",
-                text: "1. Restrict dog's movement completely to slow venom travel. Carry the dog. \n2. Keep bite wound site BELOW heart level if possible. \n3. Clean wound with fresh water. Do NOT cut the skin, do NOT apply a tourniquet, and do NOT attempt to suck venom out.",
-                audio: "Snake bite protocol active. Restrict dog movement entirely. Carry the dog to slow venom spread. Keep bite level below the heart. Do not cut or apply tourniquets."
+                title: "🚨 CRITICAL MANDATE: K9 SNAKE BITE TREATMENT",
+                text: "• MOVEMENT: Restrict dog's physical movement entirely to slow venom spread. Carry the dog.\n• PLACEMENT: Keep the puncture bite site BELOW heart level if possible.\n• FIRST AID: Flush wound with clean water. Do NOT cut the wound, do NOT apply tourniquets, and do NOT try to suck out venom.",
+                audio: "Snake bite protocol active. Restrict all physical movement to slow venom travel. Carry the dog to the transport vehicle. Keep the bite site lower than heart level. Do not cut or suction the wound."
             },
             vet: {
-                title: "🏥 EMERGENCY ROUTE: NEAREST EMERGENCY VETERINARY CLINIC",
-                text: "Amherst Veterinary Hospital / 24-Hour Regional Trauma Desk.\nRoute: Direct via US-29 South.\nContact Line: Pre-routed over radio deck. Notify perimeter units to call ahead.",
-                audio: "Emergency Vet route active. Emergency hospital vector mapped via twenty-nine south. Patching communication line to trauma desk now."
+                title: "🏥 EXTRACTION EMERGENCY: EMERGENCY VETERINARY ROUTE",
+                text: "• AMHERST EMERGENCY VET HOSP\n• CLINICAL ROUTE: Direct vector via US-29 South.\n• TAC ACTION: Radio desk notified to alert trauma staff. Prepare vehicle extraction.",
+                audio: "Emergency veterinary extraction vector armed. Route mapped direct via twenty-nine south. Radio room has been updated to alert the clinical trauma staff to prepare for immediate arrival."
             }
         };
 
-        // SYSTEM INITIALIZER
+        // SETUP ENGINE
         window.onload = function() {
-            // Default center locked securely to Amherst County Sheriff baseline coordinates
+            // High stability configurations - standard dragging completely unlocked
             mainMap = L.map('search-map', { zoomControl: false, dragging: true, tap: false }).setView([37.5857, -79.0517], 13);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(mainMap);
             
-            // Populating simulated live units cleanly using Name and Unit Number Only
-            addSimulatedTaskForceUnit([37.589, -79.055], "WOOD-K91");
-            addSimulatedTaskForceUnit([37.582, -79.048], "SMITH-104");
-            addSimulatedTaskForceUnit([37.592, -79.062], "VSP-212");
+            // Build High-Visibility Solid Colored Circular Pins
+            deploySolidTacticalPin([37.589, -79.055], "1", "WOOD-K91");
+            deploySolidTacticalPin([37.582, -79.048], "2", "SMITH-104");
+            deploySolidTacticalPin([37.592, -79.062], "3", "VSP-212");
 
+            // Stop map touch conflicts on phone layouts
             document.getElementById('search-map').addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: true });
         };
 
-        function addSimulatedTaskForceUnit(coords, nameNumberTag) {
+        function deploySolidTacticalPin(coords, numberDisplay, labelText) {
             L.marker(coords, {
                 icon: L.divIcon({
-                    html: `<div style="background:#00ff33; color:#000; font-family:'Share Tech Mono'; font-weight:bold; padding:2px 6px; border-radius:3px; border:1px solid #fff; font-size:10px; white-space:nowrap;">${nameNumberTag}</div>`,
-                    iconSize: [60, 20],
-                    iconAnchor: [30, 10]
+                    className: 'tactical-unit-pin',
+                    html: numberDisplay,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
                 })
-            }).addTo(mainMap);
+            }).addTo(mainMap).bindPopup(`<strong style="font-family:monospace; font-size:14px; color:#000;">${labelText}</strong>`);
         }
 
-        // TRIGGER TREATMENT ARRAYS
+        // PROTOCOL TRIGGER PIPELINE
         function triggerMedicalProtocol(type) {
-            const data = medicalDatabase[type];
-            document.getElementById('display-title').innerText = data.title;
-            document.getElementById('display-body').innerText = data.text;
-            
-            const time = new Date().toLocaleTimeString();
-            document.getElementById('log-node').innerText = `[${time}] MEDICAL PROTOCOL DEPLOYED: ${type.toUpperCase()}`;
+            const proto = medicalDatabase[type];
+            document.getElementById('display-title').innerText = proto.title;
+            document.getElementById('display-body').innerText = proto.text;
             
             if (type === 'vet') {
-                // Drop emergency flashing red dot at the designated medical extraction point
                 if (activeCenter) { mainMap.removeLayer(activeCenter); }
-                let pulseIcon = L.divIcon({ className: 'pulse-marker', iconSize: [24, 24], iconAnchor: [12, 12] });
+                let pulseIcon = L.divIcon({ className: 'pulse-marker', iconSize: [26, 26], iconAnchor: [13, 13] });
                 activeCenter = L.marker([37.575, -79.045], { icon: pulseIcon }).addTo(mainMap);
                 mainMap.setView([37.575, -79.045], 14);
             }
 
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                let msg = new SpeechSynthesisUtterance(data.audio);
-                window.speechSynthesis.speak(msg);
+                let outputMsg = new SpeechSynthesisUtterance(proto.audio);
+                window.speechSynthesis.speak(outputMsg);
             }
         }
 
-        // SPEECH INPUT RECOGNITION DRIVER
+        // IOS SPEECH RECOGNITION DRIVER
         function triggerVoiceReceiver() {
-            const SpeechEngine = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechEngine) {
-                alert("Voice link driver unavailable on this browser setup.");
+            const SpeechEngineClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechEngineClass) {
+                alert("Voice driver link missing on this configuration browser.");
                 return;
             }
 
-            const rec = new SpeechEngine();
-            rec.continuous = false;
-            rec.lang = 'en-US';
+            const activeRec = new SpeechEngineClass();
+            activeRec.continuous = false;
+            activeRec.lang = 'en-US';
 
-            rec.onstart = function() {
-                document.getElementById('mic-node').innerText = "🔊 LISTENING";
+            activeRec.onstart = function() {
+                document.getElementById('mic-node').innerText = "🔊 LISTEN";
                 document.getElementById('mic-node').style.background = "#dfb720";
             };
 
-            rec.onend = function() {
+            activeRec.onend = function() {
                 document.getElementById('mic-node').innerText = "🎙️ MIC";
                 document.getElementById('mic-node').style.background = "var(--alert-red)";
             };
 
-            rec.onresult = function(event) {
-                let textIn = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('transcription-node').value = textIn;
+            activeRec.onresult = function(event) {
+                let spokenPhrase = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('transcription-node').value = spokenPhrase;
                 
-                // Parse Emergency Directives
-                if (textIn.includes("cpr")) { triggerMedicalProtocol('cpr'); }
-                else if (textIn.includes("gunshot") || textIn.includes("bleeding")) { triggerMedicalProtocol('gunshot'); }
-                else if (textIn.includes("heat") || textIn.includes("temperature")) { triggerMedicalProtocol('heat'); }
-                else if (textIn.includes("snake")) { triggerMedicalProtocol('snake'); }
-                else if (textIn.includes("vet")) { triggerMedicalProtocol('vet'); }
-                else if (textIn.includes("pull up") || textIn.includes("address") || textIn.includes("location")) {
-                    let searchAddr = textIn.replace("pull up", "").replace("address", "").replace("tac", "").trim();
-                    executeGeoCordonLock(searchAddr);
+                if (spokenPhrase.includes("cpr")) { triggerMedicalProtocol('cpr'); }
+                else if (spokenPhrase.includes("gunshot") || spokenPhrase.includes("bleed")) { triggerMedicalProtocol('gunshot'); }
+                else if (spokenPhrase.includes("heat") || spokenPhrase.includes("temperature")) { triggerMedicalProtocol('heat'); }
+                else if (spokenPhrase.includes("snake")) { triggerMedicalProtocol('snake'); }
+                else if (spokenPhrase.includes("vet")) { triggerMedicalProtocol('vet'); }
+                else if (spokenPhrase.includes("pull up") || spokenPhrase.includes("address") || spokenPhrase.includes("location")) {
+                    let extractedLocation = spokenPhrase.replace("pull up", "").replace("address", "").replace("tac", "").trim();
+                    executeMobileRadarLock(extractedLocation);
                 }
             };
-            rec.start();
+            activeRec.start();
         }
 
-        // LIGHTWEIGHT RADAR AREA CORDON CALCULATOR
-        function executeGeoCordonLock(addressStr) {
-            if (!addressStr) return;
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressStr)}`)
+        function executeMobileRadarLock(addressQuery) {
+            if (!addressQuery) return;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressQuery)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
+                        const latPoint = parseFloat(data[0].lat);
+                        const lonPoint = parseFloat(data[0].lon);
                         
                         if (activeCenter) { mainMap.removeLayer(activeCenter); }
                         if (activeCordon) { mainMap.removeLayer(activeCordon); }
 
-                        let pulseIcon = L.divIcon({ className: 'pulse-marker', iconSize: [20, 20], iconAnchor: [10, 10] });
-                        activeCenter = L.marker([lat, lon], { icon: pulseIcon }).addTo(mainMap);
+                        let redPulseIcon = L.divIcon({ className: 'pulse-marker', iconSize: [20, 20], iconAnchor: [10, 10] });
+                        activeCenter = L.marker([latPoint, lonPoint], { icon: redPulseIcon }).addTo(mainMap);
 
-                        activeCordon = L.circle([lat, lon], {
+                        activeCordon = L.circle([latPoint, lonPoint], {
                             radius: 804.67, color: '#00ff33', weight: 2, fillColor: '#00ff33', fillOpacity: 0.1
                         }).addTo(mainMap);
 
-                        mainMap.setView([lat, lon], 14);
-                        document.getElementById('display-title').innerText = "📍 SEARCH EPICENTER LOCKED";
-                        document.getElementById('display-body').innerText = `Perimeter 1/2 mile cordon established around: ${addressStr}`;
+                        mainMap.setView([latPoint, lonPoint], 14);
+                        document.getElementById('display-title').innerText = "📍 TARGET RADAR LOCK";
+                        document.getElementById('display-body').innerText = `1/2 Mile Containment Cordon active around target area: ${addressQuery}`;
                         
                         if ('speechSynthesis' in window) {
                             window.speechSynthesis.cancel();
-                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Search perimeter locked. There you go, sir."));
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Perimeter cordon established."));
                         }
                     }
-                }).catch(e => console.log(e));
+                }).catch(err => console.log(err));
         }
 
-        function triggerCenterSearch() {
-            // Instantly fly map view straight back to center operational layout
+        function resetMapToBaseline() {
             mainMap.setView([37.5857, -79.0517], 13);
-            const time = new Date().toLocaleTimeString();
-            document.getElementById('log-node').innerText = `[${time}] RADAR LOCK RESET TO COMMAND BASELINE`;
+            document.getElementById('display-title').innerText = "🎯 MAP REGISTER RESET";
+            document.getElementById('display-body').innerText = "Map layout focus centered back to target sector baseline view.";
         }
     </script>
 </body>
