@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - LOCAL RADAR CORE</title>
+    <title>TACNET - OPERATIONAL COMMAND BUILD</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -116,13 +116,13 @@
         .voice-text-box { flex-grow: 1; background: #000; border: 1px solid var(--neon-green); color: #fff; font-family: 'Share Tech Mono', monospace; padding: 8px; font-size: 1rem; border-radius: 4px; -webkit-user-select: text; user-select: text; }
         .manual-go-btn { background: var(--neon-green); color: #000; border: none; font-family: 'Black Ops One', sans-serif; padding: 8px; border-radius: 4px; font-weight: bold; }
 
-        /* UN-FREEZABLE LOCAL TACTICAL RADAR CANVAS */
+        /* HIGH-VISIBILITY RADAR VIEWPORT FRAME */
         .radar-viewport-frame {
             height: 35vh;
             width: 100%;
             border: 2px solid var(--neon-green);
             border-radius: 6px;
-            background: #050f05;
+            background: #081408;
             margin-bottom: 6px;
             position: relative;
             overflow: hidden;
@@ -185,8 +185,8 @@
         <div class="credential-gate-panel">
             <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
-            <div class="gate-status-line"><span>RADAR ENGINE:</span> <span style="color:var(--gold-primary);">LOCAL HARDWARE OVERRIDE</span></div>
-            <div class="gate-status-line"><span>SECURITY PROFILE:</span> <span style="color:var(--neon-green);">BYPASS APPLE SECURITY UNLOCKED</span></div>
+            <div class="gate-status-line"><span>RADAR CONFIG:</span> <span style="color:var(--gold-primary);">VERIFIED HIGH-VISIBILITY</span></div>
+            <div class="gate-status-line"><span>DRAG SPEED:</span> <span style="color:var(--neon-green);">ZERO-LAG LOCKED IN</span></div>
         </div>
     </div>
 
@@ -199,7 +199,7 @@
         <div class="input-system-rack">
             <div class="input-row">
                 <button class="mic-trigger" onclick="runVoiceParser()" id="mic-label">🎙️ MIC</button>
-                <input type="text" class="voice-text-box" id="voice-display" placeholder="Speak target or address...">
+                <input type="text" class="voice-text-box" id="voice-display" placeholder="Enter Address or Voice Tag...">
             </div>
             <button class="manual-go-btn" onclick="triggerManualAddressOverride()">📍 GO: LOCK SEARCH PERIMETER</button>
         </div>
@@ -211,7 +211,7 @@
         <div class="medical-intel-readout">
             <div class="intel-header-title" id="intel-title">INCIDENT LOG DECK</div>
             <div class="intel-body-text" id="intel-body">
-                Local Hardware Radar Online. Touch and slide your thumb anywhere on the green tracking screen to test drag mechanics. Use buttons below to fire medical info.
+                Local Hardware Radar Online. Target lines and crosshairs are boosted to maximum contrast. Put down your thumb and drag to sweep the units through the grid!
             </div>
         </div>
 
@@ -229,18 +229,15 @@
         let canvas = null;
         let ctx = null;
 
-        // Radar Tracking State
         let offsetX = 0;
         let offsetY = 0;
         let isDragging = false;
         let startX = 0;
         let startY = 0;
 
-        // Cordon Status
         let cordonActive = false;
         let cordonText = "";
 
-        // Core Task Force Roster Positions (Simulated Offset Coordinates)
         const trackUnits = [
             { id: "1", label: "WOOD-K91", x: 0, y: -20 },
             { id: "2", label: "SMITH-104", x: 60, y: 40 },
@@ -271,13 +268,11 @@
             canvas = document.getElementById('tactical-radar');
             ctx = canvas.getContext('2d');
             
-            // Lock internal coordinates to matching frame boundaries
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
 
             drawRadarScreen();
 
-            // ATTACH DIRECT DEVICE SCREEN INTERFACES
             canvas.addEventListener('mousedown', dragStart);
             canvas.addEventListener('mousemove', dragMove);
             canvas.addEventListener('mouseup', dragEnd);
@@ -290,51 +285,44 @@
         function drawRadarScreen() {
             if (!ctx) return;
             
-            // 1. Wipe and repaint field baseline
-            ctx.fillStyle = "#020a02";
+            ctx.fillStyle = "#0a130a"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Calculate moving center based on user finger drag offset
             let centerX = (canvas.width / 2) + offsetX;
             let centerY = (canvas.height / 2) + offsetY;
 
-            // 2. Draw Moving Vector Tactical Range Rings
-            ctx.strokeStyle = "rgba(0, 255, 51, 0.15)";
-            ctx.lineWidth = 1;
-            for (let r = 40; r < Math.max(canvas.width, canvas.height); r += 40) {
+            ctx.strokeStyle = "rgba(0, 255, 51, 0.4)"; 
+            ctx.lineWidth = 1.5;
+            for (let r = 45; r < Math.max(canvas.width, canvas.height); r += 45) {
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, r, 0, 2 * Math.PI);
                 ctx.stroke();
             }
 
-            // 3. Crosshair Center-lines
-            ctx.strokeStyle = "rgba(0, 255, 51, 0.25)";
+            ctx.strokeStyle = "rgba(0, 255, 51, 0.6)"; 
+            ctx.lineWidth = 1.5;
             ctx.beginPath(); ctx.moveTo(centerX - canvas.width, centerY); ctx.lineTo(centerX + canvas.width, centerY); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(centerX, centerY - canvas.height); ctx.lineTo(centerX, centerY + canvas.height); ctx.stroke();
 
-            // 4. Draw Active Target Cordon Ring if deployed
             if (cordonActive) {
                 ctx.strokeStyle = "#00ff33";
-                ctx.lineWidth = 2;
-                ctx.fillStyle = "rgba(0, 255, 51, 0.08)";
+                ctx.lineWidth = 2.5;
+                ctx.fillStyle = "rgba(0, 255, 51, 0.12)";
                 
                 ctx.beginPath();
-                ctx.arc(centerX + 30, centerY - 40, 70, 0, 2 * Math.PI);
+                ctx.arc(centerX + 30, centerY - 40, 75, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.stroke();
 
-                // Drop target label text onto radar view
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "12px monospace";
-                ctx.fillText(`CORDON: 1/2 MILE RADIUS`, centerX + 110, centerY - 45);
+                ctx.font = "bold 13px monospace";
+                ctx.fillText(`CORDON ACTIVE: 1/2 MILE PERIMETER`, centerX + 115, centerY - 45);
             }
 
-            // 5. Build and render Searcher Points (Blue Circular Enclosures)
             trackUnits.forEach(unit => {
                 let unitX = centerX + unit.x;
                 let unitY = centerY + unit.y;
 
-                // Draw Blue Solid Circle Ring
                 ctx.fillStyle = "#0044ff";
                 ctx.beginPath();
                 ctx.arc(unitX, unitY, 14, 0, 2 * Math.PI);
@@ -343,22 +331,19 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Place ID Number in center of target circle
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 12px sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText(unit.id, unitX, unitY);
 
-                // Print Team Badge label tag next to dot
                 ctx.fillStyle = "#dfb720";
-                ctx.font = "11px monospace";
+                ctx.font = "bold 12px 'Share Tech Mono', monospace";
                 ctx.textAlign = "left";
                 ctx.fillText(unit.label, unitX + 18, unitY + 3);
             });
         }
 
-        // TACTICAL MOVEMENT INTERCEPTORS
         function dragStart(e) {
             isDragging = true;
             startX = e.clientX;
@@ -379,9 +364,7 @@
             drawRadarScreen();
         }
 
-        function dragEnd() {
-            isDragging = false;
-        }
+        function dragEnd() { isDragging = false; }
 
         function resetRadarView() {
             offsetX = 0;
@@ -400,7 +383,6 @@
             cordonActive = true;
             cordonText = targetText;
             
-            // Instantly bias layout target over to sector zone center
             offsetX = -30;
             offsetY = 40;
             drawRadarScreen();
@@ -454,9 +436,7 @@
                 else if (textResult.includes("heat") || textResult.includes("temperature")) { fireMedicalArray('heat'); }
                 else if (textResult.includes("snake")) { fireMedicalArray('snake'); }
                 else if (textResult.includes("vet")) { fireMedicalArray('vet'); }
-                else {
-                    processCordonStrike(textResult);
-                }
+                else { processCordonStrike(textResult); }
             };
             activeInstance.start();
         }
