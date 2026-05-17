@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TACNET | TACTICAL SEARCH RECON</title>
     <style>
         :root {
@@ -14,13 +14,15 @@
             --gold: #FFCC00;
             --orange: #FF6600;
             --teal: #00CCCC;
+            --tactical-red: rgba(255, 0, 0, 0.15);
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--dark-bg); color: #FFFFFF;
+            background-color: #000000; color: #FFFFFF;
             font-family: Arial, Helvetica, sans-serif; overflow: hidden;
             display: flex; flex-direction: column;
+            -webkit-user-select: none; user-select: none;
         }
 
         /* HIGH-VIS AGENCY COMMAND HEADER */
@@ -33,6 +35,7 @@
             align-items: center;
             height: 70px;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .header-patch-box {
@@ -78,16 +81,16 @@
             margin: 2px 0 0 0;
         }
 
-        /* CONSOLE MAIN SCREEN AREA */
+        /* FIXED CONSOLE CONTAINER - STOPS MOBILE SCROLLING */
         .console-container {
-            padding: 12px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             flex-grow: 1;
             box-sizing: border-box;
-            overflow-y: auto;
-            padding-bottom: 45px;
+            overflow: hidden;
+            height: calc(100% - 105px); /* Perfectly budgets space for header and footer */
         }
 
         /* VOICE INPUT ADDRESS REGISTRATION FRAME */
@@ -97,6 +100,7 @@
             background-color: #000000;
             border-radius: 4px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .mic-indicator {
@@ -122,40 +126,32 @@
             letter-spacing: 1px;
         }
 
-        /* ACTION TRIGGER BAR */
+        /* RESTORED ORIGINAL GO ACTION TRIGGER BAR */
         .action-trigger-bar {
             background-color: var(--neon-green);
             color: #000000;
             text-align: center;
-            padding: 11px;
+            padding: 12px;
             font-weight: 900;
             font-size: 1.1rem;
             letter-spacing: 1px;
             cursor: pointer;
             border-radius: 4px;
             text-transform: uppercase;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(0, 255, 51, 0.4);
         }
 
-        /* RADAR MAP MONITORING TERMINAL */
+        /* RADAR SCOPE TERMINAL SCREEN WITH NIGHT OP RED GLOW */
         .radar-screen-container {
-            height: 280px;
+            flex-grow: 1;
+            min-height: 180px;
             background-color: #000000;
-            border: 1px solid #333333;
+            border: 2px solid #333333;
             position: relative;
             overflow: hidden;
             border-radius: 4px;
-        }
-
-        /* Live Tactical Grid Underlay Map (OpenStreetMap View of Madison Heights Area) */
-        .tactical-map-underlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://b.tile.openstreetmap.org/14/4589/6182.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.45; /* Blends map lines perfectly with tactical radar layout */
-            filter: brightness(0.6) contrast(1.2) sepia(1) hue-rotate(85deg); /* Generates custom night-vision green overlay */
-            pointer-events: none;
+            box-shadow: inset 0 0 20px var(--tactical-red); /* RESTORED NIGHT OP RED GLOW LIGHT */
         }
 
         .radar-grid {
@@ -163,32 +159,29 @@
             width: 200%; height: 200%;
             top: -50%; left: -50%;
             background-image: 
-                linear-gradient(rgba(0, 255, 51, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 51, 0.08) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(rgba(0, 255, 51, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 51, 0.05) 1px, transparent 1px);
+            background-size: 35px 35px;
             pointer-events: none;
-            z-index: 2;
         }
 
         .radar-ring {
             position: absolute;
             top: 50%; left: 50%;
-            border: 1px solid rgba(0, 255, 51, 0.2);
+            border: 1px solid rgba(0, 255, 51, 0.15);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
-            z-index: 2;
         }
 
         .vector-cordon-circle {
             position: absolute;
             top: 50%; left: 45%;
-            width: 140px; height: 140px;
+            width: 130px; height: 130px;
             border: 2px solid var(--neon-green);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
-            z-index: 3;
         }
 
         .cordon-label {
@@ -196,13 +189,11 @@
             left: 110%; top: 40%;
             color: #FFFFFF; font-size: 0.75rem; font-family: monospace;
             white-space: nowrap;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px #000;
         }
 
         .tracker-blip {
             position: absolute;
-            width: 26px; height: 26px;
+            width: 24px; height: 24px;
             background-color: var(--bright-blue);
             border: 2px solid #FFFFFF;
             border-radius: 50%;
@@ -213,50 +204,49 @@
             font-weight: bold;
             color: #FFFFFF;
             box-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
-            z-index: 4;
         }
 
         .blip-label {
             position: absolute;
-            left: 30px; color: #FFFFFF;
-            font-size: 0.75rem; font-family: monospace;
+            left: 28px; color: #A0A0A0;
+            font-size: 0.7rem; font-family: monospace;
             white-space: nowrap;
-            text-shadow: 1px 1px 2px #000;
         }
 
         /* DATA LOG INTERFACE */
         .data-log-panel {
             border-top: 1px dashed var(--gold);
-            padding-top: 10px;
+            padding-top: 6px;
+            flex-shrink: 0;
         }
 
         .log-status-header {
             color: var(--gold);
             font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
         }
 
         .log-body-text {
             color: #E0E0E0;
             font-family: monospace;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            line-height: 1.3;
         }
 
         /* CRISIS OPS DIRECTIVE BUTTON MATRIX */
         .bottom-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 5px;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         .action-grid-btn {
             background-color: #000000;
-            padding: 12px;
+            padding: 10px;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             border-radius: 4px;
             display: flex;
@@ -264,6 +254,7 @@
             justify-content: center;
             gap: 6px;
             text-transform: uppercase;
+            box-sizing: border-box;
         }
 
         .btn-pink   { border: 2px solid var(--hot-pink); color: var(--hot-pink); }
@@ -273,40 +264,38 @@
         .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
         .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
 
-        /* STOP SPEECH COMMAND STRIP */
+        /* RESTORED STOP TRANSMISSION TRACK BAR */
         .btn-stop-audio {
             grid-column: span 2;
-            background-color: #330000;
+            background-color: #2b0000;
             border: 2px solid #FF3333;
             color: #FF8888;
             padding: 10px;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             letter-spacing: 1px;
             cursor: pointer;
             border-radius: 4px;
             text-align: center;
             text-transform: uppercase;
-            margin-top: 4px;
         }
 
         .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
 
         /* FIXED BOTTOM SIGNATURE TRACK ROW */
         .fixed-creator-footer {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
             background-color: #050505;
             border-top: 2px solid #222;
             padding: 8px 0;
             text-align: center;
-            z-index: 100;
+            flex-shrink: 0;
+            box-sizing: border-box;
         }
 
         .creator-text {
             color: #FF6666;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: bold;
             letter-spacing: 2px;
             margin: 0;
@@ -342,13 +331,12 @@
         </div>
 
         <div class="radar-screen-container">
-            <div class="tactical-map-underlay"></div>
             <div class="radar-grid"></div>
             
-            <div class="radar-ring" style="width: 100px; height: 100px;"></div>
-            <div class="radar-ring" style="width: 200px; height: 200px;"></div>
-            <div class="radar-ring" style="width: 350px; height: 350px;"></div>
-            <div class="radar-ring" style="width: 500px; height: 500px;"></div>
+            <div class="radar-ring" style="width: 80px; height: 80px;"></div>
+            <div class="radar-ring" style="width: 160px; height: 160px;"></div>
+            <div class="radar-ring" style="width: 280px; height: 280px;"></div>
+            <div class="radar-ring" style="width: 400px; height: 400px;"></div>
 
             <div class="vector-cordon-circle">
                 <div class="cordon-label">CORDON: 1/2 MILE RADIUS</div>
@@ -372,9 +360,6 @@
             <div class="log-body-text">
                 Vector cordon circle drawn on local console layout.<br>
                 Target Area: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
-                <div style="margin-top: 8px;">
-                    Searchers 1, 2, and 3 are mapped and scaled within target radius parameters. Fully active.
-                </div>
             </div>
         </div>
 
@@ -404,22 +389,6 @@
             alert("TACTICAL UPDATE: Cordon Vector locked dynamically onto target location.");
         }
 
-        // FORCE COMMAND TO DEPLOY STABLE NATURAL-SPEED SYSTEMS ONLY
-        function assignVoiceProfile(utterance) {
-            if (!synth) return;
-            var voiceLibrary = synth.getVoices();
-            
-            // Filters directly for localized modern configurations, discarding sluggish synthetic legacy modes
-            var primeMatch = voiceLibrary.find(function(v) {
-                return v.lang.startsWith('en') && 
-                       (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Apple'));
-            });
-
-            if (primeMatch) {
-                utterance.voice = primeMatch;
-            }
-        }
-
         function killVoiceTransmission() {
             if (synth) {
                 synth.cancel();
@@ -428,7 +397,7 @@
 
         function speakMedicalProtocol(actionType) {
             if (!synth) return;
-            synth.cancel(); // Force stop any running speech track instantly
+            synth.cancel(); 
             
             let message = "";
 
@@ -447,15 +416,22 @@
             }
 
             var transmission = new SpeechSynthesisUtterance(message);
-            assignVoiceProfile(transmission);
             
-            transmission.rate = 1.05;  // Adjusted pace up to standard operational human delivery speed
+            // Standard system browser voice profiles
+            var voiceLibrary = synth.getVoices();
+            var primeMatch = voiceLibrary.find(function(v) {
+                return v.lang.startsWith('en') && !v.name.includes('Samantha');
+            });
+            if (primeMatch) {
+                transmission.voice = primeMatch;
+            }
+
+            transmission.rate = 1.0;  // True operational human speed
             transmission.pitch = 1.0; 
             
             synth.speak(transmission);
         }
 
-        // Pre-warms cache to ensure immediate response on system deployment
         if (synth && 'onvoiceschanged' in synth) {
             synth.onvoiceschanged = function() { synth.getVoices(); };
         }
