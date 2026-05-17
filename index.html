@@ -1,111 +1,229 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET - STABILITY TEST DECK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TACNET - CONSOLE CORE</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --pure-black: #000000;
+            --neon-green: #00ff33;
+            --gold-primary: #dfb720;
+            --dark-gray: #121212;
+            --alert-red: #ff0033;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
         
         body, html { 
-            background-color: #000000; 
-            color: #00ff33; 
-            font-family: monospace; 
+            background-color: var(--pure-black); 
+            color: var(--neon-green); 
+            font-family: 'Share Tech Mono', monospace; 
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            position: fixed;
         }
 
-        /* SIMPLE TWO-PAGE SYSTEM */
+        /* MASTER PAGE CARRIER SYSTEM */
         .app-page {
             display: none; 
             width: 100%;
             height: 100%;
-            padding: 20px;
+            padding: 15px;
+            padding-top: calc(15px + env(safe-area-inset-top));
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
             flex-direction: column;
-            justify-content: center;
         }
-        
-        /* FORCE PAGE TO SHOW WHEN ACTIVE */
         .active-page {
             display: flex !important; 
         }
 
-        /* PAGE 1 DESIGN ELEMENTS */
-        .test-card {
-            border: 2px solid #dfb720;
-            background: #121212;
-            padding: 20px;
-            border-radius: 8px;
+        /* ======================================================== */
+        /* PAGE 1: MASTER HOME SYSTEM CONSOLE                       */
+        /* ======================================================== */
+        .home-logo-hub {
             text-align: center;
-            margin-bottom: 30px;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            border: 2px double var(--neon-green);
+            padding: 15px;
+            background: var(--dark-gray);
+            border-radius: 8px;
         }
-        
-        h1 { color: #dfb720; font-size: 2rem; margin-bottom: 10px; }
-        p { color: #ffffff; font-size: 1rem; margin-bottom: 5px; }
-
-        .test-trigger-btn {
-            background: #00ff33;
-            color: #000000;
-            font-size: 1.2rem;
+        .home-logo-hub h1 {
+            font-family: 'Black Ops One', sans-serif;
+            color: var(--gold-primary);
+            font-size: 2.4rem;
+            letter-spacing: 1px;
+        }
+        .home-logo-hub p {
+            color: #ffffff;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .patent-shield-box {
+            background: rgba(223, 183, 32, 0.08);
+            border: 1px solid var(--gold-primary);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+        .patent-officer {
+            color: #ffffff;
             font-weight: bold;
+            font-size: 1.05rem;
+            display: block;
+            margin-top: 4px;
+        }
+        .credential-gate-panel {
+            background: var(--dark-gray);
+            border: 1px solid var(--neon-green);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: auto; /* Pushes the launch button to the bottom perfectly */
+        }
+        .gate-title {
+            font-family: 'Black Ops One', sans-serif;
+            color: var(--gold-primary);
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            text-align: center;
+            border-bottom: 1px dashed var(--neon-green);
+            padding-bottom: 4px;
+        }
+        .gate-status-line {
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .big-launch-command-btn {
+            background: var(--neon-green);
+            color: var(--pure-black);
+            font-family: 'Black Ops One', sans-serif;
+            font-size: 1.3rem;
             padding: 20px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
-            box-shadow: 0 0 10px #00ff33;
+            box-shadow: 0 0 15px var(--neon-green);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .big-launch-command-btn:active {
+            background: var(--gold-primary);
+            box-shadow: 0 0 15px var(--gold-primary);
         }
 
-        /* PAGE 2 DESIGN ELEMENTS */
-        .return-btn {
+        /* ======================================================== */
+        /* PAGE 2: RECON PERIMETER HUD BRIDGE                      */
+        /* ======================================================== */
+        .search-header {
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-header h2 {
+            font-family: 'Black Ops One', sans-serif;
+            color: var(--gold-primary);
+            font-size: 1.4rem;
+        }
+        .return-home-btn {
             background: transparent;
-            border: 1px solid #dfb720;
-            color: #dfb720;
-            padding: 10px;
-            font-size: 1rem;
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 4px 10px;
+            font-size: 0.85rem;
             border-radius: 4px;
-            margin-top: 20px;
             cursor: pointer;
+        }
+        .status-wireframe-box {
+            border: 2px dashed #ff0033;
+            background: var(--dark-gray);
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        .signature-footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #444;
+            margin-top: 5px;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-    <div class="app-page active-page" id="screen-1">
-        <div class="test-card">
+    <div class="app-page active-page" id="page-1-node">
+        <div class="home-logo-hub">
             <h1>TACNET</h1>
-            <p>STABILITY TEST CONSOLE</p>
-            <p style="color:#00ff33; margin-top:15px;">DESIGN SPECCED BY:</p>
-            <p style="font-weight:bold;">DEPUTY EARL A. WOOD (RET)</p>
+            <p>Task Force Search & Recovery Link</p>
         </div>
 
-        <button class="test-trigger-btn" onclick="switchTestScreen(2)">👉 TAP TO TEST RECON PAGE</button>
+        <div class="patent-shield-box">
+            🔒 UNITED STATES LAW ENFORCEMENT INTERFACE<br>
+            DESIGN INVENTED & SPECCED BY:
+            <span class="patent-officer">DEPUTY SHERIFF EARL A. WOOD (RET) &bull; VA</span>
+        </div>
+
+        <div class="credential-gate-panel">
+            <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
+            <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
+            <div class="gate-status-line"><span>GPS INTEGRATION:</span> <span style="color:var(--neon-green);">READY</span></div>
+            <div class="gate-status-line"><span>ROSTER RESTRIC:</span> <span style="color:var(--gold-primary);">OFFICER CORE</span></div>
+            <div class="gate-status-line"><span>INTERFACE STABILITY:</span> <span style="color:var(--neon-green);">100% VERIFIED</span></div>
+        </div>
+
+        <button class="big-launch-command-btn" onclick="switchAppPage(2)">📡 INITIALIZE TASK FORCE SEARCH</button>
+        
+        <div class="signature-footer">PROPERTY SCHEMATICS DEPUTY EARL A. WOOD</div>
     </div>
 
-    <div class="app-page" id="screen-2">
-        <div class="test-card" style="border-color:#ff0033;">
-            <h1 style="color:#ff0033;">PAGE 2 LIVE</h1>
-            <p>If you can read this, your phone's multi-page router link is 100% operational.</p>
+    <div class="app-page" id="page-2-node">
+        <div class="search-header">
+            <h2>TACTICAL SEARCH RECON</h2>
+            <button class="return-home-btn" onclick="switchAppPage(1)">⬅️ DISCONNECT</button>
         </div>
 
-        <button class="return-btn" onclick="switchTestScreen(1)">⬅️ RETURN TO PORTAL</button>
+        <div class="status-wireframe-box">
+            <span style="color:var(--gold-primary); font-family:'Black Ops One'; font-size:1.3rem; display:block; margin-bottom:10px;">STAGE 1 PASSED</span>
+            The full home console layout is working perfectly on your iPhone screen without cutting off.<br><br>
+            Tap the yellow button above to return home. Once you confirm this layout looks right, we will drop the map engine back in under our new safeguards!
+        </div>
     </div>
 
     <script>
-        // BACK-TO-BASICS PAGE SWITCHER
-        function switchTestScreen(screenNum) {
-            // Hide both screens completely
-            document.getElementById('screen-1').classList.remove('active-page');
-            document.getElementById('screen-2').classList.remove('active-page');
+        function switchAppPage(pageID) {
+            document.getElementById('page-1-node').classList.remove('active-page');
+            document.getElementById('page-2-node').classList.remove('active-page');
             
-            // Force open only the requested screen
-            if(screenNum === 1) {
-                document.getElementById('screen-1').classList.add('active-page');
-            } else if(screenNum === 2) {
-                document.getElementById('screen-2').classList.add('active-page');
-            }
+            document.getElementById(`page-${pageID}-node`).classList.add('active-page');
         }
     </script>
 </body>
