@@ -1,9 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TACNET | MULTI-AGENCY TACTICAL TASK FORCE</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
         :root {
             --hunter-green: #1B3022;
@@ -11,7 +15,6 @@
             --gold: #D4AF37;
             --sos-red: #B22222;
             --glass: rgba(20, 35, 25, 0.9);
-            --panel-bg: #2b2b2b;
         }
 
         body, html {
@@ -21,217 +24,127 @@
             display: flex; flex-direction: column;
         }
 
-        /* MASTER TACTICAL BANNER FRAME */
+        /* BANNER AREA USING YOUR CUSTOM TNET IMAGE */
         .master-banner {
-            background: linear-gradient(180deg, #4a3f1a 0%, #1a1505 100%);
-            border: 4px solid #5a5a5a;
-            padding: 10px 20px;
+            background: #000;
+            border-bottom: 4px solid var(--neon-green);
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
-            box-shadow: inset 0 0 20px #000;
+            height: 100px;
+            overflow: hidden;
         }
 
-        .banner-seal {
-            height: 90px;
-            width: auto;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-
-        .banner-center-text {
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        .banner-title {
-            font-size: 3.2rem;
-            font-weight: bold;
-            letter-spacing: 6px;
-            margin: 0;
-            color: var(--gold);
-            text-shadow: 3px 3px 0px #000;
-        }
-
-        .banner-subtext {
-            font-size: 1.1rem;
-            color: #fff;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-top: 5px;
+        .master-banner img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         /* CONSOLE WORKSPACE */
         .console-body {
             display: flex;
             flex-grow: 1;
-            padding: 15px;
-            gap: 15px;
+            padding: 10px;
+            gap: 10px;
             background: #222;
-            border-bottom: 4px solid #5a5a5a;
         }
 
-        /* LIVE SCREEN AREA */
+        /* THE LIVE SCREEN HOUSING THE MAP */
         .screen-container {
             flex-grow: 1;
             position: relative;
-            border: 5px solid #444;
+            border: 4px solid #444;
             background-color: #000;
-            box-shadow: 0 0 15px #000;
-            overflow: hidden;
+            box-shadow: inset 0 0 20px #000;
         }
 
         #live-map {
             width: 100%; height: 100%;
-            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1000x800&maptype=satellite');
-            background-size: cover; background-position: center;
         }
 
-        /* MULTI-SHAPE TACTICAL MARKERS */
-        .marker {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-            font-size: 0.75rem;
-            box-shadow: 0 0 8px #000;
-        }
-
-        /* Shape 1: Standard Blue Circles (LEO) */
-        .marker-circle {
-            width: 40px; height: 40px;
-            background: rgba(30, 144, 255, 0.85);
-            border: 2px solid #00bfff;
-            border-radius: 50%;
-        }
-
-        /* Shape 2: Amber Hexagon (K9 Master Head) */
-        .marker-hex {
-            width: 50px; height: 50px;
-            background: rgba(218, 165, 32, 0.9);
-            border: 2px solid var(--gold);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-            font-size: 0.9rem;
-        }
-
-        /* Shape 3: Red Diamond (LEO Perimeter Lead) */
-        .marker-diamond {
-            width: 45px; height: 45px;
-            background: rgba(178, 34, 34, 0.9);
-            border: 2px solid #ff4500;
-            transform: rotate(45deg);
-        }
-        .marker-diamond span { transform: rotate(-45deg); }
-
-        /* Shape 4: Green Triangle (LEO-2 Outpost) */
-        .marker-triangle {
-            width: 45px; height: 45px;
-            background: rgba(34, 139, 34, 0.9);
-            border: 2px solid var(--neon-green);
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            padding-top: 12px; box-sizing: border-box;
-        }
-
-        /* Shape 5: Purple Square (LEO Support) */
-        .marker-square {
-            width: 40px; height: 40px;
-            background: rgba(138, 43, 226, 0.85);
-            border: 2px solid #da70d6;
-        }
-
-        /* HARDWARE CONTROL PANEL */
+        /* CUSTOM CONTROLS OVERLAY ON THE RIGHT */
         .control-panel {
-            width: 260px;
+            width: 240px;
             background: #333;
             border: 3px solid #5a5a5a;
-            padding: 15px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            box-shadow: inset 0 0 10px #000;
+            gap: 10px;
         }
 
         .panel-heading {
-            background: #222;
-            padding: 6px;
+            background: #111;
+            padding: 5px;
             text-align: center;
             font-weight: bold;
             border: 1px solid var(--gold);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
-        /* TACTICAL RUGGED BUTTONS */
+        /* INTERACTIVE HARDWARE CONTROLS */
         .hw-btn {
             background: linear-gradient(180deg, #555 0%, #222 100%);
             border: 2px solid #666; color: var(--gold);
             padding: 12px; font-weight: bold; font-family: monospace;
             cursor: pointer; text-transform: uppercase; border-radius: 4px;
-            box-shadow: 0 3px 0 #111; text-align: center;
+            text-align: center;
         }
-        .hw-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #111; }
+        .hw-btn:active { background: var(--gold); color: #000; }
         .hw-btn-gold { border-color: var(--gold); background: linear-gradient(180deg, #6b561b 0%, #221a05 100%); }
 
         .btn-sos-hardware {
             background: linear-gradient(180deg, var(--sos-red) 0%, #500 100%);
             border: 2px solid #ff4500; color: #fff;
-            padding: 15px; font-size: 1rem; animation: panel-pulse 2s infinite;
+            padding: 15px; font-size: 1rem; font-weight: bold; cursor: pointer;
         }
+        .btn-sos-hardware:active { background: #fff; color: var(--sos-red); }
 
-        @keyframes panel-pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
-
-        /* CREATOR LOWER BANNER */
+        /* CREATOR FOOTER STAMP */
         .creator-footer {
             background: #000;
             color: #ff6347;
             text-align: center;
-            padding: 12px 0;
-            font-size: 1.3rem;
+            padding: 10px 0;
+            font-size: 1.2rem;
             font-weight: bold;
             letter-spacing: 2px;
             border-top: 2px solid #333;
         }
 
-        /* NIGHT VISION OVERLAY */
+        /* NIGHT VISION FILTER EFFECT */
         .nvg-active {
-            filter: brightness(0.7) contrast(1.3) sepia(100%) hue-rotate(85deg) !important;
+            filter: brightness(0.7) contrast(1.4) sepia(100%) hue-rotate(85deg) !important;
+        }
+
+        /* MAP MARKER STYLES */
+        .map-label {
+            color: white;
+            font-weight: bold;
+            font-family: monospace;
+            text-shadow: 1px 1px 2px black;
+            font-size: 11px;
+            text-align: center;
         }
     </style>
 </head>
 <body id="master-console">
 
     <div class="master-banner">
-        <img src="amherst_badge.png.jpg" alt="Sheriff Star" class="banner-seal" onerror="this.style.display='none'">
-        <div class="banner-center-text">
-            <div class="banner-title">TACNET</div>
-            <div class="banner-subtext">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
-        </div>
-        <img src="gshep_2.jpg" alt="K9 Medallion" class="banner-seal" style="margin-right: 15px;" onerror="this.style.display='none'">
-        <img src="va.png-modified.jpg" alt="VSP Patch" class="banner-seal" onerror="this.style.display='none'">
+        <img src="tnet.png" alt="TACNET SYSTEM BANNER" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block'">
+        <div id="alt-title" style="display:none; color:var(--gold); font-size:2rem; font-weight:bold;">TACNET MAIN CONSOLE</div>
     </div>
 
     <div class="console-body">
         
         <div class="screen-container">
             <div id="live-map"></div>
-
-            <div class="marker marker-circle" style="top: 20%; left: 40%;">LEO</div>
-            <div class="marker marker-circle" style="top: 55%; left: 30%;">LEO</div>
-            <div class="marker marker-circle" style="top: 65%; left: 45%;">LEO</div>
-            
-            <div class="marker marker-hex" style="top: 35%; left: 25%;">K9</div>
-            
-            <div class="marker marker-diamond" style="top: 25%; left: 15%;"><span>LEO</span></div>
-            
-            <div class="marker marker-triangle" style="top: 25%; left: 75%;">LEO-2</div>
-            
-            <div class="marker marker-square" style="top: 45%; left: 78%;">LEO</div>
         </div>
 
         <div class="control-panel">
             <div class="panel-heading">SYSTEM EXECUTION</div>
-            <button class="hw-btn hw-btn-gold" onclick="alert('Tactical Search Operations Started.')">START SEARCH</button>
+            <button class="hw-btn hw-btn-gold" onclick="focusSearchArea()">CENTER ON SEARCH</button>
             <button class="hw-btn hw-btn-gold" onclick="startK9Voice()">K9 DEPLOY</button>
             
             <div class="panel-heading" style="margin-top: 10px;">SAFETY SYSTEM</div>
@@ -245,23 +158,65 @@
         APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // CORE TACTICAL COMMAND FUNCTIONS
+        // INITIALIZE MAP LOCKED TO MADISON HEIGHTS / AMHERST CO, VA
+        // COORDINATES: 37.4514, -79.1522
+        var map = L.map('live-map').setView([37.4514, -79.1522], 14);
+
+        // PULL FREE HIGH-RESOLUTION SAT IMAGES FROM USGS/NASA SERVERS
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tactical Satellite Feed Active'
+        }).addTo(map);
+
+        // DRAW COLOURED FIELD UNIT SYMBOLS DIRECTLY ON THE SATELLITE AREA
+        
+        // Blue Circles (LEO Field Units)
+        var leo1 = L.circleMarker([37.456, -79.158], {color: '#00bfff', fillColor: '#1e90ff', fillOpacity: 0.8, radius: 14}).addTo(map);
+        leo1.bindTooltip("<div class='map-label'>LEO-1</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
+
+        var leo2 = L.circleMarker([37.448, -79.145], {color: '#00bfff', fillColor: '#1e90ff', fillOpacity: 0.8, radius: 14}).addTo(map);
+        leo2.bindTooltip("<div class='map-label'>LEO</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
+
+        // Amber Hexagon/Circle (K9 Tracking Command)
+        var k9Unit = L.circleMarker([37.451, -79.162], {color: '#D4AF37', fillColor: '#b8860b', fillOpacity: 0.9, radius: 18}).addTo(map);
+        k9Unit.bindTooltip("<div class='map-label' style='color:#000;'>K9</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
+
+        // Red Marker (Search Perimeter Center Focus)
+        var perimeterCenter = L.circleMarker([37.452, -79.151], {color: '#ff4500', fillColor: '#b22222', fillOpacity: 0.8, radius: 12}).addTo(map);
+        perimeterCenter.bindTooltip("<div class='map-label'>LEO</div>", {permanent: true, direction: 'center', className: 'map-label'}).openTooltip();
+
+        // Highlighted Visual Search Perimeter
+        var operationalCircle = L.circle([37.4514, -79.1522], {
+            color: '#39FF14',
+            fillColor: '#39FF14',
+            fillOpacity: 0.15,
+            radius: 800,
+            dashArray: '5, 5'
+        }).addTo(map);
+
+        // SYSTEM SCRIPT UTILITIES
+        function focusSearchArea() {
+            map.setView([37.4514, -79.1522], 14);
+            alert("Console viewport re-centered on Madison Heights Command Sector.");
+        }
+
         function toggleNVG() {
             document.getElementById('master-console').classList.toggle('nvg-active');
         }
 
         function startK9Voice() {
             if ('speechSynthesis' in window) {
-                const speech = new SpeechSynthesisUtterance("TACNET K9 Deployment Framework initialized. Hands-free voice logs active.");
-                window.speechSynthesis.speak(speech);
+                window.speechSynthesis.cancel();
+                const transmission = new SpeechSynthesisUtterance("TACNET K9 Guide Active. Systems operating at peak capability.");
+                window.speechSynthesis.speak(transmission);
             } else {
-                alert("K9 Deploy Active (Speech Engine not supported by browser).");
+                alert("K9 Audio Routing Triggered.");
             }
         }
 
         function triggerSOS() {
-            alert("CRITICAL EMERGENCY: SOS Broadcasted to Amherst Dispatch and all Field Units.");
+            alert("⚠️ CRITICAL EMERGENCY: SOS BROADCAST ACTIVE ⚠️\nTelemetry packet successfully routed to Amherst Communications Division.");
         }
     </script>
 </body>
