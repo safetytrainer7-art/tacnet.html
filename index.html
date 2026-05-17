@@ -14,20 +14,17 @@
             --red: #ff3030;
             --civilian: #28d96f;
             --purple: #bf66ff;
-            --night-vision-red: rgba(255, 0, 0, 0.35);
-            --neon-glow-red: rgba(255, 0, 0, 0.75);
+            --night-vision-red: rgba(255, 0, 0, 0.28);
+            --neon-glow-red: rgba(255, 0, 0, 0.70);
         }
 
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: #000; font-family: Arial, Helvetica, sans-serif;
-            color: #fff; 
-            /* STOPS HORIZONTAL AND VERTICAL BOUNCE ON IOS */
-            overflow: hidden; 
-            position: relative;
+            color: #fff; overflow: hidden; position: relative;
         }
 
-        /* FIXED HARD-CODED CRIMSON NIGHT VISION SHIELD (THE RED TAC LIGHT) */
+        /* PERMANENT HIGH-VISIBILITY CRIMSON NIGHT VISION SHIELD */
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none;
             background: repeating-linear-gradient(
@@ -42,11 +39,11 @@
 
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 180px var(--night-vision-red), inset 0 0 60px rgba(255, 0, 0, 0.3);
+            box-shadow: inset 0 0 160px var(--night-vision-red), inset 0 0 60px rgba(255, 0, 0, 0.25);
             z-index: 9998;
         }
 
-        /* FIXED VIEWPORT CONTAINER MAPPING STACK */
+        /* CORE VIEWPORT LAYOUT GRID */
         .main-viewport {
             display: flex; flex-direction: column; width: 100vw; height: 100vh;
             position: relative; overflow: hidden;
@@ -61,24 +58,25 @@
         #addressInput {
             flex: 1; background: #000; border: 2px solid var(--neon-green); color: #fff;
             padding: 12px; font-weight: bold; font-size: 1rem; outline: none;
+            text-shadow: 0 0 5px var(--neon-green);
         }
 
         .goBtn {
             width: 75px; background: var(--neon-green); color: #000; border: none;
-            font-weight: 900; font-size: 1.1rem; cursor: pointer;
+            font-weight: 900; font-size: 1.1rem; cursor: pointer; box-shadow: 0 0 10px var(--neon-green);
         }
 
         .menuToggleBtn {
             width: 50px; background: #111; color: var(--gold); border: 2px solid var(--gold);
             font-size: 1.2rem; cursor: pointer; font-weight: bold; display: flex;
-            align-items: center; justify-content: center;
+            align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(255,204,0,0.4);
         }
 
         /* PLACEMENT HUD NOTIFICATION OVERLAY */
         #placementStatus {
-            display: none; background: #ff3030; color: #fff; padding: 8px;
-            text-align: center; font-weight: bold; font-size: 0.9rem; letter-spacing: 1px;
-            text-transform: uppercase; z-index: 1001; box-shadow: 0 4px 12px rgba(255,0,0,0.6);
+            display: none; background: var(--red); color: #fff; padding: 10px;
+            text-align: center; font-weight: bold; font-size: 0.95rem; letter-spacing: 1px;
+            text-transform: uppercase; z-index: 1001; box-shadow: 0 4px 15px rgba(255,0,0,0.7);
         }
 
         /* EXTENDED TARGET MAPPING PANEL */
@@ -104,12 +102,11 @@
             cursor: pointer; text-transform: uppercase; font-size: 0.85rem; margin-top: 2px;
         }
 
-        /* ANTI-OVERFLOW FULL COUPLING DRAWER OVERLAY PANEL */
+        /* OVERLAY CONTROL PANEL GRAPHICS GRID */
         .sideDrawer {
-            display: none; /* TRIPPED ENTIRELY OFF UNTIL ACTIVATED TO PREVENT OVERFLOW BURSTING */
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.96); z-index: 5000; box-sizing: border-box;
-            padding: 20px; flex-direction: column; gap: 16px; overflow-y: auto;
+            padding: 20px; flex-direction: column; gap: 14px; overflow-y: auto;
         }
 
         .sideDrawer.open { display: flex; }
@@ -118,10 +115,10 @@
             display: flex; align-items: center; justify-content: space-between;
             border-bottom: 2px solid var(--gold); padding-bottom: 10px; flex-shrink: 0;
         }
-        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.4rem; font-weight: 900; letter-spacing: 1px; }
+        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.4rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 8px var(--neon-glow-red); }
         .closeDrawerBtn { background: #220000; border: 1px solid #ff3333; color: #ff3333; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 4px; }
 
-        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 6px 0; flex-shrink: 0; }
+        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 4px 0; flex-shrink: 0; }
         .patch { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
 
         .drawerSectionTitle { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
@@ -134,14 +131,16 @@
             border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
             text-transform: uppercase; text-align: center; border-radius: 4px;
         }
-        .btn-blue { border-color: var(--blue); color: var(--blue); }
-        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); }
-        .btn-red { border-color: var(--red); color: var(--red); }
-        .btn-civilian { border-color: var(--civilian); color: var(--civilian); }
-        .btn-purple { border-color: var(--purple); color: var(--purple); }
+        .btn-blue { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 8px var(--blue); }
+        .btn-lightblue { border-color: var(--lightblue); color: var(--lightblue); box-shadow: 0 0 8px var(--lightblue); }
+        .btn-red { border-color: var(--red); color: var(--red); box-shadow: 0 0 8px var(--red); }
+        .btn-civilian { border-color: var(--civilian); color: var(--civilian); box-shadow: 0 0 8px var(--civilian); }
+        .btn-purple { border-color: var(--purple); color: var(--purple); box-shadow: 0 0 8px var(--purple); }
+        
+        .btn-reset { border-color: #ffaa00; color: #ffaa00; font-weight: 900; background: #221100; box-shadow: 0 0 10px #ffaa00; }
 
         #notesBox {
-            width: 100%; height: 100px; background: #000; color: #fff;
+            width: 100%; height: 95px; background: #000; color: #fff;
             border: 1px solid var(--neon-green); padding: 10px; font-size: 0.9rem; outline: none;
             resize: none; font-family: sans-serif; box-sizing: border-box;
         }
@@ -149,8 +148,19 @@
         .reportBtn {
             padding: 14px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 4px; font-size: 1rem; margin-top: 4px; flex-shrink: 0;
+            border-radius: 4px; font-size: 1rem; margin-top: 2px; flex-shrink: 0;
             box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        /* RETURN NAVIGATION GRID HUD POPUP */
+        #returnOverlay {
+            display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.92);
+            z-index: 6000; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+        }
+        .returnBtn {
+            padding: 16px 40px; background: var(--purple); color: #fff; font-size: 1.2rem;
+            font-weight: 900; border: none; border-radius: 6px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 25px var(--purple);
         }
 
         /* OFFICIAL CREATOR ATTRIBUTION FOOTER BLOCK */
@@ -158,6 +168,17 @@
             margin-top: auto; border-top: 1px solid #333; padding-top: 14px;
             text-align: center; color: #ff7777; font-size: 0.8rem; font-weight: bold;
             line-height: 1.5; letter-spacing: 1px; flex-shrink: 0;
+        }
+
+        /* HIGH-VISIBILITY PULSING NEON HOUSE TARGET ANCHOR PIN */
+        .target-pulsing-icon {
+            background: var(--neon-green); border: 2px solid #fff; border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
+        }
+        @keyframes pulseTarget {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.9); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(0, 255, 102, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
         }
     </style>
 </head>
@@ -196,13 +217,14 @@
             </div>
 
             <div>
-                <div class="drawerSectionTitle">1. SELECT TRACKING ASSET</div>
+                <div class="drawerSectionTitle">1. TARGET GRID COMMANDS</div>
                 <div class="unitGrid">
                     <button class="unitDeployBtn btn-blue" onclick="prepUnitPlacement('leo')">ADD LEO</button>
                     <button class="unitDeployBtn btn-lightblue" onclick="prepUnitPlacement('k9')">ADD K9</button>
                     <button class="unitDeployBtn btn-red" onclick="prepUnitPlacement('sar')">ADD SAR</button>
                     <button class="unitDeployBtn btn-civilian" onclick="prepUnitPlacement('civilian')">ADD CIV</button>
                     <button class="unitDeployBtn btn-purple" style="grid-column: span 2;" onclick="prepUnitPlacement('poi')">⚠️ ADD PERSON OF INTEREST (POI)</button>
+                    <button class="unitDeployBtn btn-reset" style="grid-column: span 2;" onclick="resetTrackingGrid()">🔄 RESET DEPLOYMENT GRID</button>
                 </div>
             </div>
 
@@ -218,13 +240,19 @@
                 APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
             </div>
         </div>
+
+        <div id="returnOverlay">
+            <h2 style="color: var(--gold); letter-spacing: 2px; font-weight: 900;">REPORT CONCLUDED Successfully</h2>
+            <button class="returnBtn" onclick="dismissReturnOverlay()">📂 RETURN TO GRID</button>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        var map, perimeter;
+        var map, perimeter, targetHousePin;
         var synth = window.speechSynthesis;
+        var deployedMarkersArray = [];
         var deployedUnitsLog = [];
         var reportTrackingHistory = [];
         
@@ -300,10 +328,12 @@
                 operationalLat = parseFloat(data[0].lat);
                 operationalLng = parseFloat(data[0].lon);
 
-                map.setView([operationalLat, operationalLng], 16);
+                map.setView([operationalLat, operationalLng], 18); // Zoom tightly onto roof structure
 
                 if(perimeter){ map.removeLayer(perimeter); }
+                if(targetHousePin){ map.removeLayer(targetHousePin); }
 
+                // CONTAINMENT RING OVERLAY VECTOR
                 perimeter = L.circle([operationalLat, operationalLng], {
                     color: '#00ff66',
                     fillColor: '#00ff66',
@@ -311,7 +341,15 @@
                     radius: 804
                 }).addTo(map);
 
-                reportTrackingHistory.push('TACTICAL TARGET RECENTERED IN SECTOR: ' + address.toUpperCase());
+                // HIGH-VISIBILITY PULSING ROOF OVERLAY TARGET MARKER
+                var targetIcon = L.divIcon({
+                    className: 'target-pulsing-icon',
+                    iconSize: [20, 20]
+                });
+                targetHousePin = L.marker([operationalLat, operationalLng], {icon: targetIcon}).addTo(map)
+                    .bindPopup(`<b>TARGET STRUCTURE DESTINATION</b><br>${address.toUpperCase()}`).openPopup();
+
+                reportTrackingHistory.push('TACTICAL TARGET SECURED AND PINNED AT SECTOR: ' + address.toUpperCase());
                 map.invalidateSize();
 
             } catch(e) {
@@ -322,7 +360,7 @@
         function prepUnitPlacement(type) {
             currentPlacementType = type;
             isPlacementActive = true;
-            toggleDrawer(); // HIDES OVERLAY PANEL COMPLETELY TO REVEAL TOTAL MAP VIEWPORT
+            toggleDrawer();
             
             var statusHUD = document.getElementById('placementStatus');
             statusHUD.innerText = "TAP MAP LOCATION TO DEPLOY " + type.toUpperCase();
@@ -339,19 +377,38 @@
             };
 
             var marker = L.circleMarker([lat, lng], {
-                radius: 10,
+                radius: 11,
                 color: '#fff',
                 fillColor: colors[currentPlacementType],
                 fillOpacity: 1,
-                weight: 2
-            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET</b><br>Manually Deployed`);
+                weight: 2.5
+            }).addTo(map).bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET</b><br>Grid Position Tracked`);
 
+            deployedMarkersArray.push(marker);
             deployedUnitsLog.push({ type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
-            reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET PLACED MANUAL AT LAT: ${lat.toFixed(4)}, LNG: ${lng.toFixed(4)}`);
+            reportTrackingHistory.push(`${currentPlacementType.toUpperCase()} ASSET DEPLOYED MANUAL AT LOCATION -> LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}`);
 
             isPlacementActive = false;
             currentPlacementType = null;
             document.getElementById('placementStatus').style.display = "none";
+        }
+
+        // COMPLETE DATA CLEAN OUT ACTION MODULE
+        function resetTrackingGrid() {
+            if(!confirm("CONFIRM SYSTEM CLEAR: Wipe all tracked assets and target sectors?")) return;
+            
+            // Wipe Leaflet map elements
+            deployedMarkersArray.forEach(m => map.removeLayer(m));
+            deployedMarkersArray = [];
+            deployedUnitsLog = [];
+            reportTrackingHistory = [];
+            
+            if(targetHousePin) { map.removeLayer(targetHousePin); targetHousePin = null; }
+            
+            document.getElementById('notesBox').value = "";
+            reportTrackingHistory.push('TACTICAL OPERATIONS GRID COMPLETELY RESET BY COMMAND');
+            alert("GRID CLEAR: System ready for fresh run.");
+            toggleDrawer();
         }
 
         function killVoiceTransmission(){
@@ -388,75 +445,107 @@
             synth.speak(speech);
         }
 
+        function dismissReturnOverlay() {
+            document.getElementById('returnOverlay').style.display = 'none';
+        }
+
+        // PROFESSIONAL COURT PDF REPORT GENERATION COMPILATION MATRIX
         function generateCourtPDF() {
-            var { jsPDF } = window.jspdf;
-            var doc = new jsPDF();
-            var userNotes = document.getElementById('notesBox').value;
+            try {
+                var { jsPDF } = window.jspdf;
+                var doc = new jsPDF();
+                var userNotes = document.getElementById('notesBox').value;
 
-            var currentY = 20;
-            doc.setFontSize(16);
-            doc.setFont('Helvetica', 'bold');
-            doc.text('EVIDENTIARY SEARCH OPERATIONS LOG REPORT', 20, currentY);
-            
-            currentY += 10;
-            doc.setFontSize(10);
-            doc.setFont('Helvetica', 'normal');
-            doc.text('PRODUCED VIA TACNET SEARCH DEPLOYMENT SYSTEM', 20, currentY);
-            
-            currentY += 15;
-            doc.setFont('Helvetica', 'bold');
-            doc.text('I. OPERATIONAL TELEMETRY HISTORICAL TRACKS:', 20, currentY);
-            currentY += 8;
-            doc.setFont('Helvetica', 'normal');
-
-            reportTrackingHistory.forEach(function(logLine) {
-                if(currentY > 270) { doc.addPage(); currentY = 20; }
-                doc.text('- ' + logLine, 20, currentY);
-                currentY += 7;
-            });
-
-            currentY += 10;
-            doc.setFont('Helvetica', 'bold');
-            doc.text('II. DEPLOYED PERIMETER SEARCH ASSETS LOG MATRIX:', 20, currentY);
-            currentY += 8;
-            doc.setFont('Helvetica', 'normal');
-
-            if(deployedUnitsLog.length === 0) {
-                doc.text('No active markers logged during session.', 25, currentY);
-                currentY += 7;
-            } else {
-                deployedUnitsLog.forEach(function(unit) {
-                    if(currentY > 270) { doc.addPage(); currentY = 20; }
-                    doc.text(`Asset Type: ${unit.type} | Grid Location: Lat ${unit.lat}, Lng ${unit.lng}`, 25, currentY);
-                    currentY += 7;
-                });
-            }
-
-            if(userNotes.trim() !== "") {
-                currentY += 10;
-                if(currentY > 250) { doc.addPage(); currentY = 20; }
+                var currentY = 25;
+                
+                // TOP LAW ENFORCEMENT COMMAND HEADER BLOCK
+                doc.setFillColor(15, 30, 15);
+                doc.rect(15, 12, 180, 18, 'F');
                 doc.setFont('Helvetica', 'bold');
-                doc.text('III. CASE LEGAL INVESTIGATIVE DISPOSITION NOTES:', 20, currentY);
+                doc.setFontSize(14);
+                doc.setTextColor(255, 204, 0); // Gold Title Accent
+                doc.text('EVIDENTIARY OFFICIAL SEARCH MISSION LOG REPORT', 20, 24);
+                
+                currentY = 42;
+                doc.setTextColor(0,0,0);
+                doc.setFontSize(10);
+                doc.setFont('Helvetica', 'normal');
+                doc.text('PRODUCED SYSTEMATICALLY VIA TACNET OPERATIONAL PORTAL CORE NETWORK', 20, currentY);
+                
+                currentY += 15;
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text('I. SEARCH OPERATION TELEMETRY HISTORICAL SEGMENTS:', 20, currentY);
                 currentY += 8;
                 doc.setFont('Helvetica', 'normal');
-                var multiLineNotes = doc.splitTextToSize(userNotes, 170);
-                doc.text(multiLineNotes, 20, currentY);
-                currentY += (multiLineNotes.length * 6);
+                doc.setFontSize(9);
+
+                reportTrackingHistory.forEach(function(logLine) {
+                    if(currentY > 265) { doc.addPage(); currentY = 25; }
+                    doc.text('>>  ' + logLine, 20, currentY);
+                    currentY += 7;
+                });
+
+                currentY += 10;
+                if(currentY > 250) { doc.addPage(); currentY = 25; }
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text('II. DEPLOYED PERIMETER ASSETS TRACKING MATRIX:', 20, currentY);
+                currentY += 8;
+                doc.setFont('Helvetica', 'normal');
+                doc.setFontSize(9);
+
+                if(deployedUnitsLog.length === 0) {
+                    doc.text('No manual coordinate indicators registered during this deployment timeline.', 25, currentY);
+                    currentY += 7;
+                } else {
+                    deployedUnitsLog.forEach(function(unit) {
+                        if(currentY > 265) { doc.addPage(); currentY = 25; }
+                        doc.text(`[ASSET MARK] Type: ${unit.type}  |  Telemetry: Latitude ${unit.lat}, Longitude ${unit.lng}`, 25, currentY);
+                        currentY += 7;
+                    });
+                }
+
+                if(userNotes.trim() !== "") {
+                    currentY += 10;
+                    if(currentY > 240) { doc.addPage(); currentY = 25; }
+                    doc.setFont('Helvetica', 'bold');
+                    doc.setFontSize(11);
+                    doc.text('III. FIELD EVIDENCE & DISPOSITION NOTES:', 20, currentY);
+                    currentY += 8;
+                    doc.setFont('Helvetica', 'normal');
+                    doc.setFontSize(9);
+                    var multiLineNotes = doc.splitTextToSize(userNotes, 170);
+                    doc.text(multiLineNotes, 20, currentY);
+                    currentY += (multiLineNotes.length * 6);
+                }
+
+                // CERTIFICATION FOOTER SEAL
+                currentY += 20;
+                if(currentY > 255) { doc.addPage(); currentY = 30; }
+                doc.setLineWidth(0.5);
+                doc.setDrawColor(100, 100, 100);
+                doc.line(20, currentY, 190, currentY);
+                
+                currentY += 8;
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(9.5);
+                doc.text('TACNET SYSTEMS LEGAL EVIDENCE VERIFICATION ASSIGNMENT', 20, currentY);
+                currentY += 5;
+                doc.setFont('Helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
+
+                // DOWNLOAD DOCUMENT
+                doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
+                
+                // FLIP VIEWS TO INTERACTIVE POPUP NAV
+                toggleDrawer();
+                document.getElementById('returnOverlay').style.display = 'flex';
+
+            } catch(err) {
+                alert("PDF COMPILING EXCEPTION ACCESSED: " + err.message);
             }
-
-            currentY += 20;
-            if(currentY > 260) { doc.addPage(); currentY = 30; }
-            doc.setLineWidth(0.5);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 8;
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(9);
-            doc.text('TACNET SYSTEMS LEGAL RECORD VERIFICATION', 20, currentY);
-            currentY += 5;
-            doc.setFont('Helvetica', 'normal');
-            doc.text('APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
-
-            doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
         }
     </script>
 </body>
