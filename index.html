@@ -3,246 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET | MULTI-AGENCY TACTICAL TASK FORCE</title>
+    <title>TACNET | TWO-PAGE SYSTEM</title>
     <style>
         :root {
             --hunter-green: #1B3022;
             --neon-green: #39FF14;
             --gold: #D4AF37;
             --sos-red: #B22222;
-            --panel-bg: #2b2b2b;
+            --glass: rgba(27, 48, 34, 0.85);
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background: #111; color: var(--gold);
+            background: #000; color: var(--gold);
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
-            display: flex; flex-direction: column;
         }
 
-        /* FINALIZED TACTICAL HEADER */
+        /* ORIGINAL UNCHANGED TEXT HEADER */
         .hud-header {
-            background: linear-gradient(180deg, #3a3010 0%, #151005 100%);
-            border-bottom: 3px solid #444;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-seal {
-            height: 60px;
-            width: auto;
-            border-radius: 50%;
-        }
-
-        .header-center-text {
-            text-align: center;
-            flex-grow: 1;
+            position: absolute; top: 0; width: 100%; z-index: 10;
+            background: linear-gradient(to bottom, var(--glass), transparent);
+            text-align: center; padding: 15px 0; border-bottom: 2px solid var(--gold);
         }
 
         .title-main {
-            font-size: 2.5rem; font-weight: bold; letter-spacing: 6px; margin: 0;
-            color: var(--gold); text-shadow: 2px 2px 0px #000; text-transform: uppercase;
+            font-size: 2.8rem; font-weight: bold; letter-spacing: 5px; margin: 0;
+            text-shadow: 3px 3px 0px #000; text-transform: uppercase;
         }
 
-        .title-sub { font-size: 0.9rem; letter-spacing: 2px; color: #fff; font-weight: bold; margin-top: 5px; }
+        .title-sub { font-size: 1rem; letter-spacing: 2px; color: var(--neon-green); font-weight: bold; }
 
-        /* MAIN CONSOLE LAYOUT */
-        .console-body {
-            display: flex;
-            flex-grow: 1;
-            padding: 15px;
-            gap: 15px;
-            background: #1a1a1a;
-            border-bottom: 3px solid #444;
+        /* MULTI-PAGE SCREEN SECTIONS */
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; z-index: 1;
         }
 
-        /* PRIMARY SCREEN HOUSING */
-        .screen-container {
-            flex-grow: 1;
-            position: relative;
-            border: 4px solid #333;
-            background-color: #000;
-            box-shadow: inset 0 0 20px #000;
-            overflow: hidden;
+        .page.active { display: block; }
+
+        /* PAGE 1: SATELLITE SEARCH BACKGROUND */
+        #search-page {
+            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1200x1200&maptype=satellite');
+            background-size: cover; background-position: center;
         }
 
-        /* MULTI-SHAPE TACTICAL MARKERS */
-        .marker {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-            font-size: 0.75rem;
-            box-shadow: 0 0 8px rgba(0,0,0,0.8);
+        /* PAGE 2: K9 MEDICAL HUD PLATFORM */
+        #k9-medical-page {
+            background: #0d1a11;
+            padding-top: 140px;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        /* Blue Circles (LEO Field Units) */
-        .marker-circle {
-            width: 42px; height: 42px;
-            background: rgba(30, 144, 255, 0.9);
-            border: 2px solid #00bfff;
-            border-radius: 50%;
+        /* HUD CONTROLS & MODULES */
+        .hud-left, .hud-right {
+            position: absolute; top: 140px; z-index: 10;
+            display: flex; flex-direction: column; gap: 12px; padding: 10px;
         }
 
-        /* Amber Hexagon (K9 Tracking Unit) */
-        .marker-hex {
-            width: 48px; height: 48px;
-            background: rgba(218, 165, 32, 0.95);
-            border: 2px solid var(--gold);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        .hud-left { left: 15px; }
+        .hud-right { right: 15px; width: 240px; }
+
+        .hud-bottom {
+            position: absolute; bottom: 0; width: 100%; z-index: 10;
+            background: var(--glass); display: flex; justify-content: space-around;
+            padding: 20px 0; border-top: 2px solid var(--gold);
         }
 
-        /* Red Diamond (LEO Perimeter Unit) */
-        .marker-diamond {
-            width: 45px; height: 45px;
-            background: rgba(178, 34, 34, 0.95);
-            border: 2px solid #ff4500;
-            transform: rotate(45deg);
-        }
-        .marker-diamond span { transform: rotate(-45deg); }
-
-        /* Green Triangle (LEO Outpost) */
-        .marker-triangle {
-            width: 45px; height: 45px;
-            background: rgba(34, 139, 34, 0.95);
-            border: 2px solid var(--neon-green);
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            padding-top: 14px; box-sizing: border-box;
+        .tactical-box {
+            background: var(--glass); border: 1px solid var(--gold);
+            padding: 15px; border-radius: 4px; box-shadow: 0 0 15px #000;
+            margin: 0 20px 15px 20px;
         }
 
-        /* Purple Square (LEO Support) */
-        .marker-square {
-            width: 40px; height: 40px;
-            background: rgba(138, 43, 226, 0.9);
-            border: 2px solid #da70d6;
+        .icon-circle {
+            width: 60px; height: 60px; border: 2px solid var(--gold);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; background: var(--hunter-green);
+            cursor: pointer; font-weight: bold; font-size: 0.8rem;
+            text-align: center; line-height: 1.1; box-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
 
-        /* RIGHT-SIDE CONTROL PANEL */
-        .control-panel {
-            width: 250px;
-            background: #252525;
-            border: 3px solid #444;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .medical-card {
+            background: rgba(20, 35, 25, 0.9);
+            border: 1px solid var(--neon-green);
+            padding: 15px; margin: 15px 30px; border-radius: 4px;
+            cursor: pointer;
         }
 
-        .panel-section-title {
-            color: var(--gold);
-            font-size: 0.8rem;
-            text-align: center;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
-            margin-top: 5px;
+        .medical-card:active { background: var(--hunter-green); }
+
+        .btn-sos {
+            background: var(--sos-red); color: #fff; border: 2px solid #fff;
+            padding: 18px; font-weight: bold; border-radius: 8px;
+            animation: pulse 1.5s infinite; cursor: pointer; font-size: 1.1rem;
         }
 
-        /* CONSOLE ACTION CONTROLS */
-        .console-btn {
-            background: linear-gradient(180deg, #444 0%, #1a1a1a 100%);
-            border: 1px solid var(--gold); color: var(--gold);
-            padding: 12px; font-weight: bold; font-family: monospace;
-            cursor: pointer; text-transform: uppercase; border-radius: 4px;
-            text-align: center;
-        }
-        .console-btn:active { background: var(--gold); color: #000; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
-        .btn-sos-console {
-            background: linear-gradient(180deg, var(--sos-red) 0%, #400 100%);
-            border: 1px solid #ff4500; color: #fff;
-            padding: 16px; font-size: 1rem; font-weight: bold; cursor: pointer;
-            border-radius: 4px; text-transform: uppercase;
+        #perimeter-visual {
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 320px; height: 320px;
+            border: 3px dashed var(--neon-green);
+            background: rgba(57, 255, 20, 0.15);
+            border-radius: 50%; display: none; z-index: 5;
         }
-        .btn-sos-console:active { background: #fff; color: var(--sos-red); }
-
-        .btn-nvg-console {
-            border-color: var(--neon-green);
-            color: var(--neon-green);
-            margin-top: auto;
-        }
-
-        /* SETTLED CREATOR FOOTER STAMP */
-        .creator-footer {
-            background: #000;
-            color: #ff4500;
-            text-align: center;
-            padding: 12px 0;
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            border-top: 3px solid #333;
-        }
-
-        /* NIGHT VISION MATRIX */
-        .nvg-active {
-            filter: brightness(0.7) contrast(1.3) sepia(100%) hue-rotate(85deg) !important;
+        
+        button {
+            background: var(--hunter-green); color: var(--gold);
+            border: 1px solid var(--gold); padding: 10px 15px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
         }
     </style>
 </head>
-<body id="master-ui">
+<body id="tacnet-ui">
 
     <div class="hud-header">
-        <img src="amherst_badge.png.jpg" alt="Sheriff Star" class="header-seal" onerror="this.style.opacity='0.3'">
-        <div class="header-center-text">
-            <div class="title-main">TACNET</div>
-            <div class="title-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
-        </div>
-        <img src="gshep_2.jpg" alt="K9 Medallion" class="header-seal" onerror="this.style.opacity='0.3'">
+        <div class="title-main">TACNET</div>
+        <div class="title-sub">NEXTLINE MULTI-AGENCY TACTICAL TASK FORCE</div>
     </div>
 
-    <div class="console-body">
-        
-        <div class="screen-container">
-            
-            <div class="marker marker-diamond" style="top: 35%; left: 15%;"><span>LEO</span></div>
-            <div class="marker marker-hex" style="top: 45%; left: 25%;">K9</div>
-            <div class="marker marker-circle" style="top: 60%; left: 30%;">LEO</div>
-            <div class="marker marker-circle" style="top: 32%; left: 40%;">LEO</div>
-            <div class="marker marker-circle" style="top: 68%; left: 45%;">LEO</div>
-            <div class="marker marker-triangle" style="top: 35%; left: 70%;">LEO-2</div>
-            <div class="marker marker-square" style="top: 52%; left: 73%;">LEO</div>
-            
+    <div id="search-page" class="page active">
+        <div id="perimeter-visual"></div>
+
+        <div class="hud-left">
+            <div class="icon-circle" onclick="togglePerimeter()">PERIM<br>SET</div>
+            <div class="icon-circle" onclick="dropMarker()">ARTCL<br>DROP</div>
+            <div class="icon-circle" onclick="toggleNightVision()">NVG<br>MODE</div>
         </div>
 
-        <div class="control-panel">
-            <div class="panel-section-title">SYSTEM EXECUTION</div>
-            <button class="console-btn" onclick="alert('Tactical Grid Analysis Active.')">START SEARCH</button>
-            <button class="console-btn" onclick="triggerK9Audio()">K9 DEPLOY</button>
-            
-            <div class="panel-section-title" style="margin-top: 10px;">SAFETY SYSTEM</div>
-            <button class="btn-sos-console" onclick="triggerSOSAlert()">OFFICER SOS</button>
-            
-            <button class="console-btn btn-nvg-console" onclick="toggleNVGSystem()">NIGHT VISION</button>
+        <div class="hud-right">
+            <div class="tactical-box" style="margin:0;">
+                <div style="color: var(--neon-green); border-bottom: 1px solid var(--gold); font-weight: bold; padding-bottom: 5px;">OP: ALPHA-247</div>
+                <div style="font-size: 0.9rem; margin-top: 8px;">
+                    AMHERST CO, VA<br>
+                    UNITS: 7 LEO / 2 K9<br>
+                    TEMP: 72°F / CLEAR
+                </div>
+            </div>
+            <button class="btn-sos" onclick="triggerSOS()">SOS EMERGENCY</button>
         </div>
     </div>
 
-    <div class="creator-footer">
-        APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA
+    <div id="k9-medical-page" class="page">
+        <div class="tactical-box">
+            <div style="color: var(--neon-green); font-weight: bold; text-align: center; font-size: 1.2rem;">
+                🔊 K9 VOICE-ACTIVATED MEDICAL RESPONDER
+            </div>
+            <div style="font-size: 0.85rem; text-align: center; margin-top: 5px; color: #fff;">
+                Click a card below to trigger hands-free voice audio instructions.
+            </div>
+        </div>
+
+        <div class="medical-card" onclick="speakProtocol('trauma')">
+            <strong style="color: var(--sos-red);">[BLOCK 1] FIELD TRAUMA / HEMORRHAGE CONTROL</strong>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">Apply direct pressure over laceration. Utilize operational K9 hemostatic gauze from tactical kit.</p>
+        </div>
+
+        <div class="medical-card" onclick="speakProtocol('heat')">
+            <strong style="color: #ff8c00;">[BLOCK 2] HEAT EXHAUSTION / HYPERTHERMIA</strong>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">Move canine immediately to air-conditioned unit. Apply cool water to paws, abdomen, and groin area.</p>
+        </div>
+
+        <div class="medical-card" onclick="speakProtocol('narcan')">
+            <strong style="color: #00bfff;">[BLOCK 3] TOXIC EXPOSURE / NARCAN DELIVERY</strong>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #bbb;">If canine exhibits lethargy or respiratory distress following detection run, administer intranasal Naloxone.</p>
+        </div>
+    </div>
+
+    <div class="hud-bottom">
+        <button onclick="switchPage('search')">TACTICAL SEARCH</button>
+        <button onclick="switchPage('k9')">K9 FIRST AID</button>
+        <button onclick="alert('Accessing VA/Federal Case Law Database')">CASE LAW</button>
+        <button onclick="stopVoice()">MUTE AUDIO</button>
     </div>
 
     <script>
-        function toggleNVGSystem() {
-            document.getElementById('master-ui').classList.toggle('nvg-active');
-        }
+        var synth = window.speechSynthesis;
 
-        function triggerK9Audio() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const phrase = new SpeechSynthesisUtterance("TACNET K9 Deployment Framework initialized. Hands-free voice logs active.");
-                window.speechSynthesis.speak(phrase);
-            } else {
-                alert("K9 Audio Module Engaged.");
+        // TWO-PAGE SYSTEM NAVIGATION
+        function switchPage(pageName) {
+            document.getElementById('search-page').classList.remove('active');
+            document.getElementById('k9-medical-page').classList.remove('active');
+            
+            if(pageName === 'search') {
+                document.getElementById('search-page').classList.add('active');
+            } else if(pageName === 'k9') {
+                document.getElementById('k9-medical-page').classList.add('active');
             }
         }
 
-        function triggerSOSAlert() {
-            alert("⚠️ CRITICAL ALARM: SOS TRANSMISSION ROUTED ⚠️\nTelemetry logs pushed directly to Amherst Communications Division.");
+        // VOICE ACTIVATED INSTRUCTIONAL SCRIPT LOGIC
+        function speakProtocol(type) {
+            synth.cancel(); // Stop any running transmission immediately
+            let message = "";
+
+            if (type === 'trauma') {
+                message = "Attention Officer. For K9 field trauma, apply immediate direct pressure to the wound site using clean tactical gauze. Maintain firm pressure. Locate the pressure point above the injury if severe arterial bleeding persists.";
+            } else if (type === 'heat') {
+                message = "Attention Officer. For canine heat exhaustion, cease tracking immediately. Move the dog to shade or a cooled cruiser. Wet the belly, groin, and paw pads with cool water. Do not submerge the dog in ice water.";
+            } else if (type === 'narcan') {
+                message = "Attention Officer. In case of toxic opioid ingestion or accidental inhalation, observe for pinpoint pupils and respiratory failure. Administer a standard single dose of intranasal narcan immediately into one nostril. Maintain open airway.";
+            }
+
+            var utter = new SpeechSynthesisUtterance(message);
+            utter.rate = 0.95; // Slightly slower pacing for tactical clarity
+            synth.speak(utter);
         }
+
+        function stopVoice() {
+            synth.cancel();
+        }
+
+        // PAGE 1 CONTROL MODULES
+        function togglePerimeter() {
+            const p = document.getElementById('perimeter-visual');
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function dropMarker() { alert("Article Drop: GPS Telemetry Saved."); }
+
+        function toggleNightVision() {
+            const ui = document.getElementById('tacnet-ui');
+            ui.style.filter = ui.style.filter === 'sepia(1) hue-rotate(80deg) brightness(1.2)' ? 'none' : 'sepia(1) hue-rotate(80deg) brightness(1.2)';
+        }
+
+        function triggerSOS() { alert("EMERGENCY SOS: BROADCAST OUT TO TASK FORCE UNITS."); }
     </script>
 </body>
 </html>
