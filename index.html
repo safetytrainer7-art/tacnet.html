@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TACNET | TACTICAL SEARCH RECON</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --dark-bg: #000000;
+            --panel-bg: #111111;
+            --neon-green: #00FF33;
+            --bright-blue: #0066FF;
+            --hot-pink: #FF3366;
+            --gold: #FFCC00;
+            --orange: #FF6600;
+            --teal: #00CCCC;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--dark-bg); color: #FFFFFF;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex; flex-direction: column;
+            box-sizing: border-box;
+            -webkit-user-select: none; user-select: none;
+        }
+
+        /* HIGH-VIS AGENCY COMMAND HEADER */
+        .top-header {
+            background: linear-gradient(to bottom, #4a4722, #1c1b0a);
+            border-bottom: 3px solid var(--gold);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .header-patch-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .agency-logo {
+            height: 52px;
+            width: 52px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .badge-star {
+            height: 54px;
+            width: 54px;
+            object-fit: contain;
+        }
+
+        .center-branding {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .header-title {
+            color: var(--gold);
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin: 0;
+            text-shadow: 2px 2px 2px #000;
+        }
+
+        .header-sub {
+            color: #FFFFFF;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 2px 0 0 0;
+        }
+
+        /* FIXED INTERFACE SCAFFOLDING */
+        .console-container {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-sizing: border-box;
+            width: 100%;
+            height: calc(100vh - 105px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* TELEMETRY TARGET BOX */
+        .address-bar-frame {
+            display: flex;
+            border: 2px solid var(--neon-green);
+            background-color: #000000;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .mic-indicator {
+            background-color: var(--hot-pink);
+            color: #FFFFFF;
+            padding: 10px 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .address-input-field {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            color: #FFFFFF;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* HIGH-VISIBILITY COMMAND INTERFACE GO BUTTON */
+        .action-trigger-bar {
+            display: block !important;
+            background-color: var(--neon-green) !important;
+            color: #000000 !important;
+            text-align: center;
+            padding: 14px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(0, 255, 51, 0.8);
+            border: 2px solid #FFFFFF;
+        }
+
+        /* LIVE MAP SCREEN CONTAINER */
+        .radar-screen-container {
+            height: 300px; 
+            background-color: #000000;
+            border: 3px solid #444444;
+            position: relative;
+            border-radius: 6px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 10;
+        }
+
+        /* HIGH-GLOW NIGHT VISION RED FILTER */
+        .night-vision-glow {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(255, 0, 33, 0.35) 0%, rgba(150, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.4) 100%) !important;
+            box-shadow: inset 0 0 30px rgba(255, 0, 33, 0.6) !important;
+            pointer-events: none;
+            z-index: 1000; 
+        }
+
+        /* CUSTOM ASSET MARKER GRAPHICS */
+        .k9-custom-blip {
+            border: 2px solid var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            object-fit: cover;
+            background-color: #000000;
+        }
+
+        .vsp-custom-blip {
+            border: 2px solid var(--bright-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--bright-blue);
+            object-fit: cover;
+            background-color: #000000;
+        }
+
+        /* MAP VIEW SELECT PANEL BUTTONS */
+        .map-layer-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 1100;
+        }
+
+        .layer-btn {
+            background-color: rgba(0, 0, 0, 0.9);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .layer-btn.active {
+            background-color: var(--neon-green);
+            color: #000000;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        /* TELEMETRY READOUTS */
+        .data-log-panel {
+            border-top: 1px dashed var(--gold);
+            padding-top: 8px;
+            flex-shrink: 0;
+        }
+
+        .log-status-header {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .log-body-text {
+            color: #E0E0E0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* CRISIS PROTOCOLS TERMINAL MATRIX */
+        .bottom-action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-grid-btn {
+            background-color: #000000;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-transform: uppercase;
+            box-sizing: border-box;
+        }
+
+        .btn-pink   { border: 2px solid var(--hot-pink); color: var(--hot-pink); }
+        .btn-red    { border: 2px solid #CC3333; color: #CC3333; }
+        .btn-orange { border: 2px solid var(--orange); color: var(--orange); }
+        .btn-teal   { border: 2px solid var(--teal); color: var(--teal); }
+        .btn-gold   { border: 2px solid var(--gold); color: var(--gold); }
+        .btn-blue   { border: 2px solid var(--bright-blue); color: var(--bright-blue); background-color: rgba(0, 102, 255, 0.1); }
+
+        /* COMMAND FEED INTERRUPT SWITCH */
+        .btn-stop-audio {
+            grid-column: span 2;
+            background-color: #2b0000;
+            border: 2px solid #FF3333;
+            color: #FF8888;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .action-grid-btn:active, .btn-stop-audio:active { background-color: #FFFFFF; color: #000000; }
+
+        /* FOOTER BRANDING STRIP */
+        .fixed-creator-footer {
+            background-color: #050505;
+            border-top: 2px solid #222;
+            padding: 10px 0;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .creator-text {
+            color: #FF6666;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <img class="badge-star" src="amherst_badge.png.jpg" alt="Amherst Sheriff Badge" onerror="this.style.display='none'">
+        
+        <div class="center-branding">
+            <h1 class="header-title">TACNET</h1>
+            <p class="header-sub">Nextline Multi-Agency Tactical Task Force</p>
+        </div>
+        
+        <div class="header-patch-box">
+            <img class="agency-logo" src="gshep_2.jpg" alt="K9 Unit" onerror="this.style.display='none'">
+            <img class="agency-logo" src="va.png-modified.jpg" alt="VSP Patch" onerror="this.style.display='none'">
+        </div>
+    </div>
+
+    <div class="console-container">
+        
+        <div class="address-bar-frame">
+            <div class="mic-indicator">🎤 MIC</div>
+            <input type="text" class="address-input-field" value="135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA" id="target-address-input">
+        </div>
+
+        <div class="action-trigger-bar" onclick="lockOperationalPerimeter()">
+            📍 GO: LOCK SEARCH PERIMETER
+        </div>
+
+        <div class="radar-screen-container">
+            
+            <div id="map"></div>
+            
+            <div class="night-vision-glow"></div>
+
+            <div class="map-layer-controls">
+                <button class="layer-btn active" id="btn-sat" onclick="switchMapLayer('sat')">Satellite</button>
+                <button class="layer-btn" id="btn-street" onclick="switchMapLayer('street')">Street View</button>
+                <button class="layer-btn" id="btn-terrain" onclick="switchMapLayer('terrain')">Terrain</button>
+            </div>
+        </div>
+
+        <div class="data-log-panel">
+            <div class="log-status-header">📍 PERIMETER CORDON STATUS</div>
+            <div class="log-body-text">
+                Task Force Satellite grid tracking modules synchronized.<br>
+                Target Sector: <span id="log-target-address" style="color: #FFFFFF; font-weight: bold;">135 FLOSSIE DRIVE MADISON HEIGHTS VIRGINIA</span>
+            </div>
+        </div>
+
+        <div class="bottom-action-grid">
+            <div class="action-grid-btn btn-pink" onclick="speakMedicalProtocol('cpr')">🐾 1. K9 CPR</div>
+            <div class="action-grid-btn btn-red" onclick="speakMedicalProtocol('gunshot')">💥 2. GUNSHOT</div>
+            <div class="action-grid-btn btn-orange" onclick="speakMedicalProtocol('heatstroke')">☀️ 3. HEAT STROKE</div>
+            <div class="action-grid-btn btn-teal" onclick="speakMedicalProtocol('snakebite')">🐍 4. SNAKE BITE</div>
+            <div class="action-grid-btn btn-gold" onclick="speakMedicalProtocol('vet')">🏥 EMERGENCY VET</div>
+            <div class="action-grid-btn btn-blue" onclick="speakMedicalProtocol('rally')">🐕 RALLY ON K9-1</div>
+            
+            <div class="btn-stop-audio" onclick="killVoiceTransmission()">🛑 STOP TRANSMISSION</div>
+        </div>
+
+    </div>
+
+    <div class="fixed-creator-footer">
+        <p class="creator-text">App Creator Deputy Sheriff Earl A. Wood Retired VA</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var synth = window.speechSynthesis;
+        var map, activeLayer, searchCircle;
+        
+        var defaultLat = 37.4338;
+        var defaultLng = -79.1114;
+
+        // MAP TILES TIERS
+        var layers = {
+            sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'ArcGIS Satellite'
+            }),
+            street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{y}/{x}.png', {
+                attribution: 'OpenStreetMap'
+            }),
+            terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{y}/{x}.png', {
+                attribution: 'Topo Terrain'
+            })
+        };
+
+        function initMap() {
+            map = L.map('map', {
+                center: [defaultLat, defaultLng],
+                zoom: 15,
+                zoomControl: false, 
+                attributionControl: false
+            });
+
+            activeLayer = layers.sat;
+            activeLayer.addTo(map);
+
+            searchCircle = L.circle([defaultLat, defaultLng], {
+                color: '#00FF33',
+                fillColor: '#00FF33',
+                fillOpacity: 0.10,
+                radius: 804 
+            }).addTo(map);
+
+            var k9Icon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<img class="k9-custom-blip" src="gshep_2.jpg" width="34" height="34">',
+                iconSize: [34, 34],
+                iconAnchor: [17, 17]
+            });
+
+            var vspIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<img class="vsp-custom-blip" src="va.png-modified.jpg" width="30" height="30">',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            // TARGET SEARCHERS LOGIC
+            L.marker([defaultLat, defaultLng], {icon: k9Icon}).addTo(map).bindPopup("<b>WOOD-K91 (LEAD)</b>").openPopup();
+            L.marker([37.438, -79.117], {icon: vspIcon}).addTo(map).bindPopup("<b>VSP PERIMETER UNIT</b>"); 
+            L.marker([37.430, -79.106], {icon: vspIcon}).addTo(map).bindPopup("<b>SUPPORT CO-1</b>"); 
+        }
+
+        function switchMapLayer(type) {
+            if (!map) return;
+            map.removeLayer(activeLayer);
+            activeLayer = layers[type];
+            activeLayer.addTo(map);
+
+            document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + type).classList.add('active');
+        }
+
+        function lockOperationalPerimeter() {
+            var inputAddr = document.getElementById('target-address-input').value;
+            document.getElementById('log-target-address').innerText = inputAddr.toUpperCase();
+            
+            if (map) {
+                map.setView([defaultLat, defaultLng], 15);
+            }
+            alert("TACTICAL VECTOR ALERT: Tracking map array synchronized on target grid coordinates.");
+        }
+
+        function killVoiceTransmission() {
+            if (synth) {
+                synth.cancel();
+            }
+        }
+
+        // PURGED ROBOTIC TRAITS - DIRECT SYSTEM DISPATCH
+        function speakMedicalProtocol(actionType) {
+            if (!synth) return;
+            synth.cancel(); 
+            
+            let message = "";
+
+            if (actionType === 'cpr') {
+                message = "Executing K9 CPR instructions. Lay the dog on a firm surface on its right side. Verify airway is completely clear. Deliver thirty chest compressions just behind the elbow, then extend the neck and deliver two rescue breaths directly into the nostrils. Repeat cycle.";
+            } else if (actionType === 'gunshot') {
+                message = "Executing K9 Gunshot trauma response. Immediately pack the entry site tightly using hemostatic gauze from your tactical medical bag. Apply heavy, steady, manual direct pressure without stopping for a minimum of three minutes. Do not remove gauze if it saturates; layer more over top.";
+            } else if (actionType === 'heatstroke') {
+                message = "Executing K9 Heat Stroke protocol. Cease tracking and field operations immediately. Relocate canine to shaded terrain or air-conditioned fleet transport. Apply room-temperature running water over the stomach, inner thighs, and paw pads. Direct ambient air conditioning toward the body.";
+            } else if (actionType === 'snakebite') {
+                message = "Executing K9 Snake Bite procedure. Restrain canine and minimize all physical exertion to restrict systemic spread of venom. Keep the bite location positioned below heart level if possible. Cleanse area gently. Do not apply ice, or use a tourniquet.";
+            } else if (actionType === 'vet') {
+                message = "Sourcing emergency veterinary triage routing. Field telemetry data compiled. Contacting regional police veterinary dispatch line to stand by for priority emergency intake.";
+            } else if (actionType === 'rally') {
+                message = "Command directive issued: All perimeter units collapse cordon formations and rally coordinates back inward on target lead asset position, Wood Canine One.";
+            }
+
+            var transmission = new SpeechSynthesisUtterance(message);
+            
+            transmission.lang = 'en-US';
+            transmission.rate = 1.0; 
+            transmission.pitch = 1.0; 
+            
+            synth.speak(transmission);
+        }
+
+        window.onload = initMap;
+    </script>
+</body>
+</html>
