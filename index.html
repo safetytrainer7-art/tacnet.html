@@ -1,3 +1,4 @@
+
 # TACNET — Single File Tactical Operations Prototype
 
 Save this as:
@@ -167,11 +168,12 @@ font-size:.72rem;
 letter-spacing:2px;
 }
 
-.controls{
-padding:8px;
-display:flex;
-gap:8px;
-background:#081108;
+.controls{padding:6px;display:flex;gap:6px;background:#081108;flex-shrink:0;}
+
+@media(max-width:768px){
+.controls{flex-direction:row;}
+#agencyCode,#addressInput{font-size:.82rem;padding:10px;}
+.controlBtn{padding:10px 12px;font-size:.82rem;min-width:72px;}
 }
 
 #agencyCode,
@@ -193,14 +195,9 @@ font-weight:900;
 cursor:pointer;
 }
 
-#map{
-flex:1;
-width:100%;
-}
+#map{flex:1;width:100%;min-height:48vh;z-index:1;}
 
-.legend{
-display:grid;
-grid-template-columns:repeat(3,1fr);
+.legend{display:grid;grid-template-columns:repeat(2,1fr);
 gap:6px;
 padding:8px;
 background:#040904;
@@ -220,16 +217,12 @@ height:14px;
 border-radius:50%;
 }
 
-.bottomPanel{
-padding:8px;
-display:grid;
-grid-template-columns:repeat(2,1fr);
+.bottomPanel{padding:6px;display:grid;grid-template-columns:repeat(2,1fr);
 gap:8px;
 background:#040904;
 }
 
-.actionBtn{
-padding:14px;
+.actionBtn{padding:10px;font-size:.82rem;
 border:none;
 font-weight:bold;
 cursor:pointer;
@@ -248,8 +241,7 @@ border-color:var(--gold);
 color:var(--gold);
 }
 
-.notesPanel{
-padding:8px;
+.notesPanel{padding:6px;flex-shrink:0;
 background:#000;
 }
 
@@ -385,35 +377,45 @@ navigator.geolocation.watchPosition((position)=>{
 const lat=position.coords.latitude;
 const lng=position.coords.longitude;
 
-let officer=L.circleMarker([lat,lng],{
+if(window.userMarker){
+window.userMarker.setLatLng([lat,lng]);
+}else{
+window.userMarker=L.circleMarker([lat,lng],{
 radius:10,
 color:'#ffffff',
 fillColor:'#1d7dff',
 fillOpacity:1,
 weight:3
-}).addTo(map);
+}).addTo(map).bindPopup('LIVE OFFICER GPS');
+}
 
-units.push(officer);
-
-});
+},{enableHighAccuracy:true});
 
 }
+
+L.control.layers({
+'Street':layers.street,
+'Satellite':layers.sat,
+'Terrain':layers.terrain
+}).addTo(map);
 
 reportLog.push('TACTICAL SEARCH STARTED');
 }
 
 function joinAgency(){
 
-const code=document.getElementById('agencyCode').value;
+const code=document.getElementById('agencyCode').value.trim();
 
-if(code.length<4){
-alert('ENTER VALID ACCESS CODE');
+const validCodes=['TACNET2026','STATE01','FEDERAL01','AMHERST911'];
+
+if(!validCodes.includes(code)){
+alert('ACCESS DENIED');
 return;
 }
 
-alert('OUTSIDE AGENCY JOINED TACNET');
+alert('OUTSIDE AGENCY CONNECTED TO TACNET');
 
-reportLog.push('OUTSIDE AGENCY JOINED WITH ACCESS CODE');
+reportLog.push('OUTSIDE AGENCY JOINED: '+code);
 }
 
 async function searchAddress(){
