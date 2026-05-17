@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TACNET - HIGH REDUNDANCY PATROL PORTAL</title>
+    <title>TACNET - LOCK-PROOF TASK FORCE CONTROLLER</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
@@ -21,7 +20,14 @@
             --police-blue: #0044ff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            /* Hard bypasses iOS text-selection lag */
+            -webkit-user-select: none;
+            user-select: none;
+        }
         
         body, html { 
             background-color: var(--pure-black); 
@@ -30,27 +36,29 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            /* Hard lock to prevent the entire web browser page from bouncing or sliding */
+            position: fixed; 
         }
 
-        /* APP PAGES TERMINAL CONTAINER */
+        /* SCREEN CARRIERS */
         .app-page {
             display: none; 
             width: 100%;
             height: 100%;
-            padding: 12px;
-            padding-top: calc(12px + env(safe-area-inset-top));
-            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            padding: 10px;
+            padding-top: calc(10px + env(safe-area-inset-top));
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
             flex-direction: column;
         }
         .active-page {
             display: flex; 
         }
 
-        /* PAGE 1: MASTER HOME DESIGN SCREEN */
+        /* MASTER CONSOLE SCREEN (PAGE 1) */
         .home-logo-hub {
             text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            margin-top: 20px;
+            margin-bottom: 15px;
             border: 2px double var(--neon-green);
             padding: 15px;
             background: var(--dark-gray);
@@ -59,12 +67,12 @@
         .home-logo-hub h1 {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
-            font-size: 2.4rem;
+            font-size: 2.2rem;
         }
         .home-logo-hub p {
             color: #ffffff;
             font-size: 0.85rem;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
             margin-top: 4px;
         }
@@ -76,7 +84,7 @@
             text-align: center;
             font-size: 0.9rem;
             line-height: 1.4;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .patent-officer {
             color: #ffffff;
@@ -108,18 +116,18 @@
             background: var(--neon-green);
             color: var(--pure-black);
             font-family: 'Black Ops One', sans-serif;
-            font-size: 1.4rem;
-            padding: 20px;
+            font-size: 1.3rem;
+            padding: 18px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             text-align: center;
             box-shadow: 0 0 15px var(--neon-green);
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        /* PAGE 2: ACTIVE SEARCH ENGINE SCREEN */
+        /* RUNNING SEARCH HUD (PAGE 2) */
         .search-header {
             border-bottom: 2px solid var(--neon-green);
             padding-bottom: 4px;
@@ -131,7 +139,7 @@
         .search-header h2 {
             font-family: 'Black Ops One', sans-serif;
             color: var(--gold-primary);
-            font-size: 1.5rem;
+            font-size: 1.4rem;
         }
         .return-home-btn {
             background: transparent;
@@ -142,20 +150,26 @@
             font-size: 0.8rem;
             border-radius: 3px;
         }
+        
+        /* THE LOCKED MAP CONTAINER FRAME */
         .map-viewport-frame {
-            height: 40vh; 
+            height: 38vh; /* Tight fixed layout keeps CPU processing light */
             width: 100%;
             border: 2px solid var(--neon-green);
             border-radius: 6px;
             background: #000000;
             margin-bottom: 6px;
             position: relative;
+            overflow: hidden;
         }
         #search-map {
             width: 100%;
             height: 100%;
-            touch-action: none; 
+            /* Absolute enforcement forcing iOS Safari to pass all touches to map dragging */
+            touch-action: pan-x pan-y !important; 
         }
+        
+        /* THE SOLID VISIBILITY UNIT CIRCLES */
         .tactical-unit-pin {
             background-color: var(--police-blue);
             color: #ffffff;
@@ -166,16 +180,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 8px rgba(0, 68, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 68, 255, 1);
         }
         
-        /* TWO-ELEMENT CONTEXT ENTRY BAR */
+        /* DATA AND DICTIONARY LAYOUTS */
         .input-system-rack {
             display: flex;
             flex-direction: column;
             gap: 4px;
             background: var(--dark-gray);
-            padding: 6px;
+            padding: 5px;
             border: 1px solid var(--gold-primary);
             border-radius: 6px;
             margin-bottom: 6px;
@@ -190,9 +204,8 @@
             border: none;
             font-family: 'Black Ops One', sans-serif;
             font-size: 0.9rem;
-            padding: 0 16px;
+            padding: 0 14px;
             border-radius: 4px;
-            min-width: 75px;
         }
         .voice-text-box {
             flex-grow: 1;
@@ -200,9 +213,11 @@
             border: 1px solid var(--neon-green);
             color: #fff;
             font-family: 'Share Tech Mono', monospace;
-            padding: 10px;
-            font-size: 1.05rem;
+            padding: 8px;
+            font-size: 1rem;
             border-radius: 4px;
+            -webkit-user-select: text;
+            user-select: text; /* Allows typing override safely */
         }
         .manual-go-btn {
             background: var(--neon-green);
@@ -210,7 +225,7 @@
             border: none;
             font-family: 'Black Ops One', sans-serif;
             font-size: 0.85rem;
-            padding: 10px;
+            padding: 8px;
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
@@ -232,7 +247,7 @@
             font-size: 1.1rem;
             border-bottom: 1px dashed var(--neon-green);
             padding-bottom: 2px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .intel-body-text {
             color: #ffffff;
@@ -249,7 +264,7 @@
             background: rgba(255, 0, 51, 0.08);
             border: 2px solid var(--alert-red);
             color: #ff4466;
-            padding: 12px 2px;
+            padding: 11px 2px;
             font-family: 'Black Ops One', sans-serif;
             font-size: 0.9rem;
             border-radius: 6px;
@@ -274,9 +289,9 @@
         }
         .signature-footer {
             text-align: center;
-            font-size: 0.75rem;
-            color: #555;
-            margin-top: 6px;
+            font-size: 0.7rem;
+            color: #444;
+            margin-top: 4px;
             text-transform: uppercase;
         }
     </style>
@@ -299,8 +314,8 @@
             <div class="gate-title">MOBILE CORE SECURITY TETHER</div>
             <div class="gate-status-line"><span>OPERACTIVE LINK:</span> <span style="color:var(--neon-green);">CONNECTED</span></div>
             <div class="gate-status-line"><span>GPS INTEGRATION:</span> <span style="color:var(--neon-green);">READY</span></div>
-            <div class="gate-status-line"><span>ROSTER RESTRIC:</span> <span style="color:var(--gold-primary);">NAME/NUMBER ONLY</span></div>
-            <div class="gate-status-line"><span>OVERRIDE ENTRY:</span> <span style="color:var(--neon-green);">MANUAL + VOICE LIVE</span></div>
+            <div class="gate-status-line"><span>ANTI-FREEZE CAP:</span> <span style="color:var(--gold-primary);">ZOOM LOCK BYPASS ACTIVE</span></div>
+            <div class="gate-status-line"><span>SEARCH RETICLE:</span> <span style="color:var(--neon-green);">LOCAL LOCALIZED CAP</span></div>
         </div>
 
         <button class="big-launch-command-btn" onclick="navigateToAppPage(2)">📡 INITIALIZE TASK FORCE SEARCH</button>
@@ -329,7 +344,7 @@
         <div class="medical-intel-readout">
             <div class="intel-header-title" id="intel-title">INCIDENT LOG DECK</div>
             <div class="intel-body-text" id="intel-body">
-                System standing by. Type an address or use the MIC. To test without a live network, type an address and hit the green button.
+                System standing by. Use manual entry or MIC. If an address jumps off-screen, tap the blue button below to immediately snap back to your tracking units.
             </div>
         </div>
 
@@ -339,7 +354,7 @@
             <button class="action-click-btn" onclick="fireMedicalArray('heat')">☀️ 3. HEAT STROKE</button>
             <button class="action-click-btn" onclick="fireMedicalArray('snake')">🐍 4. SNAKE BITE</button>
             <button class="action-click-btn" onclick="fireMedicalArray('vet')" style="border-color:var(--gold-primary); color:var(--gold-primary);">🏥 EMERGENCY VET</button>
-            <button class="action-click-btn" onclick="centerTrackingMap()" style="border-color:var(--neon-green); color:var(--neon-green);">🎯 RE-CENTER MAP</button>
+            <button class="action-click-btn" onclick="centerTrackingMap()" style="border-color:#3366ff; color:#3366ff; background:rgba(0,68,255,0.1);">🐕 RALLY ON K9-1</button>
         </div>
     </div>
 
@@ -347,6 +362,10 @@
         let trackingMapEngine = null;
         let areaCordonOverlay = null;
         let strategicCenterPin = null;
+
+        // FIXED OPERATIONAL AREA BASES (Amherst County Baseline HQ)
+        const baselineLat = 37.5857;
+        const baselineLon = -79.0517;
 
         const emergencyProtocols = {
             cpr: {
@@ -390,17 +409,29 @@
         }
 
         function initializeTrackingMap() {
+            // HARD-ENFORCING ZOOM STABILITY GUARDS FOR IOS SAFARI
             trackingMapEngine = L.map('search-map', { 
-                zoomControl: false, dragging: true, tap: false, touchZoom: true, bounceAtZoomLimits: false
-            }).setView([37.5857, -79.0517], 13);
+                zoomControl: false, 
+                dragging: true, 
+                tap: false, 
+                touchZoom: true,
+                minZoom: 11,      /* Prevents map from zooming out to outer space */
+                maxZoom: 18,      /* Prevents rendering crashes */
+                bounceAtZoomLimits: false
+            }).setView([baselineLat, baselineLon], 13);
             
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(trackingMapEngine);
             
+            loadOperationalUnits();
+
+            // Intercept and break the iOS page bounce loop entirely
+            document.getElementById('search-map').addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: false });
+        }
+
+        function loadOperationalUnits() {
             dropSolidCircularPin([37.589, -79.055], "1", "WOOD-K91");
             dropSolidCircularPin([37.582, -79.048], "2", "SMITH-104");
             dropSolidCircularPin([37.592, -79.062], "3", "VSP-212");
-
-            document.getElementById('search-map').addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: false });
         }
 
         function dropSolidCircularPin(coordinates, numberValue, labelValue) {
@@ -429,11 +460,10 @@
             }
         }
 
-        // VOICE CAPTURE DRIVER
         function runVoiceParser() {
             const SpeechLib = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechLib) {
-                alert("Voice link driver missing.");
+                alert("Voice driver link missing.");
                 return;
             }
 
@@ -455,14 +485,12 @@
                 let textResult = event.results[0][0].transcript.toLowerCase();
                 document.getElementById('voice-display').value = textResult;
                 
-                // Match Medical Commands first
                 if (textResult.includes("cpr")) { fireMedicalArray('cpr'); }
                 else if (textResult.includes("gunshot") || textResult.includes("bleed")) { fireMedicalArray('gunshot'); }
                 else if (textResult.includes("heat") || textResult.includes("temperature")) { fireMedicalArray('heat'); }
                 else if (textResult.includes("snake")) { fireMedicalArray('snake'); }
                 else if (textResult.includes("vet")) { fireMedicalArray('vet'); }
                 else {
-                    // Treat any other spoken phrases directly as an address attempt
                     let parsedAddress = textResult.replace("pull up", "").replace("address", "").replace("tac", "").trim();
                     processGeoCordon(parsedAddress);
                 }
@@ -470,23 +498,16 @@
             activeInstance.start();
         }
 
-        // MANUAL BACKUP OVERRIDE
         function triggerManualAddressOverride() {
             let typedInput = document.getElementById('voice-display').value.trim();
-            if (typedInput) {
-                processGeoCordon(typedInput);
-            } else {
-                document.getElementById('intel-title').innerText = "⚠️ ENTRY BLANK";
-                document.getElementById('intel-body').innerText = "Please type an address or street intersection into the box first, then hit the green button.";
-            }
+            if (typedInput) { processGeoCordon(typedInput); }
         }
 
-        // LOOKUP ENGINE
         function processGeoCordon(targetString) {
             if (!targetString) return;
             
-            document.getElementById('intel-title').innerText = "📡 PINGING SATELLITE SYSTEM...";
-            document.getElementById('intel-body').innerText = `Searching coordinates for: ${targetString}`;
+            document.getElementById('intel-title').innerText = "📡 SEARCHING SATELLITE TELEMETRY...";
+            document.getElementById('intel-body').innerText = `Pinging database coordinates for: ${targetString}`;
 
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(targetString)}`)
                 .then(res => res.json())
@@ -505,29 +526,32 @@
                             radius: 804.67, color: '#00ff33', weight: 2, fillColor: '#00ff33', fillOpacity: 0.1
                         }).addTo(trackingMapEngine);
 
+                        // Safe zoom tracking lock prevents browser freezing
                         trackingMapEngine.setView([targetLat, targetLon], 14);
-                        document.getElementById('intel-title').innerText = "📍 SEARCH EPICENTER LOCKED";
-                        document.getElementById('intel-body').innerText = `1/2 Mile containment cordon active around:\n${targetString}`;
+                        document.getElementById('intel-title').innerText = "📍 PERIMETER CORDON ENGAGED";
+                        document.getElementById('intel-body').innerText = `1/2 Mile containment ring active around:\n${targetString}\n\nTo view your tracking units, press 'RALLY ON K9-1' below.`;
                         
                         if ('speechSynthesis' in window) {
                             window.speechSynthesis.cancel();
-                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Perimeter containment cordon established."));
+                            window.speechSynthesis.speak(new SpeechSynthesisUtterance("Perimeter cordon established."));
                         }
                     } else {
-                        document.getElementById('intel-title').innerText = "❌ LOCATION NOT FOUND";
-                        document.getElementById('intel-body').innerText = `The mapping database couldn't find "${targetString}". If testing locally without an online server, Apple blocks external lookups. Try typing a simple city or county name to test network traffic.`;
+                        document.getElementById('intel-title').innerText = "❌ UNABLE TO RESOLVE";
+                        document.getElementById('intel-body').innerText = `Could not locate "${targetString}". Check spelling or try typing a broader town/city name to verify link connection.`;
                     }
                 }).catch(err => {
-                    document.getElementById('intel-title').innerText = "⚠️ SECURITY/NETWORK BLOCK";
-                    document.getElementById('intel-body').innerText = "Apple iOS blocked the internet search request. This happens when testing a raw file offline. Once this app is deployed onto a secure web server (https://), this lock breaks and the search will go through seamlessly.";
+                    document.getElementById('intel-title').innerText = "⚠️ INTERNET PRIVACY REJECTION";
+                    document.getElementById('intel-body').innerText = "Apple browser blocked lookup. This is normal when running a raw file locally. Tap 'RALLY ON K9-1' to reset view safely.";
                 });
         }
 
+        // TACTICAL FORCE RE-CENTER RESET (The Escape Hatch)
         function centerTrackingMap() {
             if (trackingMapEngine) {
-                trackingMapEngine.setView([37.5857, -79.0517], 13);
-                document.getElementById('intel-title').innerText = "🎯 RE-CENTER DEPLOYED";
-                document.getElementById('intel-body').innerText = "Map viewport snapped back to command baseline coordinate tracking center.";
+                // Instantly force map camera right back onto the staging lanes
+                trackingMapEngine.setView([baselineLat, baselineLon], 13);
+                document.getElementById('intel-title').innerText = "🎯 SYSTEM FOCUS RESET";
+                document.getElementById('intel-body').innerText = "Map camera safely forced back to tracking center. Units 1, 2, and 3 are back in visual range.";
             }
         }
     </script>
