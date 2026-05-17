@@ -14,25 +14,26 @@
             --red: #ff3030;
             --civilian: #28d96f;
             --purple: #bf66ff;
-            --night-vision-red: rgba(255, 0, 0, 0.40);
-            --neon-glow-red: rgba(255, 0, 0, 0.85);
+            --night-vision-red: rgba(255, 0, 0, 0.35);
+            --neon-glow-red: rgba(255, 0, 0, 0.75);
         }
 
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             background: #000; font-family: Arial, Helvetica, sans-serif;
             color: #fff; 
-            /* FIXED: Force browser to completely lock out horizontal shifting */
+            /* STOPS HORIZONTAL AND VERTICAL BOUNCE ON IOS */
             overflow: hidden; 
+            position: relative;
         }
 
-        /* CORE CRIMSON NIGHT VISION SHIELD */
+        /* FIXED HARD-CODED CRIMSON NIGHT VISION SHIELD (THE RED TAC LIGHT) */
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none;
             background: repeating-linear-gradient(
                 to bottom,
-                rgba(255, 0, 0, .03),
-                rgba(255, 0, 0, .03) 2px,
+                rgba(255, 0, 0, .04),
+                rgba(255, 0, 0, .04) 2px,
                 transparent 2px,
                 transparent 4px
             );
@@ -41,13 +42,13 @@
 
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 160px var(--night-vision-red);
+            box-shadow: inset 0 0 180px var(--night-vision-red), inset 0 0 60px rgba(255, 0, 0, 0.3);
             z-index: 9998;
         }
 
-        /* FULL INTERACTIVE MAIN CONTAINER PANEL */
+        /* FIXED VIEWPORT CONTAINER MAPPING STACK */
         .main-viewport {
-            display: flex; flex-direction: column; width: 100%; height: 100%;
+            display: flex; flex-direction: column; width: 100vw; height: 100vh;
             position: relative; overflow: hidden;
         }
 
@@ -75,9 +76,9 @@
 
         /* PLACEMENT HUD NOTIFICATION OVERLAY */
         #placementStatus {
-            display: none; background: #ff3030; color: #fff; padding: 6px;
-            text-align: center; font-weight: bold; font-size: 0.85rem; letter-spacing: 1px;
-            text-transform: uppercase; z-index: 1001; box-shadow: 0 3px 10px rgba(255,0,0,0.5);
+            display: none; background: #ff3030; color: #fff; padding: 8px;
+            text-align: center; font-weight: bold; font-size: 0.9rem; letter-spacing: 1px;
+            text-transform: uppercase; z-index: 1001; box-shadow: 0 4px 12px rgba(255,0,0,0.6);
         }
 
         /* EXTENDED TARGET MAPPING PANEL */
@@ -103,34 +104,33 @@
             cursor: pointer; text-transform: uppercase; font-size: 0.85rem; margin-top: 2px;
         }
 
-        /* FIXED FIXED FIXED: ABSOLUTE SCREEN DETACHMENT DRAWER */
+        /* ANTI-OVERFLOW FULL COUPLING DRAWER OVERLAY PANEL */
         .sideDrawer {
-            position: absolute; top: 0; bottom: 0; right: -325px; width: 320px;
-            background: rgba(5, 10, 5, 0.98); border-left: 2px solid var(--gold);
-            z-index: 5000; transition: right 0.25s ease-out; padding: 16px;
-            display: flex; flex-direction: column; gap: 14px; overflow-y: auto;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.9);
+            display: none; /* TRIPPED ENTIRELY OFF UNTIL ACTIVATED TO PREVENT OVERFLOW BURSTING */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.96); z-index: 5000; box-sizing: border-box;
+            padding: 20px; flex-direction: column; gap: 16px; overflow-y: auto;
         }
 
-        .sideDrawer.open { right: 0; }
+        .sideDrawer.open { display: flex; }
 
         .drawerHeader {
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px dashed var(--gold); padding-bottom: 8px; flex-shrink: 0;
+            border-bottom: 2px solid var(--gold); padding-bottom: 10px; flex-shrink: 0;
         }
-        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.2rem; font-weight: 900; }
-        .closeDrawerBtn { background: none; border: none; color: #ff3333; font-size: 1.3rem; font-weight: bold; cursor: pointer; }
+        .drawerTitle { margin: 0; color: var(--gold); font-size: 1.4rem; font-weight: 900; letter-spacing: 1px; }
+        .closeDrawerBtn { background: #220000; border: 1px solid #ff3333; color: #ff3333; font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 4px; }
 
-        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 4px 0; flex-shrink: 0; }
-        .patch { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
+        .agencyLogos { display: flex; justify-content: space-around; align-items: center; margin: 6px 0; flex-shrink: 0; }
+        .patch { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
 
-        .drawerSectionTitle { color: var(--neon-green); font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+        .drawerSectionTitle { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* MARKER DEPLOYMENT SECTOR CONTROLS */
-        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         
         .unitDeployBtn {
-            padding: 10px; font-size: .78rem; background: #000; color: #fff;
+            padding: 12px; font-size: .85rem; background: #000; color: #fff;
             border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
             text-transform: uppercase; text-align: center; border-radius: 4px;
         }
@@ -141,22 +141,23 @@
         .btn-purple { border-color: var(--purple); color: var(--purple); }
 
         #notesBox {
-            width: 100%; height: 95px; background: #000; color: #fff;
-            border: 1px solid var(--neon-green); padding: 8px; font-size: 0.85rem; outline: none;
-            resize: none; font-family: sans-serif;
+            width: 100%; height: 100px; background: #000; color: #fff;
+            border: 1px solid var(--neon-green); padding: 10px; font-size: 0.9rem; outline: none;
+            resize: none; font-family: sans-serif; box-sizing: border-box;
         }
 
         .reportBtn {
-            padding: 12px; background: var(--neon-green); color: #000; font-weight: 900;
+            padding: 14px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 4px; font-size: 0.9rem; margin-top: 2px; flex-shrink: 0;
+            border-radius: 4px; font-size: 1rem; margin-top: 4px; flex-shrink: 0;
+            box-shadow: 0 0 15px var(--neon-green);
         }
 
         /* OFFICIAL CREATOR ATTRIBUTION FOOTER BLOCK */
         .attributionBlock {
-            margin-top: auto; border-top: 1px solid #333; padding-top: 10px;
-            text-align: center; color: #ff7777; font-size: 0.72rem; font-weight: bold;
-            line-height: 1.4; letter-spacing: 1px; flex-shrink: 0;
+            margin-top: auto; border-top: 1px solid #333; padding-top: 14px;
+            text-align: center; color: #ff7777; font-size: 0.8rem; font-weight: bold;
+            line-height: 1.5; letter-spacing: 1px; flex-shrink: 0;
         }
     </style>
 </head>
@@ -185,8 +186,8 @@
 
         <div id="sideDrawer" class="sideDrawer">
             <div class="drawerHeader">
-                <h3 class="drawerTitle">TACNET PANEL</h3>
-                <button class="closeDrawerBtn" onclick="toggleDrawer()">✕</button>
+                <h3 class="drawerTitle">TACNET PORTAL</h3>
+                <button class="closeDrawerBtn" onclick="toggleDrawer()">CLOSE</button>
             </div>
 
             <div class="agencyLogos">
@@ -280,7 +281,7 @@
 
         function toggleDrawer() {
             document.getElementById('sideDrawer').classList.toggle('open');
-            setTimeout(()=>{ map.invalidateSize(); }, 300);
+            setTimeout(()=>{ map.invalidateSize(); }, 200);
         }
 
         async function searchAddress(){
@@ -321,7 +322,7 @@
         function prepUnitPlacement(type) {
             currentPlacementType = type;
             isPlacementActive = true;
-            toggleDrawer();
+            toggleDrawer(); // HIDES OVERLAY PANEL COMPLETELY TO REVEAL TOTAL MAP VIEWPORT
             
             var statusHUD = document.getElementById('placementStatus');
             statusHUD.innerText = "TAP MAP LOCATION TO DEPLOY " + type.toUpperCase();
