@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TACNET | TWO-PAGE SYSTEM</title>
+    <title>TACNET | MULTI-AGENCY TASK FORCE</title>
     <style>
         :root {
             --hunter-green: #1B3022;
@@ -19,7 +20,7 @@
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
         }
 
-        /* ORIGINAL UNCHANGED TEXT HEADER */
+        /* THE ORIGINAL TEXT HEADER - CRACKED GOLD STYLING */
         .hud-header {
             position: absolute; top: 0; width: 100%; z-index: 10;
             background: linear-gradient(to bottom, var(--glass), transparent);
@@ -33,7 +34,7 @@
 
         .title-sub { font-size: 1rem; letter-spacing: 2px; color: var(--neon-green); font-weight: bold; }
 
-        /* MULTI-PAGE SCREEN SECTIONS */
+        /* TWO-PAGE DISPLAY FRAMEWORKS */
         .page {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: none; z-index: 1;
@@ -41,13 +42,13 @@
 
         .page.active { display: block; }
 
-        /* PAGE 1: SATELLITE SEARCH BACKGROUND */
+        /* PAGE 1: SEARCH DASHBOARD SCREEN */
         #search-page {
             background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=37.4514,-79.1522&zoom=14&size=1200x1200&maptype=satellite');
             background-size: cover; background-position: center;
         }
 
-        /* PAGE 2: K9 MEDICAL HUD PLATFORM */
+        /* PAGE 2: VOICE ACTIVATED K9 FIRST AID HUD */
         #k9-medical-page {
             background: #0d1a11;
             padding-top: 140px;
@@ -55,7 +56,7 @@
             overflow-y: auto;
         }
 
-        /* HUD CONTROLS & MODULES */
+        /* COMMAND HOUSINGS & DOCKS */
         .hud-left, .hud-right {
             position: absolute; top: 140px; z-index: 10;
             display: flex; flex-direction: column; gap: 12px; padding: 10px;
@@ -152,7 +153,7 @@
                 🔊 K9 VOICE-ACTIVATED MEDICAL RESPONDER
             </div>
             <div style="font-size: 0.85rem; text-align: center; margin-top: 5px; color: #fff;">
-                Click a card below to trigger hands-free voice audio instructions.
+                Tap a block below to engage operational hands-free audio guidance.
             </div>
         </div>
 
@@ -182,7 +183,7 @@
     <script>
         var synth = window.speechSynthesis;
 
-        // TWO-PAGE SYSTEM NAVIGATION
+        // TWO-PAGE SWITCH LOGIC
         function switchPage(pageName) {
             document.getElementById('search-page').classList.remove('active');
             document.getElementById('k9-medical-page').classList.remove('active');
@@ -194,9 +195,9 @@
             }
         }
 
-        // VOICE ACTIVATED INSTRUCTIONAL SCRIPT LOGIC
+        // HANDS-FREE CLINICAL AUDIO TRANSMISSIONS
         function speakProtocol(type) {
-            synth.cancel(); // Stop any running transmission immediately
+            synth.cancel(); 
             let message = "";
 
             if (type === 'trauma') {
@@ -208,7 +209,7 @@
             }
 
             var utter = new SpeechSynthesisUtterance(message);
-            utter.rate = 0.95; // Slightly slower pacing for tactical clarity
+            utter.rate = 0.95; 
             synth.speak(utter);
         }
 
@@ -216,7 +217,7 @@
             synth.cancel();
         }
 
-        // PAGE 1 CONTROL MODULES
+        // TACTICAL SYSTEM MODULES
         function togglePerimeter() {
             const p = document.getElementById('perimeter-visual');
             p.style.display = p.style.display === 'none' ? 'block' : 'none';
