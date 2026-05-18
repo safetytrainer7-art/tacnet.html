@@ -127,6 +127,19 @@
 
         #map { flex: 1; width: 100%; background: #111; }
 
+        /* Custom adjustments for Leaflet Control styling to fit tactical look */
+        .leaflet-control-layers {
+            background: #000 !important;
+            color: #fff !important;
+            border: 1px solid var(--gold) !important;
+            font-size: 0.75rem !important;
+            font-weight: bold !important;
+        }
+        .leaflet-control-layers-toggle {
+            background-color: #222 !important;
+            border-radius: 4px;
+        }
+
         .terminal-box { height: 65px; background: #020502; border-top: 1px solid #112211; padding: 4px; flex-shrink: 0; box-sizing: border-box; }
         #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.72rem; color: #33cc66; line-height: 1.2; }
         .ticker-line { padding: 1px 0; border-bottom: 1px solid #040a04; }
@@ -317,8 +330,11 @@
         var operationalLat = 37.4338;
         var operationalLng = -79.1114;
 
+        // Expanded layer setup specifically for urban street routing and terrain tracking
         var layers = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
+            streets: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
+            terrain: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 }),
             tacticalGrid: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}.png', { maxZoom: 20 })
         };
 
@@ -346,14 +362,17 @@
 
         function initMap() {
             map = L.map('map', {zoomControl: true, attributionControl: false}).setView([operationalLat, operationalLng], 15);
-            layers.sat.addTo(map);
+            layers.sat.addTo(map); // Default map view stays satellite
 
             perimeter = L.circle([operationalLat, operationalLng], {
                 color: '#00ff66', fillColor: '#00ff66', fillOpacity: .10, radius: 402
             }).addTo(map);
 
+            // Added options to the layer switch UI in top-right corner
             L.control.layers({
                 'SATELLITE OVERHEAD RECON': layers.sat,
+                'CITY STREET MAP VIEW': layers.streets,
+                'TERRAIN CONTOUR TOPOGRAPHY': layers.terrain,
                 'TACTICAL URBAN HIGH-VIS GRID': layers.tacticalGrid
             }, null, { position: 'topright' }).addTo(map);
 
@@ -364,7 +383,7 @@
 
             startLocalGPSEngine();
             setTimeout(()=>{ map.invalidateSize(); }, 400);
-            logToSystemRecord('TACNET MULTI-AGENCY CORE PLATFORM INITIALIZED.');
+            logToSystemRecord('TACNET MULTI-AGENCY CORE PLATFORM INITIALIZED WITH URBAN STREET ENGINES.');
         }
 
         function startLocalGPSEngine() {
@@ -377,7 +396,7 @@
             }
         }
 
-        // ================= NEW STRATEGIC HUD FILTERS & ALERTS =================
+        // ================= STRATEGIC HUD FILTERS & ALERTS =================
         function toggleNightVisionHUD() {
             isNightVisionEnabled = !isNightVisionEnabled;
             var overlay = document.getElementById('nightVisionOverlay');
@@ -405,10 +424,8 @@
                 btn.innerText = "🚨 BROADCASTING SOS";
                 logToSystemRecord(`⚠️ EMERGENCY MANDATE: OFFICER DOWN SOS CRITICAL TELEMETRY FIRED [LAT: ${operationalLat.toFixed(5)}, LNG: ${operationalLng.toFixed(5)}]`);
                 
-                // Play sound frequency block
                 playLocalSOSEnergyTone();
                 
-                // Blast urgent priority packet via real-time stream
                 if(window.activeSupabaseChannel) {
                     window.activeSupabaseChannel.send({
                         type: 'broadcast',
@@ -429,12 +446,12 @@
                 if(!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
                 var osc = audioCtx.createOscillator();
                 var gain = audioCtx.createGain();
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch alarm
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
                 osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.3);
                 gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-                setTimeout(playLocalSOSEnergyTone, 600); // Repeat loop if toggled on
+                setTimeout(playLocalSOSEnergyTone, 600);
             } catch(e){}
         }
 
