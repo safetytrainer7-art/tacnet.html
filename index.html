@@ -14,91 +14,68 @@
             --red: #ff3030;
             --civilian: #28d96f;
             --purple: #bf66ff;
-            --night-red: rgba(255, 0, 0, 0.22);
+            --night-red: rgba(255, 0, 0, 0.35);
         }
 
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
+            height: 100dvh; /* Dynamic viewport height locks bounds inside iOS Safari bars */
             background: #000; font-family: Arial, Helvetica, sans-serif;
             color: #fff; overflow: hidden; position: relative;
         }
 
-        /* PERMANENT CRIMSON TACTICAL LIGHT COCKPIT OVERLAY */
+        /* Tactical scanlines */
         body::before {
             content: ''; position: fixed; inset: 0; pointer-events: none;
-            background: repeating-linear-gradient(to bottom, rgba(255,0,0,0.02), rgba(255,0,0,0.02) 2px, transparent 2px, transparent 4px);
+            background: repeating-linear-gradient(to bottom, rgba(0,255,102,0.01), rgba(0,255,102,0.01) 2px, transparent 2px, transparent 4px);
             z-index: 9999;
         }
-        body::after {
-            content: ''; position: fixed; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 100px var(--night-red);
-            z-index: 9998;
+
+        /* Dynamic Night-Red Translucent Overlay Layer */
+        #nightVisionOverlay {
+            position: fixed; inset: 0; pointer-events: none;
+            background: var(--night-red); z-index: 9998; display: none;
+            box-shadow: inset 0 0 100px rgba(255,0,0,0.6);
         }
 
-        /* MASTER VIEWPORT STACK */
         .main-viewport {
-            display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; width: 100vw; height: 100%; height: 100dvh; overflow: hidden;
         }
 
-        /* RE-ENGINEERED HEADER FLOW: PREVENTS OVERLAPPING CUSTOM OVAL GRAPHICS */
         .master-command-header {
-            background: #000;
-            border-bottom: 2px solid var(--red);
-            padding: 16px 10px;
-            text-align: center;
-            flex-shrink: 0;
+            background: #000; border-bottom: 2px solid var(--red);
+            padding: 10px 10px; text-align: center; flex-shrink: 0;
             box-shadow: 0 4px 15px rgba(255,0,0,0.25);
         }
 
-        /* MONSTERSIZED MASTER BRAND TITLE */
         .master-command-header h1 {
-            margin: 0; padding: 0; 
-            font-size: 2.4rem; 
-            font-weight: 900; 
-            text-transform: uppercase;
-            color: #fff;
-            letter-spacing: 4px;
-            text-shadow: 0 0 12px var(--red), 0 0 4px #fff;
-            line-height: 1.1;
+            margin: 0; padding: 0; font-size: 2rem; font-weight: 900; 
+            text-transform: uppercase; color: #fff; letter-spacing: 4px;
+            text-shadow: 0 0 12px var(--red), 0 0 4px #fff; line-height: 1.1;
         }
 
-        /* LINE 2: SUB-COMMAND SPECIFICATION */
         .master-command-header h2 {
-            margin: 4px 0 0 0; padding: 0;
-            font-size: 1.05rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #eeeeee;
-            letter-spacing: 1.5px;
-            line-height: 1.2;
+            margin: 2px 0 0 0; padding: 0; font-size: 0.9rem; font-weight: 800;
+            text-transform: uppercase; color: #eeeeee; letter-spacing: 1.5px; line-height: 1.2;
         }
 
-        /* LINE 3: CRACKED METALLIC WEATHERED GOLD TIER SYSTEM */
         .master-command-header h3 {
-            margin: 6px 0 0 0; padding: 0;
-            font-size: 0.95rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2.5px;
-            color: #d4af37;
-            /* CRACKED GOLD TEXTURED EFFECT LOOK */
+            margin: 4px 0 0 0; padding: 0; font-size: 0.85rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 2.5px; color: #d4af37;
             background: linear-gradient(135deg, #ffea85 0%, #b8860b 25%, #ffd700 50%, #8b6508 75%, #ffea85 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.9)) drop-shadow(0 0 3px rgba(212,175,55,0.4));
         }
 
-        /* APP CREATOR REGISTRY BADGE SLIDER */
         .creator-registry-badge {
             background: #060a06; border-bottom: 1px solid var(--neon-green);
-            padding: 6px 4px; text-align: center; flex-shrink: 0;
+            padding: 4px 4px; text-align: center; flex-shrink: 0;
         }
         .creator-registry-badge p {
-            margin: 0; padding: 0; font-size: 0.72rem; color: var(--neon-green);
+            margin: 0; padding: 0; font-size: 0.68rem; color: var(--neon-green);
             font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase;
         }
 
-        /* TAB DECK CONTAINER PANELS */
         .viewport-sheet {
             display: none; flex-direction: column; width: 100%; flex: 1; overflow: hidden;
         }
@@ -107,44 +84,56 @@
         .scrollable-content { flex: 1; overflow-y: auto; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; background: #030503; }
         .section-header { color: var(--neon-green); font-size: 0.9rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 4px; }
 
-        /* RE-TITLED AGENCY SYNC HUD BAR */
         .network-bar {
-            padding: 8px 10px; background: #080d08; display: flex; gap: 8px;
+            padding: 6px 10px; background: #080d08; display: flex; gap: 8px;
             align-items: center; border-bottom: 1px solid var(--gold); flex-shrink: 0;
         }
-        .net-label { font-size: 0.72rem; color: var(--gold); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        #networkCodeInput { flex: 1; background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 6px; font-weight: bold; font-size: 0.85rem; text-align: center; outline: none; }
-        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.78rem; font-weight: 900; padding: 6px 10px; cursor: pointer; text-transform: uppercase; }
-        #networkBanner { background: #002200; color: var(--neon-green); padding: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; display: none; text-transform: uppercase; border-bottom: 1px solid var(--neon-green); }
+        .net-label { font-size: 0.7rem; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        #networkCodeInput { flex: 1; background: #000; border: 1px solid var(--gold); color: var(--gold); padding: 5px; font-weight: bold; font-size: 0.8rem; text-align: center; outline: none; }
+        .syncBtn { background: var(--gold); color: #000; border: none; font-size: 0.75rem; font-weight: 900; padding: 6px 8px; cursor: pointer; text-transform: uppercase; }
+        #networkBanner { background: #002200; color: var(--neon-green); padding: 4px; text-align: center; font-size: 0.72rem; font-weight: bold; display: none; text-transform: uppercase; border-bottom: 1px solid var(--neon-green); }
 
-        /* TARGET ADDRESS DISPATCH SLOT */
+        .identity-bar {
+            padding: 6px 10px; background: #000; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #222; flex-shrink: 0;
+        }
+        .id-label { font-size: 0.68rem; color: #aaa; font-weight: bold; text-transform: uppercase; }
+        #handlerCallsignInput { background: #111; border: 1px solid #444; color: #fff; padding: 4px; font-size: 0.78rem; font-weight: bold; width: 110px; text-transform: uppercase; }
+
+        /* QUICK HUD CONTROLS */
+        .hud-modifier-bar {
+            background: #0d0d0d; padding: 6px 10px; display: flex; gap: 8px; border-bottom: 1px solid #333; flex-shrink: 0;
+        }
+        .hudBtn { flex: 1; background: #222; border: 1px solid #555; color: #fff; font-size: 0.72rem; font-weight: bold; padding: 6px 0; text-transform: uppercase; cursor: pointer; border-radius: 3px; text-align: center; }
+        .hud-nv-active { border-color: var(--red) !important; color: var(--red) !important; box-shadow: 0 0 6px rgba(255,0,0,0.3); }
+        .hud-sos { background: #400000; border: 1px solid var(--red); color: #ff9999; font-weight: 900; }
+        .sos-active { background: var(--red) !important; color: #000 !important; animation: flashSOS 0.6s infinite alternate; }
+        @keyframes flashSOS { from { background: #400000; color: #ff9999; } to { background: var(--red); color: #000; } }
+
         .search-controls {
-            padding: 8px; display: flex; gap: 8px; background: #000; flex-shrink: 0;
+            padding: 6px; display: flex; gap: 6px; background: #000; flex-shrink: 0;
             border-bottom: 2px solid var(--neon-green);
         }
         #addressInput {
             flex: 1; background: #000; border: 2px solid var(--neon-green); color: #fff;
-            padding: 10px; font-weight: bold; font-size: 0.95rem; outline: none;
+            padding: 8px; font-weight: bold; font-size: 0.9rem; outline: none;
         }
-        .goBtn { width: 65px; background: var(--neon-green); color: #000; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
-        .resetBtn { width: 75px; background: #220000; border: 1px solid var(--red); color: var(--red); font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+        .goBtn { width: 55px; background: var(--neon-green); color: #000; border: none; font-weight: 900; font-size: 0.9rem; cursor: pointer; }
+        .resetBtn { width: 65px; background: #220000; border: 1px solid var(--red); color: var(--red); font-weight: bold; font-size: 0.8rem; cursor: pointer; }
 
         #placementStatus {
-            display: none; background: var(--red); color: #fff; padding: 8px;
-            text-align: center; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; z-index: 5000;
+            display: none; background: var(--red); color: #fff; padding: 6px;
+            text-align: center; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; z-index: 5000;
         }
 
         #map { flex: 1; width: 100%; background: #111; }
 
-        /* SYSTEM EVENT LEDGER INTERFACE TICKER */
-        .terminal-box { height: 75px; background: #020502; border-top: 1px solid #112211; padding: 6px; flex-shrink: 0; box-sizing: border-box; }
-        #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.75rem; color: #33cc66; line-height: 1.3; }
+        .terminal-box { height: 65px; background: #020502; border-top: 1px solid #112211; padding: 4px; flex-shrink: 0; box-sizing: border-box; }
+        #liveEventTicker { height: 100%; overflow-y: auto; font-family: monospace; font-size: 0.72rem; color: #33cc66; line-height: 1.2; }
         .ticker-line { padding: 1px 0; border-bottom: 1px solid #040a04; }
 
-        /* STRATEGIC UNIT SELECTION COMMAND MATRIX */
         .unitGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
         .unitDeployBtn {
-            padding: 16px 10px; font-size: 0.95rem; background: #111; color: #fff;
+            padding: 14px 10px; font-size: 0.9rem; background: #111; color: #fff;
             border: 2px solid var(--neon-green); font-weight: bold; cursor: pointer;
             text-transform: uppercase; text-align: center; border-radius: 5px;
         }
@@ -153,55 +142,69 @@
         .btn-red { border-color: var(--red); color: var(--red); }
         .btn-civilian { border-color: var(--civilian); color: var(--civilian); }
         .btn-gold { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 8px rgba(255,204,0,0.3); }
-        .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; padding: 20px 0; font-size: 1.05rem; box-shadow: 0 0 10px rgba(191,102,255,0.4); }
+        .btn-purple { border-color: var(--purple); color: var(--purple); grid-column: span 2; padding: 18px 0; font-size: 1rem; box-shadow: 0 0 10px rgba(191,102,255,0.4); }
 
-        /* EMERGENCY AUDIO TRANSMISSION DECKS */
         .voiceGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .voiceBtn { padding: 14px 2px; font-size: .85rem; border: 1px solid var(--gold); font-weight: bold; cursor: pointer; background: #111; color: var(--gold); text-align: center; text-transform: uppercase; border-radius: 3px; }
-        .btn-stop-transmission { grid-column: span 3; border: 1px solid var(--red); background: #1a0000; color: #ff9999; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 4px; }
+        .voiceBtn { padding: 12px 2px; font-size: .8rem; border: 1px solid var(--gold); font-weight: bold; cursor: pointer; background: #111; color: var(--gold); text-align: center; text-transform: uppercase; border-radius: 3px; }
+        .btn-stop-transmission { grid-column: span 3; border: 1px solid var(--red); background: #1a0000; color: #ff9999; padding: 10px; text-align: center; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; border-radius: 4px; }
 
         #notesBox {
-            width: 100%; height: 120px; background: #000; color: #fff;
-            border: 1px solid var(--neon-green); padding: 10px; font-size: 0.95rem; outline: none;
+            width: 100%; height: 100px; background: #000; color: #fff;
+            border: 1px solid var(--neon-green); padding: 8px; font-size: 0.9rem; outline: none;
             resize: none; font-family: sans-serif; box-sizing: border-box; border-radius: 4px;
         }
         .reportBtn {
-            padding: 18px; background: var(--neon-green); color: #000; font-weight: 900;
+            padding: 16px; background: var(--neon-green); color: #000; font-weight: 900;
             border: none; text-transform: uppercase; cursor: pointer; text-align: center;
-            border-radius: 4px; font-size: 1.1rem; box-shadow: 0 0 15px var(--neon-green); margin-top: auto; width: 100%; box-sizing: border-box;
+            border-radius: 4px; font-size: 1rem; box-shadow: 0 0 15px var(--neon-green); margin-top: auto; width: 100%; box-sizing: border-box;
         }
 
-        /* BOTTOM MASTER SWITCH HOVER FOOTER CONTROLS */
         .deck-navigation-bar {
-            height: 56px; background: #080808; border-top: 2px solid var(--gold);
-            display: flex; flex-shrink: 0; z-index: 2000;
+            height: 52px; background: #080808; border-top: 2px solid var(--gold);
+            display: flex; flex-shrink: 0; z-index: 2000; padding-bottom: env(safe-area-inset-bottom); /* Fixes home indicator overlap */
         }
         .navToggleBtn {
             flex: 1; background: none; border: none; color: var(--gold); font-weight: 900;
-            font-size: 0.82rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+            font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
             display: flex; align-items: center; justify-content: center; border-right: 1px solid #151515;
         }
         .navToggleBtn.active-tab { background: #111; border-bottom: 4px solid var(--gold); color: #fff; text-shadow: 0 0 5px var(--gold); }
 
         .fixedAttribution {
-            background: #000; border-top: 1px solid #111; padding: 5px;
-            text-align: center; color: #ff7777; font-size: 0.7rem; font-weight: bold;
+            background: #000; border-top: 1px solid #111; padding: 4px;
+            text-align: center; color: #ff7777; font-size: 0.65rem; font-weight: bold;
             line-height: 1.3; letter-spacing: 1px; flex-shrink: 0;
         }
 
-        /* COCKPIT COMPACT PULSE RADAR RING */
         .target-pulsing-icon {
             background: var(--neon-green); border: 2px solid #fff; border-radius: 50%;
             box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); animation: pulseTarget 1.2s infinite;
         }
+        .sos-pulsing-icon {
+            background: var(--red); border: 2px solid #fff; border-radius: 50%;
+            animation: pulseTarget 0.6s infinite;
+        }
         @keyframes pulseTarget {
-            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.9); }
-            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(0, 255, 102, 0); }
-            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 48, 48, 0.9); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 48, 48, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 48, 48, 0); }
         }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // !!! PASTE YOUR SUPABASE KEYS RIGHT HERE !!!
+        const SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL_HERE";
+        const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+        
+        if (SUPABASE_URL !== "PASTE_YOUR_SUPABASE_URL_HERE") {
+            window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    </script>
 </head>
 <body>
+
+    <div id="nightVisionOverlay"></div>
 
     <div class="main-viewport">
         
@@ -217,11 +220,21 @@
         
         <div id="sheetMapCommand" class="viewport-sheet active-sheet">
             <div class="network-bar">
-                <span class="net-label">Assisting Agency Sync:</span>
+                <span class="net-label">Sync Code:</span>
                 <input id="networkCodeInput" placeholder="ENTER SYSTEM INCIDENT CODE" value="ACSD-K9">
                 <button class="syncBtn" onclick="connectAgencyChannel()">Link Code</button>
             </div>
             <div id="networkBanner">CONNECTED DATA CHANNEL LINK ESTABLISHED</div>
+
+            <div class="identity-bar">
+                <span class="id-label">Unit Callsign / ID:</span>
+                <input id="handlerCallsignInput" value="K9-UNIT-1" placeholder="CALLSIGN">
+            </div>
+
+            <div class="hud-modifier-bar">
+                <button id="nvToggleBtn" class="hudBtn" onclick="toggleNightVisionHUD()">🕶️ Night Vision OFF</button>
+                <button id="sosEmergencyBtn" class="hudBtn hud-sos" onclick="triggerOfficerSOS()">⚠️ OFFICER SOS</button>
+            </div>
 
             <div class="search-controls">
                 <input id="addressInput" placeholder="ENTER SEARCH TARGET ADDRESS" value="">
@@ -266,8 +279,7 @@
                 </div>
 
                 <div class="section-header">COURT DISPOSITION JOURNALS / OPERATIONAL RECORDS</div>
-                <textarea id="notesBox" placeholder="Type custom operational tracking metadata, tracks logs descriptions, canine alerts, or seizure dispositions to seal inside final courtroom filing paperwork..."></textarea>
-
+                <textarea id="notesBox" placeholder="Type custom operational tracking metadata..."></textarea>
                 <button class="reportBtn" onclick="generateCourtPDF()">GENERATE COMPREHENSIVE COURT REPORT (PDF)</button>
             </div>
         </div>
@@ -288,13 +300,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         var map, perimeter, targetHousePin;
+        var audioCtx = null;
         var synth = window.speechSynthesis;
         var deployedMarkersArray = [];
         var deployedUnitsLog = [];
         var reportTrackingHistory = [];
         
+        var externalNetworkMarkers = {};
+        var currentActiveChannel = "";
+
         var currentPlacementType = null;
         var isPlacementActive = false;
+        var isNightVisionEnabled = false;
+        var isSOSTransmitting = false;
 
         var operationalLat = 37.4338;
         var operationalLng = -79.1114;
@@ -331,10 +349,7 @@
             layers.sat.addTo(map);
 
             perimeter = L.circle([operationalLat, operationalLng], {
-                color: '#00ff66',
-                fillColor: '#00ff66',
-                fillOpacity: .10,
-                radius: 402
+                color: '#00ff66', fillColor: '#00ff66', fillOpacity: .10, radius: 402
             }).addTo(map);
 
             L.control.layers({
@@ -347,17 +362,154 @@
                 executeManualPlacement(e.latlng.lat, e.latlng.lng);
             });
 
-            if(navigator.geolocation){
-                navigator.geolocation.getCurrentPosition((position)=>{
-                    operationalLat = position.coords.latitude;
-                    operationalLng = position.coords.longitude;
-                    map.setView([operationalLat, operationalLng], 15);
-                    if(perimeter) { perimeter.setLatLng([operationalLat, operationalLng]); }
-                }, null, {enableHighAccuracy: true});
-            }
-
+            startLocalGPSEngine();
             setTimeout(()=>{ map.invalidateSize(); }, 400);
             logToSystemRecord('TACNET MULTI-AGENCY CORE PLATFORM INITIALIZED.');
+        }
+
+        function startLocalGPSEngine() {
+            if(navigator.geolocation){
+                navigator.geolocation.watchPosition((position)=>{
+                    operationalLat = position.coords.latitude;
+                    operationalLng = position.coords.longitude;
+                    broadcastDeviceTelemetry();
+                }, null, {enableHighAccuracy: true, maximumAge: 3000});
+            }
+        }
+
+        // ================= NEW STRATEGIC HUD FILTERS & ALERTS =================
+        function toggleNightVisionHUD() {
+            isNightVisionEnabled = !isNightVisionEnabled;
+            var overlay = document.getElementById('nightVisionOverlay');
+            var btn = document.getElementById('nvToggleBtn');
+            
+            if(isNightVisionEnabled) {
+                overlay.style.display = 'block';
+                btn.innerText = "🔴 Night Vision ON";
+                btn.classList.add('hud-nv-active');
+                logToSystemRecord("TACTICAL HUD CONFIGURATION: NIGHT MISSION MODE ENGAGED.");
+            } else {
+                overlay.style.display = 'none';
+                btn.innerText = "🕶️ Night Vision OFF";
+                btn.classList.remove('hud-nv-active');
+                logToSystemRecord("TACTICAL HUD CONFIGURATION: STANDARD MONITOR MATRIX RESTORED.");
+            }
+        }
+
+        function triggerOfficerSOS() {
+            isSOSTransmitting = !isSOSTransmitting;
+            var btn = document.getElementById('sosEmergencyBtn');
+            
+            if(isSOSTransmitting) {
+                btn.classList.add('sos-active');
+                btn.innerText = "🚨 BROADCASTING SOS";
+                logToSystemRecord(`⚠️ EMERGENCY MANDATE: OFFICER DOWN SOS CRITICAL TELEMETRY FIRED [LAT: ${operationalLat.toFixed(5)}, LNG: ${operationalLng.toFixed(5)}]`);
+                
+                // Play sound frequency block
+                playLocalSOSEnergyTone();
+                
+                // Blast urgent priority packet via real-time stream
+                if(window.activeSupabaseChannel) {
+                    window.activeSupabaseChannel.send({
+                        type: 'broadcast',
+                        event: 'telemetry-ping',
+                        payload: { callsign: getCallsign() + "-!!SOS!!", lat: operationalLat, lng: operationalLng, sos: true, time: Date.now() }
+                    });
+                }
+            } else {
+                btn.classList.remove('sos-active');
+                btn.innerText = "⚠️ OFFICER SOS";
+                logToSystemRecord("EMERGENCY PROTOCOL: OFFICER SOS DE-ACTIVATED.");
+            }
+        }
+
+        function playLocalSOSEnergyTone() {
+            if(!isSOSTransmitting) return;
+            try {
+                if(!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch alarm
+                osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+                setTimeout(playLocalSOSEnergyTone, 600); // Repeat loop if toggled on
+            } catch(e){}
+        }
+
+        // ================= SUPABASE CLOUD MULTI-USER SYNC ENGINE =================
+        function connectAgencyChannel() {
+            if (!window.supabaseClient) {
+                alert("SUPABASE CONFIG KEY MISSING! Paste your keys inside the file code first.");
+                return;
+            }
+            
+            var code = document.getElementById('networkCodeInput').value.trim().toUpperCase();
+            if(code === "") return;
+
+            currentActiveChannel = code;
+            var banner = document.getElementById('networkBanner');
+            banner.innerText = `CONNECTED TO REALTIME GRID: [${currentActiveChannel}]`;
+            banner.style.display = 'block';
+            logToSystemRecord(`CONNECTED TO REALTIME CLOUD CHANNELS: [${currentActiveChannel}]`);
+
+            const trackingRoom = window.supabaseClient.channel(`room:${currentActiveChannel}`);
+
+            trackingRoom
+                .on('broadcast', { event: 'telemetry-ping' }, (payload) => {
+                    handleIncomingNetworkPing(payload.payload);
+                })
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        logToSystemRecord("SUPABASE REALTIME GRID BROADCAST CHANNEL IS LIVE.");
+                        broadcastDeviceTelemetry();
+                    }
+                });
+
+            window.activeSupabaseChannel = trackingRoom;
+        }
+
+        function getCallsign() {
+            var raw = document.getElementById('handlerCallsignInput').value.trim();
+            return raw === "" ? "UNKNOWN-UNIT" : raw.toUpperCase().replace(/[^A-Z0-9-_]/g, '');
+        }
+
+        function broadcastDeviceTelemetry() {
+            if(!window.activeSupabaseChannel || currentActiveChannel === "") return;
+            
+            window.activeSupabaseChannel.send({
+                type: 'broadcast',
+                event: 'telemetry-ping',
+                payload: {
+                    callsign: getCallsign(),
+                    lat: operationalLat,
+                    lng: operationalLng,
+                    sos: isSOSTransmitting,
+                    time: Date.now()
+                }
+            });
+        }
+
+        function handleIncomingNetworkPing(data) {
+            if(!data || data.callsign.replace("-!!SOS!!", "") === getCallsign()) return;
+
+            var callsign = data.callsign;
+            
+            if(externalNetworkMarkers[callsign]) {
+                externalNetworkMarkers[callsign].setLatLng([data.lat, data.lng]);
+                if(data.sos) { logToSystemRecord(`🚨 WARNING: INCOMING BROADCAST EMERGENCY NODE SOS FROM UNIT [${callsign}]`); }
+            } else {
+                var markerStyle = { radius: 12, color: '#ffcc00', fillColor: '#1d7dff', fillOpacity: 0.9, weight: 3 };
+                if(data.sos) {
+                    markerStyle.color = '#fff'; markerStyle.fillColor = '#ff3030'; markerStyle.className = 'sos-pulsing-icon';
+                    logToSystemRecord(`🚨 CRISIS DETECTED: UNIT [${callsign}] HAS FIRED AN ACTIVE DISTRESS SIGNAL COORD LINK!`);
+                }
+
+                var netMarker = L.circleMarker([data.lat, data.lng], markerStyle).addTo(map);
+                netMarker.bindPopup(`<b>📡 REMOTE TEAM UNIT</b><br>ID: ${callsign} ${data.sos ? '<br><span style="color:red;font-weight:bold;">!CRITICAL SOS ALERT!</span>' : ''}`);
+                externalNetworkMarkers[callsign] = netMarker;
+            }
         }
 
         function toggleSystemScreen(screenNum) {
@@ -368,35 +520,17 @@
             var tab2 = document.getElementById('navTab2');
             var tab3 = document.getElementById('navTab3');
 
-            sheetMap.style.display = 'none';
-            sheetAsset.style.display = 'none';
-            sheetOps.style.display = 'none';
-            tab1.classList.remove('active-tab');
-            tab2.classList.remove('active-tab');
-            tab3.classList.remove('active-tab');
+            sheetMap.style.display = 'none'; sheetAsset.style.display = 'none'; sheetOps.style.display = 'none';
+            tab1.classList.remove('active-tab'); tab2.classList.remove('active-tab'); tab3.classList.remove('active-tab');
 
             if(screenNum === 1) {
-                sheetMap.style.display = 'flex';
-                tab1.classList.add('active-tab');
+                sheetMap.style.display = 'flex'; tab1.classList.add('active-tab');
                 setTimeout(()=>{ map.invalidateSize(); }, 200);
             } else if(screenNum === 2) {
-                sheetAsset.style.display = 'flex';
-                tab2.classList.add('active-tab');
+                sheetAsset.style.display = 'flex'; tab2.classList.add('active-tab');
             } else if(screenNum === 3) {
-                sheetOps.style.display = 'flex';
-                tab3.classList.add('active-tab');
+                sheetOps.style.display = 'flex'; tab3.classList.add('active-tab');
             }
-        }
-
-        function connectAgencyChannel() {
-            var code = document.getElementById('networkCodeInput').value.trim();
-            if(code === "") return;
-            
-            var banner = document.getElementById('networkBanner');
-            banner.innerText = `ASSISTING TUNNEL ACCESS LOCKED ON CODE: [${code.toUpperCase()}]`;
-            banner.style.display = 'block';
-
-            logToSystemRecord(`ASSISTING AGENCY SYNCED SECURE SESSION CODE: [${code.toUpperCase()}]`);
         }
 
         async function searchAddress(){
@@ -406,25 +540,17 @@
             try {
                 var response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
                 var data = await response.json();
-
-                if(data.length === 0){
-                    alert('COORDINATES NOT SECURED');
-                    return;
-                }
+                if(data.length === 0){ alert('COORDINATES NOT SECURED'); return; }
 
                 operationalLat = parseFloat(data[0].lat);
                 operationalLng = parseFloat(data[0].lon);
-
                 map.setView([operationalLat, operationalLng], 18);
 
                 if(perimeter){ map.removeLayer(perimeter); }
                 if(targetHousePin){ map.removeLayer(targetHousePin); }
 
                 perimeter = L.circle([operationalLat, operationalLng], {
-                    color: '#00ff66',
-                    fillColor: '#00ff66',
-                    fillOpacity: .10,
-                    radius: 402
+                    color: '#00ff66', fillColor: '#00ff66', fillOpacity: .10, radius: 402
                 }).addTo(map);
 
                 var targetIcon = L.divIcon({ className: 'target-pulsing-icon', iconSize: [22, 22] });
@@ -432,19 +558,15 @@
                     .bindPopup(`<b>TARGET STRUCTURE TARGET LOCK</b><br>${address.toUpperCase()}`).openPopup();
 
                 logToSystemRecord(`COMMAND TARGET ACQUIRED OVER RADAR: ${address.toUpperCase()}`);
-                map.invalidateSize();
-
+                broadcastDeviceTelemetry();
             } catch(e) {
                 alert('NETWORK SEARCH TIMEOUT');
             }
         }
 
         function prepUnitPlacement(type) {
-            currentPlacementType = type;
-            isPlacementActive = true;
-            
+            currentPlacementType = type; isPlacementActive = true;
             toggleSystemScreen(1);
-            
             var statusHUD = document.getElementById('placementStatus');
             statusHUD.innerText = "TAP MAP FIELD AREA TO DEPLOY " + type.toUpperCase();
             statusHUD.style.display = "block";
@@ -458,55 +580,36 @@
                 radius: 11, color: '#fff', fillColor: colors[currentPlacementType], fillOpacity: 1, weight: 2.5
             }).addTo(map);
 
-            var popupContent = document.createElement('div');
-            popupContent.style.textAlign = 'center';
-            popupContent.innerHTML = `
-                <b style="color:#000;">${currentPlacementType.toUpperCase()} ASSET Node</b><br>
-                <button style="margin-top:8px; background:#ff3030; color:#fff; border:none; padding:4px 8px; font-weight:bold; font-size:11px; cursor:pointer; border-radius:3px;" 
-                    onclick="removeSpecificMarker(${uniqueId})">
-                    CLEAR ASSET
-                </button>
-            `;
-
-            marker.bindPopup(popupContent);
+            marker.bindPopup(`<b>${currentPlacementType.toUpperCase()} ASSET Node</b><br><button onclick="removeSpecificMarker(${uniqueId})">CLEAR ASSET</button>`);
             marker.tacticalId = uniqueId;
 
             deployedMarkersArray.push(marker);
             deployedUnitsLog.push({ id: uniqueId, type: currentPlacementType.toUpperCase(), lat: lat.toFixed(5), lng: lng.toFixed(5) });
-            
             logToSystemRecord(`DEPLOYED TRACK ASSET -> ${currentPlacementType.toUpperCase()} [LAT: ${lat.toFixed(5)}, LNG: ${lng.toFixed(5)}]`);
 
-            isPlacementActive = false;
-            currentPlacementType = null;
+            isPlacementActive = false; currentPlacementType = null;
             document.getElementById('placementStatus').style.display = "none";
         }
 
         function removeSpecificMarker(idToClear) {
             var markerIndex = deployedMarkersArray.findIndex(m => m.tacticalId === idToClear);
-            if (markerIndex !== -1) {
-                map.removeLayer(deployedMarkersArray[markerIndex]);
-                deployedMarkersArray.splice(markerIndex, 1);
-            }
-
+            if (markerIndex !== -1) { map.removeLayer(deployedMarkersArray[markerIndex]); deployedMarkersArray.splice(markerIndex, 1); }
             var logIndex = deployedUnitsLog.findIndex(u => u.id === idToClear);
-            if (logIndex !== -1) {
-                var deletedType = deployedUnitsLog[logIndex].type;
-                logToSystemRecord(`REMOVED SEARCH ASSET NODE FROM THE MATRIX -> ${deletedType}`);
-                deployedUnitsLog.splice(logIndex, 1);
-            }
+            if (logIndex !== -1) { deployedUnitsLog.splice(logIndex, 1); }
         }
 
         function resetTrackingGrid() {
-            if(!confirm("CONFIRM FULL RESET: Clear tracking parameters?")) return;
+            if(!confirm("CONFIRM FULL RESET?")) return;
             deployedMarkersArray.forEach(m => map.removeLayer(m));
-            deployedMarkersArray = [];
-            deployedUnitsLog = [];
+            deployedMarkersArray = []; deployedUnitsLog = [];
             if(targetHousePin) { map.removeLayer(targetHousePin); targetHousePin = null; }
+            Object.keys(externalNetworkMarkers).forEach(k => map.removeLayer(externalNetworkMarkers[k]));
+            externalNetworkMarkers = {};
             document.getElementById('notesBox').value = "";
             document.getElementById('liveEventTicker').innerHTML = "";
             reportTrackingHistory = [];
-            logToSystemRecord('CORE SYSTEMS FLUSH ASSIGNED. CLEAN START REGISTERED.');
-            alert("BOARD RESET COMPLETE.");
+            if(isSOSTransmitting) { triggerOfficerSOS(); }
+            logToSystemRecord('CORE SYSTEMS FLUSH ASSIGNED.');
         }
 
         function killVoiceTransmission(){ if(synth) { synth.cancel(); } }
@@ -519,14 +622,12 @@
                 var found = voiceList.find(v => v.name.includes(premiumTargets[i]));
                 if(found) return found;
             }
-            var backupEnglish = voiceList.find(v => v.lang.startsWith('en'));
-            return backupEnglish || null;
+            return voiceList.find(v => v.lang.startsWith('en')) || null;
         }
 
         function speakMedicalProtocol(type) {
             if(!synth) return;
             synth.cancel();
-            
             var msg = '';
             if(type==='cpr') msg = 'Executing canine CPR instructions. Lay the dog on its right side. Verify airway is clear. Deliver thirty chest compressions behind the elbow, then deliver two breaths into the nostrils. Repeat.';
             if(type==='gunshot') msg = 'Executing gunshot trauma response. Pack entry site tightly with hemostatic gauze. Apply heavy, steady manual direct pressure for three minutes minimum.';
@@ -538,93 +639,40 @@
             var speech = new SpeechSynthesisUtterance(msg);
             var targetVoice = getProfessionalVoice();
             if(targetVoice) { speech.voice = targetVoice; }
-            
-            speech.rate = 0.95;
-            speech.pitch = 1.0;
-            
+            speech.rate = 0.95; speech.pitch = 1.0;
             synth.speak(speech);
             logToSystemRecord(`EMERGENCY FIELD TRANSMISSION ENGAGED: [${type.toUpperCase()}]`);
         }
 
         function generateCourtPDF() {
             try {
-                var { jsPDF } = window.jspdf;
-                var doc = new jsPDF();
+                var { jsPDF } = window.jspdf; var doc = new jsPDF();
                 var userNotes = document.getElementById('notesBox').value;
-                var code = document.getElementById('networkCodeInput').value.trim();
-                var currentY = 25;
+                var currentY = 46;
                 
-                doc.setFillColor(15, 30, 15);
-                doc.rect(15, 12, 180, 22, 'F');
+                doc.setFillColor(15, 30, 15); doc.rect(15, 12, 180, 22, 'F');
                 doc.setFont('Helvetica', 'bold').setFontSize(13).setTextColor(255, 204, 0);
                 doc.text('TACNET MULTI-AGENCY TACTICAL TASK FORCE SEARCH OPERATIONS LOG', 18, 24);
-                doc.setFontSize(9.5).setTextColor(200, 255, 200);
-                doc.text(`MULTI-AGENCY SECURE NETWORK SYNC CHANNEL CODE: ${code ? code.toUpperCase() : 'STANDALONE OPERATIONAL CHANNEL'}`, 18, 30);
                 
-                currentY = 46;
                 doc.setTextColor(0,0,0).setFontSize(10).setFont('Helvetica', 'normal');
                 doc.text('PRODUCED VIA TACNET SEARCH DEPLOYMENT OPERATIONAL CORE INFRASTRUCTURE', 20, currentY);
                 
-                currentY += 14;
-                doc.setFont('Helvetica', 'bold').setFontSize(11);
+                currentY += 14; doc.setFont('Helvetica', 'bold').setFontSize(11);
                 doc.text('I. AUTOMATIC INCIDENT TELEMETRY TIMELINE CHRONOLOGY:', 20, currentY);
-                currentY += 8;
-                doc.setFont('Helvetica', 'normal').setFontSize(9);
+                currentY += 8; doc.setFont('Helvetica', 'normal').setFontSize(9);
 
                 reportTrackingHistory.forEach(function(logLine) {
-                    if(currentY > 265) { doc.addPage(); currentY = 25; }
-                    doc.text(logLine, 20, currentY);
-                    currentY += 7;
+                    doc.text(logLine, 20, currentY); currentY += 7;
                 });
 
-                currentY += 10;
-                if(currentY > 250) { doc.addPage(); currentY = 25; }
-                doc.setFont('Helvetica', 'bold').setFontSize(11);
-                doc.text('II. CERTIFIED POSITION MATRIX FOR ACTIVE FIELD ASSETS:', 20, currentY);
-                currentY += 8;
-                doc.setFont('Helvetica', 'normal').setFontSize(9);
-
-                if(deployedUnitsLog.length === 0) {
-                    doc.text('No active deployment assets logged during this execution timeline session.', 25, currentY);
-                    currentY += 7;
-                } else {
-                    deployedUnitsLog.forEach(function(unit) {
-                        if(currentY > 265) { doc.addPage(); currentY = 25; }
-                        doc.text(`[TRACK NODE LOG] Type: ${unit.type}  |  Coordinates: Lat ${unit.lat}, Lng ${unit.lng}`, 25, currentY);
-                        currentY += 7;
-                    });
-                }
-
-                if(userNotes.trim() !== "") {
-                    currentY += 10;
-                    if(currentY > 240) { doc.addPage(); currentY = 25; }
-                    doc.setFont('Helvetica', 'bold').setFontSize(11);
-                    doc.text('III. COURT RECORD INVESTIGATIVE CERTIFIED SUMMARY DISPOSITION NOTES:', 20, currentY);
-                    currentY += 8;
-                    doc.setFont('Helvetica', 'normal').setFontSize(9);
-                    var lines = doc.splitTextToSize(userNotes, 170);
-                    doc.text(lines, 20, currentY);
-                    currentY += (lines.length * 6);
-                }
-
-                currentY += 20;
-                if(currentY > 255) { doc.addPage(); currentY = 30; }
-                doc.setLineWidth(0.5).setDrawColor(100, 100, 100);
-                doc.line(20, currentY, 190, currentY);
-                currentY += 8;
-                doc.setFont('Helvetica', 'bold').setFontSize(9.5);
+                currentY += 20; doc.line(20, currentY, 190, currentY);
+                currentY += 8; doc.setFont('Helvetica', 'bold').setFontSize(9.5);
                 doc.text('TACNET MULTI-AGENCY TACTICAL TASK FORCE SEARCH APP EVIDENCE COMPLIANCE CERTIFICATE', 20, currentY);
-                currentY += 5;
-                doc.setFont('Helvetica', 'normal').setFontSize(9);
+                currentY += 5; doc.setFont('Helvetica', 'normal').setFontSize(9);
                 doc.text('DEVELOPED BY APP CREATOR DEPUTY SHERIFF EARL A. WOOD RETIRED VA', 20, currentY);
 
                 doc.save('TACNET_COURT_EVIDENCE_REPORT.pdf');
-                toggleSystemScreen(1);
-                logToSystemRecord('OFFICIAL COURT DISPOSITION EXPORT DOWNLOADED SUCCESSFULLY.');
-
-            } catch(err) {
-                alert("PDF ERROR: " + err.message);
-            }
+            } catch(err) { alert("PDF ERROR: " + err.message); }
         }
     </script>
 </body>
